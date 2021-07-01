@@ -153,7 +153,7 @@ class Ui_Dialog(object):
     def unselectAll(self):
         for i in range(len(self.structList)):
             self.checkboxs[i].setChecked(False)
-    
+
     '''
     @description: 弹出输入种子输入的界面
     @param {*} self
@@ -166,10 +166,8 @@ class Ui_Dialog(object):
             self.uiSeed.setupUi(self.seedDialog)
             self.uiSeed.initStructDict(self.header_loc, False, self.selectedStruct, self.structList)
             self.seedDialog.show()
-        except AttributeError:
-            print("还没有选择结构体!")
-        # except BaseException as e:
-        #     print(e)
+        except BaseException as e:
+            print(e)
 
 # 添加内容 --By Radon
 if __name__ == "__main__":
