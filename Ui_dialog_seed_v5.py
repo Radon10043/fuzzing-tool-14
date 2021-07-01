@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-06-29 12:43:27
+LastEditTime: 2021-07-01 14:21:20
 Description:
 '''
 # -*- coding: utf-8 -*-
@@ -374,11 +374,3 @@ class Ui_Dialog(object):
         genSeedMsgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "种子文件生成成功!")
         genSeedMsgBox.exec_()
     # 结束
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(dialog)
-    dialog.show()
-    sys.exit(app.exec_())

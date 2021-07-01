@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-06-29 12:46:15
+LastEditTime: 2021-07-01 14:20:10
 Description: Some pulic function
 '''
 
@@ -31,12 +31,13 @@ def deleteNote(source):
             source[i]="\n"
     return source
 
-'''
-@description: 获取所有定义的函数
-@param {*} source_locs 所有源文件地址的字符串，用\n隔开
-@return {*} 返回包含所有自定义函数的列表
-'''
+
 def getAllFunctions(source_locs):
+    '''
+    @description: 获取所有定义的函数
+    @param {*} source_locs 所有源文件地址的字符串，用\n隔开
+    @return {*} 返回包含所有自定义函数的列表
+    '''
     if isinstance(source_locs, str):
         source_loc = source_locs.split("\n")
     elif isinstance(source_locs, list):
@@ -53,6 +54,10 @@ def getAllFunctions(source_locs):
         f.close()
         lines = deleteNote(lines)
         for line in lines:
+            # 程序有时候会误认为#pragma comment(lib, "ws2_32.lib")是函数，还没想到好方法
+            if "#pragram" in line:
+                continue
+            # 有左括号且没在{}内就认为有可能是函数
             if "(" in line and brace == 0:
                 code = line.split("(")[0]
                 code.rstrip()

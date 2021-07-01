@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-06-29 13:00:52
+LastEditTime: 2021-07-01 14:41:55
 Description: Hi, say something
 '''
 import re
@@ -57,7 +57,8 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
                 for k in range(len(allNode)):
                     if allNode[k] == funcName:
                         break
-                instrCode = "\tdtg->" + instrument_var + " += " + str(2**k) + ";\n"
+                # 把变量的某一位置为1，用或操作
+                instrCode = "\tdtg->" + instrument_var + " |= " + str(2**k) + ";\n"
                 instr = True
             if "{" in lines[j]:
                 brace += 1
@@ -103,8 +104,8 @@ def multiFileCompile(source_loc):
         if os.system(cmd) != 0:
             print("出错!")
     # 移除插装的源文件
-    for source in source_loc:
-        os.remove(source)
+    # for source in source_loc:
+    #     os.remove(source)
     # 删掉.o文件
     for oFile in oFileName:
         os.remove(oFile)

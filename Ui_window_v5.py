@@ -1,3 +1,10 @@
+'''
+Author: Radon
+Date: 2021-06-29 13:23:34
+LastEditors: Radon
+LastEditTime: 2021-07-01 14:41:04
+Description: 模糊测试工具
+'''
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'd:\VSCode_Project\python_project\fuzzProject\window_v5.ui'
@@ -310,7 +317,7 @@ class Ui_MainWindow(object):
         self.uiFuzz.setupUi(self.fuzzDialog)
         self.fuzzDialog.show()
         self.uiFuzz.startFuzz(source_loc,ui,self.uiFuzz)
-    
+
     def popSeedDialog(self):
         header_loc = self.HFileLoc.toPlainText()
         readJSON = False
@@ -330,7 +337,7 @@ class Ui_MainWindow(object):
                 readJSON = True
         self.seedDialog.show()
         self.uiSeed.initStructDict(header_loc,readJSON)
-    
+
     '''
     @description: 弹出一个dialog, 其中显示了c中所有的函数, 以让用户选择目标
     @param {*} self
@@ -350,7 +357,7 @@ class Ui_MainWindow(object):
         self.targetDialog.show()
         self.uiTarget.setValues(ui,source_loc,[])
         # self.uiFuzz.startFuzz(source_loc,ui,self.uiFuzz,self.uiSeed)
-    
+
     '''
     @description: 弹出选择输入结构体的界面，通过选择结构体来得知初始输入的格式
     @param {*} self 需要将header_loc发送给选择结构体的界面。header_loc是列表
@@ -390,7 +397,7 @@ class Ui_MainWindow(object):
             self.uiStruct.setupUi(self.structDialog)
             self.structDialog.show()
             self.uiStruct.setValues(header_loc)
-    
+
     '''
     @description: 通过CPPCHECK进行静态分析获取可能有缺陷的地方
     @param {*} self

@@ -96,26 +96,28 @@ def getDistance_shortest(graph,nodeSet,target):
             shortest = 999.0
     return shortest
 
-'''
-@description: 获取结点集合与目标结点之间的平均距离
-@param {*} graph 图, 需要根据图计算距离
-@param {*} nodeSet 结点集合
-@param {*} target 目标结点
-@return {*}
-'''
+
 def getDistance_average(graph,nodeSet,target):
+    '''
+    @description: 获取结点集合与目标结点之间的平均距离
+    @param {*} graph 图, 需要根据图计算距离
+    @param {*} nodeSet 结点集合
+    @param {*} target 目标结点
+    @return {*}
+    '''
     G = nx.Graph()
     G.add_weighted_edges_from(graph)
     distance = 0
-    # try:
-    #     for node in nodeSet:
-    #         distance += nx.dijkstra_path_length(G,node,target)
-    #     distance = distance/len(nodeSet)
-    # except:
-    #     distance = 999.0
-    for node in nodeSet:
-        distance += nx.dijkstra_path_length(G,node,target)
-    distance = distance/len(nodeSet)
+    try:
+        for node in nodeSet:
+            distance += nx.dijkstra_path_length(G,node,target)
+        distance = distance/len(nodeSet)
+    except:
+        print("代码可能有错，请检查!")
+        distance = 999.0
+    # for node in nodeSet:
+    #     distance += nx.dijkstra_path_length(G,node,target)
+    # distance = distance/len(nodeSet)
     return distance
 
 def getDirContent(position):
@@ -138,6 +140,7 @@ def threadReceiver():
     prog = "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\main.exe"
     out = getstatusoutput(prog)
     isCrash = out[0]
+    print("Receiver print:\n", out[1])
 
 '''
 @description: 线程2-启动python监控方，用于收集C++返回的UDP
@@ -191,7 +194,6 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll):
     returnUDPInfo[0] = re.sub("[^0-9]","",returnUDPInfo[0])
     returnUDPInfo = [int(data) for data in returnUDPInfo]
     print("returnData", returnUDPInfo)
-    # 分析缺陷，覆盖什么的代码，待补充
     # 获得覆盖的结点
     instrValue = MAIdll.getInstrumentValue(bytes(returnUDPInfo))
     print("instrValue:", instrValue)
