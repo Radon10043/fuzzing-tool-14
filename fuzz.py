@@ -340,7 +340,9 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
 
     # 加载所需的DLL文件
     # MAI是Mutate And Instrument的缩写
-    MAIdll = ctypes.cdll.LoadLibrary(now_loc + "in\\mutate_instru.dll")
+    # 因为还存在一些问题，所以先调用手动生成的dll
+    # MAIdll = ctypes.cdll.LoadLibrary(now_loc + "in\\mutate_instru.dll")
+    MAIdll = ctypes.cdll.LoadLibrary(now_loc + "in\\mutate_instru_bkp.dll")
 
     # 如果已经有out了, 就删掉它
     if os.path.exists(now_loc+"\\out"):
@@ -566,9 +568,8 @@ def sendData():
 
 
 if __name__ == "__main__":
-    # source_loc = "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\main.cpp".split("\n")
-    # ui = "111"
-    # uiFuzz = "222"
-    # fuzzThread = "fuzzThread"
-    # fuzz(source_loc,ui,uiFuzz,fuzzThread)
-    sendData()
+    source_loc = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\main.cpp"]
+    ui = "111"
+    uiFuzz = "222"
+    fuzzThread = "fuzzThread"
+    fuzz(source_loc,ui,uiFuzz,fuzzThread)

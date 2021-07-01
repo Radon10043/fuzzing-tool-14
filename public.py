@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-01 14:20:10
+LastEditTime: 2021-07-01 15:35:15
 Description: Some pulic function
 '''
 
@@ -135,7 +135,6 @@ def genMutate(header_loc, struct, structDict):
     # 把用户选择的头文件位置也include
     for header in header_loc:
         code += "#include \"" + header + "\"\n"
-    code += "\n"
     # mutate函数中有三个形参: struct data是发送数据的结构体, seedPath是变异后的文件保存路径, 精确到.txt
     # r是一个随机数, 用于与原来的值进行异或
     code += "void mutate(" + struct + " data, char* savePath, int r){\n"
@@ -151,7 +150,7 @@ def genMutate(header_loc, struct, structDict):
     code += "\t\tfprintf(f,\"%d\", *p);\n"
     code += "\t\tif (p != (unsigned char*)&data + sizeof(data)-1)\n"
     code += "\t\t\tfprintf(f, \",\");\n"
-    code += "\t}\n\tfclose(f);"
+    code += "\t}\n\tfclose(f);\n"
     code += "}\n\n"
     # 写一个获取插装变量的值的函数
     for key,value in structDict[struct].items():

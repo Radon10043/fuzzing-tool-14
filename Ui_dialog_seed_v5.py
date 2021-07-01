@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-01 14:21:20
+LastEditTime: 2021-07-01 16:31:02
 Description:
 '''
 # -*- coding: utf-8 -*-
@@ -78,6 +78,18 @@ structDict = {
 }
 # 传入数据结构-end
 
+# 数据类型字典-start
+# 其中存储了数据类型和它对应的位
+dataTypeDict = {
+    "_Bool" : 8,
+    "char" : 8,
+    "int" : 32,
+    "short" : 16,
+    "unsigned char" : 8,
+    "unsigned short" : 16,
+    "unsigned int" : 32,
+}
+# 数据类型字典-end
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -111,7 +123,7 @@ class Ui_Dialog(object):
         # 生成按钮-end
 
         self.setTableContent(structDict)
-    
+
     # 发送一个新的dict，设置表格内容
     def setTableContent(self, newDict):
         # 获取变量数-start
@@ -150,7 +162,6 @@ class Ui_Dialog(object):
                     i, 6, self.varCheckBoxItem(val['mutation'], structKey, key))  # 变异
                 self.structTable.setItem(
                     i, 7, self.enableeditItem(str(val["bitsize"])))  # 位
-                
                 i += 1
     # 结束
 
@@ -276,7 +287,7 @@ class Ui_Dialog(object):
         return int(round(random.uniform(lower, upper), 2))
 
 
-    def getBitsize(self,variable):
+    def getBitsize(self, variable):
         '''
         @description: 根据变量的名称获取它的位大小
         @param {*} self
@@ -286,7 +297,15 @@ class Ui_Dialog(object):
         if ":" in variable:
             return int(re.sub(" ", "", variable.split(":")[1]))
         else:
-            return 7
+            # 在数据类型字典里找对应的位大小
+            variable = variable.split(" ")
+            variable.pop(-1)
+            dataType = " ".join(variable).rstrip()
+            print(dataType + "1111111")
+            for key,value in dataTypeDict.items():
+                if key == dataType:
+                    return value
+            return -1
 
 
     def initStructDict(self, header_loc, readJSON, struct, allStruct):
