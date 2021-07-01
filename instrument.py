@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-07-01 14:41:55
+LastEditTime: 2021-07-01 14:43:08
 Description: Hi, say something
 '''
 import re
@@ -104,8 +104,8 @@ def multiFileCompile(source_loc):
         if os.system(cmd) != 0:
             print("出错!")
     # 移除插装的源文件
-    # for source in source_loc:
-    #     os.remove(source)
+    for source in source_loc:
+        os.remove(source)
     # 删掉.o文件
     for oFile in oFileName:
         os.remove(oFile)
