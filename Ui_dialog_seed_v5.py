@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-01 16:31:02
+LastEditTime: 2021-07-05 13:36:38
 Description:
 '''
 # -*- coding: utf-8 -*-
@@ -120,6 +120,7 @@ class Ui_Dialog(object):
         self.generateBtn.setGeometry(QtCore.QRect(455, 500, 435, 40))
         self.generateBtn.setText("生成种子文件")
         self.generateBtn.clicked.connect(self.genSeed)
+        # self.generateBtn.clicked.connect(Dialog.accept)
         # 生成按钮-end
 
         self.setTableContent(structDict)
@@ -301,7 +302,6 @@ class Ui_Dialog(object):
             variable = variable.split(" ")
             variable.pop(-1)
             dataType = " ".join(variable).rstrip()
-            print(dataType + "1111111")
             for key,value in dataTypeDict.items():
                 if key == dataType:
                     return value

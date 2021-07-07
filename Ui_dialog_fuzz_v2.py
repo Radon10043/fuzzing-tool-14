@@ -73,25 +73,25 @@ class Ui_Dialog(object):
             self.textBrowser.setText("\n\n\t\t初始化中...\n\t即将开始无目标的模糊测试...")
         else:
             self.textBrowser.setText("\n\n\t\t初始化中...\n\t即将开始目标制导的模糊测试...")
-    
+
     def fuzzInfoPrint(self,fuzzInfo):
         # self.fuzzInfoTBrowser.setText(fuzzInfo)
         self.textBrowser.setText(fuzzInfo)
         QtWidgets.QApplication.processEvents()
         print(fuzzInfo)
-    
+
     def overFuzz(self):
         self.checkResultBtn.setEnabled(True)
         self.stopBtn.setEnabled(False)
-    
+
     def errorFuzz(self):
         self.checkResultBtn.setEnabled(False)
         self.stopBtn.setEnabled(False)
-    
+
     def stopFuzz(self):
         print("stop!")
         self.stop = True
-    
+
     def openFolder(self):
         out_loc = self.source_loc[0]
         out_loc = re.sub(out_loc.split("\\")[-1],"",out_loc)+"out"
@@ -115,12 +115,14 @@ class FuzzThread(QThread):
         self.start()
     def run(self):
         print("FuzzThread has started.")
-        if len(self.targetSetInfo) == 0:
-            fuzz_notarget.initGloablVariable()
-            self.result = fuzz_notarget.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
-        else:
-            fuzz.initGloablVariable()
-            self.result = fuzz.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
+        # if len(self.targetSetInfo) == 0:
+        #     fuzz_notarget.initGloablVariable()
+        #     self.result = fuzz_notarget.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
+        # else:
+        #     fuzz.initGloablVariable()
+        #     self.result = fuzz.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
+        fuzz.initGloablVariable()
+        self.result = fuzz.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
         if isinstance(self.result,str):
             self.errorSgn.emit(True)
         else:

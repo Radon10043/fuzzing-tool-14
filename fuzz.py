@@ -55,12 +55,13 @@ def getCoverNode(num):
     coverNode.append("main")
     return coverNode
 
-'''
-@description: 获取调用图的数据
-@param {*} fileName 调用图位置
-@return {*}
-'''
+
 def loadData(fileName):
+    '''
+    @description: 获取调用图的数据
+    @param {*} fileName 调用图位置
+    @return {*}
+    '''
     file = open(fileName,'r')#read file
     weightedEdges = []
     elementList = []
@@ -75,14 +76,15 @@ def loadData(fileName):
     file.close()
     return weightedEdges
 
-'''
-@description: 获取覆盖结点集合与目标结点之间的最短距离
-@param {*} graph 图, 需要根据图计算距离
-@param {*} nodeSet 结点集合
-@param {*} target 目标结点
-@return {*}
-'''
+
 def getDistance_shortest(graph,nodeSet,target):
+    '''
+    @description: 获取覆盖结点集合与目标结点之间的最短距离
+    @param {*} graph 图, 需要根据图计算距离
+    @param {*} nodeSet 结点集合
+    @param {*} target 目标结点
+    @return {*}
+    '''
     G = nx.Graph()
     G.add_weighted_edges_from(graph)
     shortest = 999.0
@@ -113,7 +115,6 @@ def getDistance_average(graph,nodeSet,target):
             distance += nx.dijkstra_path_length(G,node,target)
         distance = distance/len(nodeSet)
     except:
-        print("代码可能有错，请检查!")
         distance = 999.0
     # for node in nodeSet:
     #     distance += nx.dijkstra_path_length(G,node,target)
@@ -129,27 +130,29 @@ def getDirContent(position):
             content.append(f.read())
     return content
 
-'''
-@description: 线程1-启动C++接收方，用于接收由py发送的测试用例
-@param {*}
-@return {*}
-'''
-def threadReceiver():
+
+def threadReceiver(program_loc):
+    '''
+    @description: 线程1-启动C++接收方，用于接收由py发送的测试用例
+    @param {*}
+    @return {*}
+    '''
     global isCrash
     isCrash = 0
-    prog = "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\main.exe"
+    prog = program_loc
     out = getstatusoutput(prog)
     isCrash = out[0]
-    print("Receiver print:\n", out[1])
 
-'''
-@description: 线程2-启动python监控方，用于收集C++返回的UDP
-@param {*}
-@return {*}
-'''
+
 def threadMonitor():
+    '''
+    @description: 线程2-启动python监控方，用于收集C++返回的UDP
+    @param {*}
+    @return {*}
+    '''
     global returnUDPInfo
-    prog = "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\cppudptest\\getudp.py"
+    # 启动同目录下的getudp.py
+    prog = os.path.dirname(os.path.abspath(__file__)) + "\\getudp.py"
     out = getstatusoutput(prog)
     # print("getudp.py: ", out)
     global returnUDPInfo
@@ -172,11 +175,11 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll):
     # 启动线程2后，稍微等下，如果线程1速度快了可能会导致线程2无法获得返回的UDP包
     # 从而陷入一直等待线程2结束的状态
     time.sleep(0.2)
-    # 一段时间后，启动线程1
-    thread1 = threading.Thread(target = threadReceiver, name = "thread_receiver")
+    # 一段时间后，启动线程1，注意args是一个元组，结尾必须有逗号
+    thread1 = threading.Thread(target = threadReceiver, name = "thread_receiver", args = (program_loc, ))
     thread1.start()
     # 形参的测试用例是str类型的list，转换成int后再转为byte
-    data = bytes([int(data) for data in testcase])
+    data = testcase
     # 发送测试用例
     s = socket.socket()
     host = socket.gethostname()
@@ -187,6 +190,7 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll):
     # 等待线程1和线程2结束
     thread1.join()
     thread2.join()
+
     # 读取返回的UDP包的内容
     global returnUDPInfo
     returnUDPInfo = returnUDPInfo.split(",")
@@ -200,7 +204,7 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll):
     coverNode = getCoverNode(instrValue)
     print("coverNode:",coverNode)
     # 计算距离
-    distance = 0
+    distance = 500
     for target in targetSet:
         distance += getDistance_average(callGraph, coverNode, target)
     fitness = 1/distance
@@ -212,14 +216,11 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll):
 def mutate(testcase, mutateSavePath, MAIdll):
     '''
     @description: 根据南京大学徐安孜同学写的例子对变异进行了改写，由于均是数字，所以做一下和数字有关的操作就好
-    @param {*} testcase 传入的测试用例是内部元素均为str的list
+    @param {*} testcase 传入的测试用例是一个字节序列
     @param {*} mutateSavePath 变异测试用例的保存路径, 与原本流程不同, 在这里直接将变异后的测试用例保存到本地
     @return {*}
     '''
-    # 先把测试用例转为内部元素均为int的list
-    testcase = [int(data) for data in testcase]
-    # 形参需要转换为bytes类型才能正确传递给dll
-    testcase = bytes(testcase)
+    # 将对测试用例进行变异并保存
     mutateSavePath = bytes(mutateSavePath, encoding="utf8")
     r = random.randint(0,255)
     MAIdll.mutate(testcase, mutateSavePath, r)
@@ -285,12 +286,12 @@ def generateReport(source_loc,fuzzInfoDict):
     reportContent+= "|            执行速度： "+fuzzInfoDict["执行速度"]+"个/s\t|     已覆盖结点数量： "+str(len(allCoveredNode))+"\t|\n"
     reportContent+= "|  已生成测试用例： "+fuzzInfoDict["已生成测试用例"]+"个\t|            整体覆盖率： "+fuzzInfoDict["整体覆盖率"]+"%\t|\n"
     reportContent+= "|——————————————————————————|\n"
-    testcases = getDirContent(basic_loc+"out\\testcases")
-    savedCrashes = getDirContent(basic_loc+"out\\crash")
-    for i in range(len(testcases)):
-        reportContent += "已保存的测试用例"+str(i+1)+": "+testcases[i]+"\n"
-    for i in range(len(savedCrashes)):
-        reportContent += "已触发缺陷的测试用例"+str(i+1)+": "+savedCrashes[i]+"\n"
+    # testcases = getDirContent(basic_loc+"out\\testcases")
+    # savedCrashes = getDirContent(basic_loc+"out\\crash")
+    # for i in range(len(testcases)):
+    #     reportContent += "已保存的测试用例"+str(i+1)+": "+testcases[i]+"\n"
+    # for i in range(len(savedCrashes)):
+    #     reportContent += "已触发缺陷的测试用例"+str(i+1)+": "+savedCrashes[i]+"\n"
     reportContent += "已发现结点名称: "+str(allNode)+"\n"
     reportContent += "已覆盖结点名称: "+str(allCoveredNode)+"\n"
     reportContent += "\n当前位置: \t\t\t"+basic_loc+"out\n"
@@ -318,11 +319,16 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
             fuzzThread.fuzzInfoSgn.emit("\n\n\t\t被测文件不存在!")
             return "source not exist!"
 
-    now_loc = re.sub(source_loc[0].split("\\")[-1],"",source_loc[0])      # 当前所在目录
-    output_loc = now_loc                                            # 输出exe和obj的位置
-    program_loc = now_loc + "instrument.exe"    #可执行文件位置
-    seed_loc = now_loc + "in\\seed.txt"     #初始测试用例位置
-    graph_loc = now_loc + "graph_cg.txt"   #调用图位置
+    # 当前所在目录
+    now_loc = re.sub(source_loc[0].split("\\")[-1],"",source_loc[0])
+    # 输出exe和obj的位置
+    output_loc = now_loc
+    # 可执行文件位置
+    program_loc = now_loc + "instrument.exe"
+    # 初始测试用例位置
+    seed_loc = now_loc + "in\\seed"
+    # 调用图位置
+    graph_loc = now_loc + "graph_cg.txt"
     # 插装后的文件位置，因为是多文件，所以这里用了列表
     instrument_loc = []
 
@@ -340,9 +346,7 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
 
     # 加载所需的DLL文件
     # MAI是Mutate And Instrument的缩写
-    # 因为还存在一些问题，所以先调用手动生成的dll
-    # MAIdll = ctypes.cdll.LoadLibrary(now_loc + "in\\mutate_instru.dll")
-    MAIdll = ctypes.cdll.LoadLibrary(now_loc + "in\\mutate_instru_bkp.dll")
+    MAIdll = ctypes.cdll.LoadLibrary(now_loc + "in\\mutate_instru.dll")
 
     # 如果已经有out了, 就删掉它
     if os.path.exists(now_loc+"\\out"):
@@ -368,11 +372,12 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
 
     maxMutateTC = int(ui.TCNumPerCyc.text())
     maxTimeout = int(ui.timeoutLEdit.text())
+    # 设置目标集
     targetSet = ui.targetSetInfo.toPlainText()
     targetSet = re.sub("[^A-Za-z1-9_\n]","",targetSet)
-    if len(targetSet) == 0:
-        print("No target!")
-        return
+    # if len(targetSet) == 0:
+    #     print("No target!")
+    #     return
     targetSet = targetSet.split("\n")
     print("targetSet:",targetSet)
 
@@ -380,15 +385,15 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
     end = time.time()
 
 
-    # 待修改
+    # 统计所有的函数，读取调用图
     callGraph = loadData(graph_loc)
     global allNode
     allNode = public.getAllFunctions(source_loc)
     allNode = sorted(set(allNode),key=allNode.index)
     print("allNode:", allNode)
 
-    # 待修改
-    testcase.append(open(seed_loc).read().split(","))
+    # 读取初始种子测试用例
+    testcase.append(open(seed_loc, mode="rb").read())
     # testcase[0] = [str(data) for data in testcase[0]]
     mkdir(now_loc + "\\out\\testcases")
     mkdir(now_loc+"\\out\\crash")
@@ -424,13 +429,13 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
             crash = returnData[4]
             timeout = returnData[5]
             if crash:
-                crashFile = open(now_loc + "\\out\\crash\\crash" + str(uniq_crash) + ".txt", mode="w")
-                crashFile.write(str(testcase[i]))
+                crashFile = open(now_loc + "\\out\\crash\\crash" + str(uniq_crash), mode="wb")
+                crashFile.write(testcase[i])
                 crashFile.close()
                 uniq_crash += 1
             if timeout:
-                timeoutFile = open(now_loc + "\\out\\timeout\\timeout" + str(count_timeout) + ".txt", mode="w")
-                timeoutFile.write(str(testcase[i]))
+                timeoutFile = open(now_loc + "\\out\\timeout\\timeout" + str(count_timeout), mode="wb")
+                timeoutFile.write(testcase[i])
                 timeoutFile.close()
                 count_timeout += 1
             for node in returnData[3]:
@@ -441,8 +446,8 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
             if coverage[1] > coverage[0]:
                 # 把能让覆盖率增加的测试用例保存到output\testcase文件夹中
                 coverage[0] = coverage[1]
-                testN = open(now_loc + "\\out\\testcases\\test" + str(count_test).zfill(6) + ".txt", mode="w")
-                testN.write(str(testcase[i]))
+                testN = open(now_loc + "\\out\\testcases\\test" + str(count_test).zfill(6), mode="wb")
+                testN.write(testcase[i])
                 testN.close()
                 count_test += 1
             TC_data.append([testcase[i],distance,fitness,coverNode])
@@ -456,7 +461,7 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
             pm = 98.0
             for data in TC_data:
                 if random.randint(0,100) < pm:    # 小于阈值就进行下列变异操作
-                    mutateSavePath = now_loc + "\\out\\mutate\\cycle"+str(cycle)+"\\mutate" + str(mutateNum).zfill(6) + ".txt"
+                    mutateSavePath = now_loc + "\\out\\mutate\\cycle"+str(cycle)+"\\mutate" + str(mutateNum).zfill(6)
                     mutate(data[0], mutateSavePath, MAIdll)
                     mutateNum += 1
                 pm -= (98.0/maxMutateTC)
@@ -467,8 +472,8 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
         mutateSavePath = now_loc + "\\out\\mutate\\cycle"+str(cycle)+"\\"
         files = os.listdir(mutateSavePath)
         for file in files:
-            f = open(mutateSavePath + file)
-            testcase.append(f.read().split(","))
+            f = open(mutateSavePath + file, mode = "rb")
+            testcase.append(f.read())
         cycle += 1
         end=time.time()
         # 生成简短的测试信息
@@ -504,7 +509,13 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
     print("\n",allCoveredNode)
     print("\nfuzz over! cycle = %d, coverage = %.2f, time = %.2fs"%(cycle,coverage[1],end-start))
 
+
 def initGloablVariable():
+    '''
+    @description: 初始化全局变量
+    @param {*}
+    @return {*}
+    '''
     global crash_code
     global crashNode
     global allNode
@@ -515,6 +526,7 @@ def initGloablVariable():
     isCrash = 0
     crashes = 0
 
+# ================全局变量=====================================================================
 crash_code = []         # 存储异常退出导致的错误代码
 crashNode = []          # 触发错误覆盖到了哪些结点，如果覆盖到crashNode中没有的结点，就将该结点
                         # 添加到crashNode中，并保存测试用例
@@ -522,54 +534,8 @@ allNode = []            # 储存了图里的所有结点
 isCrash = 0             # 程序的返回值
 crashes = 0             # 统计触发了多少次缺陷
 returnUDPInfo = []      # 存储发送回来的UDP数据包
-
-def threadReceiver():
-    prog = "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\instrument.exe"
-    out = getstatusoutput(prog)
-    # print("main.exe: " + str(out[0]))
-
-def threadMonitor():
-    global returnUDPInfo
-    prog = "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\cppudptest\\getudp.py"
-    out = getstatusoutput(prog)
-    # print("getudp.py: ", out)
-    returnUDPInfo = out[1]
-
-def sendData():
-    thread2 = threading.Thread(target = threadMonitor, name = "thread_monitor",)
-    thread2.start()
-
-    time.sleep(0.2)
-
-    thread1 = threading.Thread(target = threadReceiver, name = "thread_receiver")
-    thread1.start()
-
-    s = socket.socket()
-    host = socket.gethostname()
-    port = 8888
-    s.connect((host, port))
-    data = bytes([102,0,33,92,90,0,0,0,21,6,19,11,47,48,100,0,96,0,0,0,0,0,0,0,107,0,0,0,44,0,0,0,1,1,0,0,76,0,0,0,107,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,64,0,116,45,1,108,117,1,71,42,1,60,39,1])
-    #data = bytes([10,20,204,204,30,40,50,204])
-    s.send(data)
-    s.close()
-
-    thread1.join()
-    thread2.join()
-
-    global returnUDPInfo
-    returnUDPInfo = returnUDPInfo.split(",")
-    returnUDPInfo.pop(-1)
-    returnUDPInfo[0] = re.sub("[^0-9]","",returnUDPInfo[0])
-    temp = ",".join(returnUDPInfo)
-    returnUDPInfo = [int(data) for data in returnUDPInfo]
-    print(temp)
-    print(returnUDPInfo)
-    print("length: ", len(returnUDPInfo))
-
+# ============================================================================================
 
 if __name__ == "__main__":
-    source_loc = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\main.cpp"]
-    ui = "111"
-    uiFuzz = "222"
-    fuzzThread = "fuzzThread"
-    fuzz(source_loc,ui,uiFuzz,fuzzThread)
+    pass
+    # sendData()
