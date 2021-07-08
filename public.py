@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-07 19:12:00
+LastEditTime: 2021-07-08 15:04:50
 Description: Some pulic function
 '''
 
@@ -169,18 +169,7 @@ def genMutate(header_loc, struct, structDict):
     mutateFile = open(root + "mutate_instru.c", mode = "w")
     mutateFile.write(code)
 
-    # 生成.dll文件
-    # 这里还有点问题，根据代码生成的dll文件执行过程中会出错，但手动生成的就不会出错
-    code = "import os\n\n"
-    code += "if os.path.exists(\"mutate_instru.dll\"):\n"
-    code += "\tos.remove(\"mutate_instru.dll\")\n"
-    code += "os.system(\"gcc -shared -o mutate_instru.dll mutate_instru.c\")\n"
-    pyFile = open(root + "\\generateDll.py", mode = "w")
-    pyFile.write(code)
-    pyFile.close()
-    out = subprocess.getstatusoutput(root + "\\generateDll.py")
-    print("out: ", out)
-    # subprocess.getstatusoutput("gcc -shared -o " + root + "\\mutate_instru.dll " + root + "\\mutate_instru.c")
+    # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window_v5.py生成
     # gcc -shared -o mutate_instru.dll mutate_instru.c
 
 
