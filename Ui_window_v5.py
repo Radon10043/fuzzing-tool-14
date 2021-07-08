@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-07 19:21:13
+LastEditTime: 2021-07-08 15:10:11
 Description: 模糊测试工具
 '''
 
@@ -318,12 +318,17 @@ class Ui_MainWindow(object):
                 headerNotExistBox.exec_()
                 return
 
-        # 检测种子文件是否存在
         root_loc = re.sub(source_loc[0].split("\\")[-1],"",source_loc[0])
-        if not os.path.exists(root_loc + "in\\seed"):
-            seedNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "种子文件不存在！")
-            seedNotExistBox.exec_()
-            return
+
+        # 检测一系列的必要文件是否存在
+        fileList = ["instrument.txt", "mutate_instru.c", "seed"]
+        for f in fileList:
+            if not os.path.exists(root_loc + "in\\" + f):
+                necessaryFileNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", str(f) + "不存在，请重新生成种子文件")
+                necessaryFileNotExistBox.exec_()
+                return
+
+        # 提示用户确认种子已是最新状态
         seedLatestBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "模糊测试即将开始, 请确认种子文件为最新状态")
         yes = seedLatestBox.addButton("确定", QtWidgets.QMessageBox.YesRole)
         no = seedLatestBox.addButton("修改种子", QtWidgets.QMessageBox.NoRole)
@@ -344,10 +349,14 @@ class Ui_MainWindow(object):
                 outFolderBackupBox.exec_()
                 return
 
-        # 生成dll
-        if not os.path.exists(root_loc + "\\in\\generateDll.py"):
+        # 如果不存在dll，则生成dll
+        if not os.path.exists(root_loc + "\\in\\mutate_instru.dll"):
             os.chdir(root_loc + "\\in\\")
-            os.system("generateDll.py")
+            os.system("gcc -shared -o mutate_instru.dll mutate_instru.c")
+
+        # 防止出现bug，将手动输入按钮和开始测试按钮设置为false
+        self.startFuzzBtn.setDisabled(True)
+        self.popSeedDialogBtn.setDisabled(True)
 
         self.fuzzDialog = QtWidgets.QDialog()
         self.uiFuzz = fuzzDialogPY.Ui_Dialog()
@@ -400,7 +409,6 @@ class Ui_MainWindow(object):
         self.uiTarget.setupUi(self.targetDialog)
         self.targetDialog.show()
         self.uiTarget.setValues(ui,source_loc,[])
-        # self.uiFuzz.startFuzz(source_loc,ui,self.uiFuzz,self.uiSeed)
 
 
     def popStructDialog(self):
