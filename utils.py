@@ -10,6 +10,15 @@ import time
 isCrash = 0
 
 
+def parse_array(text):
+    # loc|sign|filename
+    loc_sign_fn = text.strip().split("|")
+    loc = [int(i) for i in loc_sign_fn[0].split(',')]
+    sign = [int(i) for i in loc_sign_fn[1].split(',')]
+    fn = loc_sign_fn[2]
+    return loc, sign, fn
+
+
 def mkdir(path, del_if_exist=True):
     '''
     @description: 创建文件夹
@@ -47,11 +56,12 @@ def getCoverNode(num):
     return coverNode
 
 
-def threadReceiver():
+def threadReceiver(program_loc):
     global isCrash
     isCrash = 0
-    prog = "D:\\fuzzing-tool-14\\example\\main.exe"
-    out = getstatusoutput(prog)
+    # prog = "D:\\fuzzing-tool-14\\example\\main.exe"
+    # prog = os.path.join(os.curdir, "example", "main.exe")
+    out = getstatusoutput(program_loc)
     isCrash = out[0]
     print("Receiver print:\n", out[1])
 
@@ -63,7 +73,8 @@ def threadReceiver():
 '''
 def threadMonitor():
     global returnUDPInfo
-    prog = "D:\\fuzzing-tool-14\\example\\cppudptest\\getudp.py"
+    # prog = "D:\\fuzzing-tool-14\\example\\cppudptest\\getudp.py"
+    prog = os.path.join(os.curdir, "example", "cppudptest", "getudp.py")
     out = getstatusoutput(prog)
     # print("getudp.py: ", out)
     global returnUDPInfo
@@ -83,7 +94,7 @@ def getCoverage(testcase, program_loc, MAIdll):
     # 从而陷入一直等待线程2结束的状态
     time.sleep(0.2)
     # 一段时间后，启动线程1
-    thread1 = threading.Thread(target=threadReceiver, name="thread_receiver")
+    thread1 = threading.Thread(target=threadReceiver, args=[program_loc, ], name="thread_receiver")
     thread1.start()
     # 形参的测试用例是str类型的list，转换成int后再转为byte
     # data = bytes([int(data) for data in testcase])

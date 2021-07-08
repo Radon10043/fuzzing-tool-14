@@ -412,6 +412,12 @@ def train(model):
 
 
 class NNThread(threading.Thread):
+    def __init__(self, ui, uiFuzz, fuzzThread):
+        threading.Thread.__init__(self)
+        self.ui = ui
+        self.uiFuzz = uiFuzz
+        self.fuzzThread = fuzzThread
+
     def run(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind((HOST, PORT))
