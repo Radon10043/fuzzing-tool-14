@@ -181,9 +181,10 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     utils.mkdir(now_loc + "\\AIFuzz\\mutations")
     utils.mkdir(now_loc + "\\AIFuzz\\crashes")
     utils.mkdir(now_loc + "\\AIFuzz\\bitmaps")
-    uiFuzz.text_browser_nn.append("测试文件夹准备完成...\n")
+    # uiFuzz.text_browser_nn.append("测试文件夹准备完成...\n")
     utils.gen_training_data(os.path.join(utils.ROOT, "AIFuzz"), seed_loc, 10)
-    uiFuzz.text_browser_nn.append("已生成初始训练数据...\n")
+    # uiFuzz.text_browser_nn.append("已生成初始训练数据...\n")
+    fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经生成初始训练数据...\n")
 
     # 设置终止条件
     if ui.stopByCrash.isChecked():
@@ -200,7 +201,7 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
         condition = "mutateNum<" + str(stopNum)
 
     exec_thread = FuzzExecThread(ui, uiFuzz, fuzzThread, program_loc, MAIdll, allNode)
-    nn_thread = nn.NNThread(ui, uiFuzz, fuzzThread, len(testcase), allNode, 10, program_loc, MAIdll)
+    nn_thread = nn.NN(ui, uiFuzz, fuzzThread, len(testcase), allNode, 10, program_loc, MAIdll)
 
     nn_thread.start()
     time.sleep(1)
@@ -234,9 +235,8 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     print("\nfuzz over! cycle = %d, coverage = %.2f, time = %.2fs" % (cycle, coverage[1], end - start))
 
 
-class FuzzExecThread(threading.Thread):
-    def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes):
-        threading.Thread.__init__(self)
+class FuzzExec():
+    def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes, nn):
         self.ui = ui
         self.uiFuzz = ui_fuzz
         self.fuzzThread = fuzz_thread
@@ -254,6 +254,7 @@ class FuzzExecThread(threading.Thread):
         self.cov_gain_cnt = 0
         self.all_nodes = set(all_nodes)
         self.program_cov = set()
+        self.nn = nn
 
     def update_program_cov(self, cov):
         if cov.issubset(self.program_cov):
@@ -428,6 +429,7 @@ class FuzzExecThread(threading.Thread):
         s.connect((HOST, PORT))
         seeds_dir = os.path.join(self.dir, "seeds")
         utils.mkdir(os.path.join(self.dir, "mutations", "0"))
+        self.nn.gen_grad(b'train')
         while True:
             1==1
             """

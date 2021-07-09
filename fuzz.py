@@ -178,8 +178,10 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll):
     # 一段时间后，启动线程1，注意args是一个元组，结尾必须有逗号
     thread1 = threading.Thread(target = threadReceiver, name = "thread_receiver", args = (program_loc, ))
     thread1.start()
-    # 形参的测试用例是str类型的list，转换成int后再转为byte
+    # 形参的测试用例bytes
     data = testcase
+    # 发送前，将测试用例的插装变量设置为0
+    MAIdll.setInstrumentValueToZero(data)
     # 发送测试用例
     s = socket.socket()
     host = socket.gethostname()
@@ -458,13 +460,19 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
         mutateStart = time.time()               # 记录变异开始时间
         checkpoint = mutateNum
         while mutateNum - checkpoint < maxMutateTC:
+            pTargetMutate = 98.0
+            pNoTargetMutate = 50.0
+            if len(targetSet) == 0:
+                pm = pNoTargetMutate
+            else:
+                pm = pTargetMutate
             pm = 98.0
             for data in TC_data:
                 if random.randint(0,100) < pm:    # 小于阈值就进行下列变异操作
                     mutateSavePath = now_loc + "\\out\\mutate\\cycle"+str(cycle)+"\\mutate" + str(mutateNum).zfill(6)
                     mutate(data[0], mutateSavePath, MAIdll)
                     mutateNum += 1
-                pm -= (98.0/maxMutateTC)
+                pTargetMutate -= (98.0/maxMutateTC)
                 if mutateNum - checkpoint >= maxMutateTC:
                     break
         # 读取文件夹下的变异的测试用例, 赋值到testcase
@@ -537,5 +545,7 @@ returnUDPInfo = []      # 存储发送回来的UDP数据包
 # ============================================================================================
 
 if __name__ == "__main__":
-    pass
-    # sendData()
+    data = bytes([251, 17, 111, 96, 45, 48, 0, 0, 22, 10, 16, 15, 13, 13, 101, 0, 214, 0, 0, 0, 153, 162, 1, 0, 30, 71, 202, 129, 247, 87, 182, 25, 30, 197, 1, 0, 121, 0, 0, 2, 200, 1, 1, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 2, 0, 7, 4, 62, 0, 114, 91, 1, 232, 78, 0, 248, 228, 1, 44, 112, 1])
+    dll = ctypes.cdll.LoadLibrary("C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example_21.7.5\\in\\mutate_instru.dll")
+    dll.setInstrumentValueToZero(data)
+    print("instrValue:", dll.getInstrumentValue(data))

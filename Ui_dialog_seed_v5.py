@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-05 13:36:38
+LastEditTime: 2021-07-09 21:36:36
 Description:
 '''
 # -*- coding: utf-8 -*-
@@ -191,7 +191,7 @@ class Ui_Dialog(object):
     # 表格变异-CheckBox-end
 
     # 表格插装变量-CheckBox-start
-    def insCheckBoxItem(self, checkBool,  struct, memVal):
+    def insCheckBoxItem(self, checkBool, struct, memVal):
         global structDict
         checkBox = QtWidgets.QCheckBox()
         checkBox.setChecked(checkBool)
@@ -207,6 +207,8 @@ class Ui_Dialog(object):
                 if val['instrument']:
                     val['checkBox'].setChecked(False)
         structDict[struct][memVal]['instrument'] = checkBool
+        if checkBool == True:
+            print("yes.")
         # print(structDict)
     # 表格插装变量-CheckBox-end
 
