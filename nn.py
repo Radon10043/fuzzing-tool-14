@@ -93,9 +93,10 @@ class LossHistory(keras.callbacks.Callback):
         print(step_decay(len(self.losses)))
 
 
-class NNThread(threading.Thread):
+class NN():
     def __init__(self, ui, ui_fuzz, fuzz_thread, input_dim, all_node, grads_cnt, program_loc, MAIdll):
-        threading.Thread.__init__(self)
+        tf.compat.v1.disable_eager_execution()
+        # threading.Thread.__init__(self)
         self.ui = ui
         self.uiFuzz = ui_fuzz
         self.fuzzThread = fuzz_thread
@@ -309,7 +310,7 @@ class NNThread(threading.Thread):
     def gen_mutate2(self, model, edge_num, sign):
         tmp_list = []
         # select seeds
-
+        start = time.time()
         if self.round_cnt == 0 or len(self.new_seeds) == 0:
             new_seed_list = self.seed_list
         else:
@@ -335,7 +336,8 @@ class NNThread(threading.Thread):
         interested_indice = np.random.choice(self.output_dim, edge_num)
         layer_list = [(layer.name, layer) for layer in model.layers]
 
-        with open(os.path.join(self.dir, 'gradient_info_p'), 'w') as f:
+        grad_fn = os.path.join(self.dir, 'gradient_info_p')
+        with open(grad_fn, 'w') as f:
             for idxx in range(len(interested_indice[:])):
                 # kears's would stall after multiple gradient compuation. Release memory and reload model to fix it.
                 if idxx % 100 == 0:
@@ -356,8 +358,19 @@ class NNThread(threading.Thread):
                     ele1 = [str(int(el)) for el in ele[1]]
                     ele2 = ele[2]
                     f.write(",".join(ele0) + '|' + ",".join(ele1) + '|' + ele2 + "\n")
+        end = time.time()
+        info = "已生成梯度信息！\n"
+        info += "轮次：\t\t\t" + str(self.round_cnt+1) + "\n"
+        info += "生成梯度信息的种子数：\t\t" + str(edge_num) + "\n"
+        info += "梯度类型：\t\t" + "有符号" if sign else "无符号(随机)" + "\n"
+        info += "时间：\t\t" + str(end-start) + "秒\n"
+        info += "梯度文件保存路径：\n\t" + grad_fn + "\n"
+        info += "可以开始测试...\n"
+        self.uiFuzz.text_browser_nn.append(info)
+
 
     def train(self, model):
+        start = time.time()
         loss_history = LossHistory()
         lrate = keras.callbacks.LearningRateScheduler(step_decay)
         callbacks_list = [loss_history, lrate]
@@ -365,13 +378,15 @@ class NNThread(threading.Thread):
                             steps_per_epoch=(self.SPLIT_RATIO / 16 + 1),
                             epochs=10,
                             verbose=1, callbacks=callbacks_list)
+        end = time.time()
         save_loc = os.path.join(self.dir, "hard_label.h5")
         model.save(save_loc)
         info = "模型训练完成！\n"
         info += "轮次：\t\t\t" + str(self.round_cnt+1) + "\n"
         info += "输入维数：\t\t" + str(self.input_dim) + "\n"
         info += "输出维数：\t\t" + str(self.output_dim) + "\n"
-        info += "保存路径：\t\t" + save_loc + "\n"
+        info += "训练时间：\t\t" + str(end-start) + "秒\n"
+        info += "保存路径：\n\t" + save_loc + "\n"
         self.fuzzThread.nnInfoSgn.emit(info)
 
     def build_model(self):

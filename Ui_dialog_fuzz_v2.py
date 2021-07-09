@@ -25,17 +25,19 @@ class Ui_Dialog(object):
     fuzz_ai = False
     def setupUi(self, Dialog, fuzz_ai):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(494, 357)
+
         self.fuzz_ai = fuzz_ai
         self.text_browser_nn = None
         self.text_browser_exec = None
         self.textBrowser = None
         if fuzz_ai:
+            Dialog.resize(794, 357)
             self.text_browser_nn = QtWidgets.QTextBrowser(Dialog)
             self.text_browser_exec = QtWidgets.QTextBrowser(Dialog)
             self.text_browser_nn.setGeometry(QtCore.QRect(35, 21, 321, 271))
             self.text_browser_exec.setGeometry(QtCore.QRect(400, 21, 321, 271))
         else:
+            Dialog.resize(494, 357)
             self.textBrowser = QtWidgets.QTextBrowser(Dialog)
             self.textBrowser.setGeometry(QtCore.QRect(35, 21, 421, 271))
             self.textBrowser.setObjectName("textBrowser")

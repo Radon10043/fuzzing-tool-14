@@ -17,6 +17,7 @@ unsigned int getInstrumentValue(Datagram data){
 	return data.trajectory.radonInstr;
 }
 
-void resetInstrumentValue(Datagram* data){
-    data->trajectory.radonInstr = 0;
+void setInstrumentValueToZero(Datagram data){
+	Datagram* temp = &data;
+	temp->trajectory.radonInstr = 0;
 }

@@ -90,7 +90,7 @@ def getCoverage(testcase, program_loc, MAIdll):
     """
 
     print("old", testcase)
-    MAIdll.resetInstrumentValue(testcase)
+    MAIdll.setInstrumentValueToZero(testcase)
     print("new", testcase)
     # 先启动线程2，用于监控
     thread2 = threading.Thread(target=threadMonitor, name="thread_monitor",)
