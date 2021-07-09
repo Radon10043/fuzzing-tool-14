@@ -9,28 +9,40 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QThread,pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal
 import time
 import sys
 import re
 import os
 
 import fuzz
+import fuzz_ai
 import fuzz_notarget
 
 
 class Ui_Dialog(object):
     stop = False
-    def setupUi(self, Dialog):
+    fuzz_ai = False
+    def setupUi(self, Dialog, fuzz_ai):
         Dialog.setObjectName("Dialog")
         Dialog.resize(494, 357)
-        self.textBrowser = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser.setGeometry(QtCore.QRect(35, 21, 421, 271))
-        self.textBrowser.setObjectName("textBrowser")
+        self.fuzz_ai = fuzz_ai
+        self.text_browser_nn = None
+        self.text_browser_exec = None
+        self.textBrowser = None
+        if fuzz_ai:
+            self.text_browser_nn = QtWidgets.QTextBrowser(Dialog)
+            self.text_browser_exec = QtWidgets.QTextBrowser(Dialog)
+            self.text_browser_nn.setGeometry(QtCore.QRect(35, 21, 321, 271))
+            self.text_browser_exec.setGeometry(QtCore.QRect(400, 21, 321, 271))
+        else:
+            self.textBrowser = QtWidgets.QTextBrowser(Dialog)
+            self.textBrowser.setGeometry(QtCore.QRect(35, 21, 421, 271))
+            self.textBrowser.setObjectName("textBrowser")
+
         self.stopBtn = QtWidgets.QPushButton(Dialog)
         self.stopBtn.setGeometry(QtCore.QRect(100, 300, 93, 28))
         self.stopBtn.setObjectName("stopBtn")
-        self.textBrowser.setObjectName("textBrowser")
         self.checkResultBtn = QtWidgets.QPushButton(Dialog)
         self.checkResultBtn.setGeometry(QtCore.QRect(300, 300, 93, 28))
         self.checkResultBtn.setObjectName("checkResultBtn")
@@ -49,83 +61,110 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "测试信息"))
-        self.textBrowser.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">测试信息</p></body></html>"))
+        if not self.fuzz_ai:
+            self.textBrowser.setHtml(_translate("Dialog",
+                                            "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                            "p, li { white-space: pre-wrap; }\n"
+                                            "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                            "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+                                            "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+                                            "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+                                            "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+                                            "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">测试信息</p></body></html>"))
 
     # 以下为手写内容
-    def startFuzz(self,source_loc,ui,uiFuzz):
+    def startFuzz(self, source_loc, ui, uiFuzz):
         # fuzz.fuzz(source_loc,ui,ui2)
         self.source_loc = source_loc
-        self.targetSetInfo = re.sub("[^A-Za-z1-9_\n]","",ui.targetSetInfo.toPlainText())
+        self.targetSetInfo = re.sub("[^A-Za-z1-9_\n]", "", ui.targetSetInfo.toPlainText())
         self.fuzzThread = FuzzThread()
         self.fuzzThread.fuzzInfoSgn.connect(self.fuzzInfoPrint)
+        self.fuzzThread.nnInfoSgn.connect(self.nnInfoPrint)
+        self.fuzzThread.execInfoSgn.connect(self.execInfoPrint)
         self.fuzzThread.overSgn.connect(self.overFuzz)
         self.fuzzThread.errorSgn.connect(self.errorFuzz)
-        self.fuzzThread.setValues(source_loc,ui,uiFuzz,self.targetSetInfo)
-        if len(self.targetSetInfo) == 0:
+        self.fuzzThread.setValues(source_loc, ui, uiFuzz, self.targetSetInfo, self.fuzz_ai)
+        if self.fuzz_ai:
+            self.text_browser_nn.setText("\n\n\t\t初始化中...\n\t即将开始基于机器学习的模糊测试...")
+            self.text_browser_exec.setText("\n\n\t\t初始化中...\n\t即将开始基于机器学习的模糊测试...")
+        elif len(self.targetSetInfo) == 0:
             self.textBrowser.setText("\n\n\t\t初始化中...\n\t即将开始无目标的模糊测试...")
         else:
             self.textBrowser.setText("\n\n\t\t初始化中...\n\t即将开始目标制导的模糊测试...")
-    
-    def fuzzInfoPrint(self,fuzzInfo):
+
+    def fuzzInfoPrint(self, fuzzInfo):
         # self.fuzzInfoTBrowser.setText(fuzzInfo)
         self.textBrowser.setText(fuzzInfo)
         QtWidgets.QApplication.processEvents()
         print(fuzzInfo)
-    
+
+    def nnInfoPrint(self, fuzzInfo):
+        self.text_browser_nn.setText(fuzzInfo)
+        QtWidgets.QApplication.processEvents()
+        print(fuzzInfo)
+
+    def execInfoPrint(self, fuzzInfo):
+        self.text_browser_exec.setText(fuzzInfo)
+        QtWidgets.QApplication.processEvents()
+        print(fuzzInfo)
+
     def overFuzz(self):
         self.checkResultBtn.setEnabled(True)
         self.stopBtn.setEnabled(False)
-    
+
     def errorFuzz(self):
         self.checkResultBtn.setEnabled(False)
         self.stopBtn.setEnabled(False)
-    
+
     def stopFuzz(self):
         print("stop!")
         self.stop = True
-    
+
     def openFolder(self):
         out_loc = self.source_loc[0]
-        out_loc = re.sub(out_loc.split("\\")[-1],"",out_loc)+"out"
+        out_loc = re.sub(out_loc.split("\\")[-1], "", out_loc) + "out"
         if os.path.exists(out_loc):
-            os.system("explorer.exe "+out_loc)
+            os.system("explorer.exe " + out_loc)
         else:
             print("out_loc not exist!")
+
 
 class FuzzThread(QThread):
     # 模糊测试用一个新线程，不然会暂时卡死
     fuzzInfoSgn = QtCore.pyqtSignal(str)
+    nnInfoSgn = QtCore.pyqtSignal(str)
+    execInfoSgn = QtCore.pyqtSignal(str)
     overSgn = QtCore.pyqtSignal(bool)
     errorSgn = QtCore.pyqtSignal(bool)
+
     def __init__(self):
         super().__init__()
-    def setValues(self,source_loc,ui,uiFuzz,targetSetInfo):
+
+    def setValues(self, source_loc, ui, uiFuzz, targetSetInfo, fuzz_ai):
+        self.fuzz_ai = fuzz_ai
         self.source_loc = source_loc
         self.ui = ui
         self.uiFuzz = uiFuzz
         self.targetSetInfo = targetSetInfo
         self.start()
+
     def run(self):
         print("FuzzThread has started.")
-        if len(self.targetSetInfo) == 0:
+        if self.fuzz_ai:
+            self.result = fuzz_ai.fuzz(self.source_loc, self.ui, self.uiFuzz, self)
+        elif len(self.targetSetInfo) == 0:
             fuzz_notarget.initGloablVariable()
-            self.result = fuzz_notarget.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
+            self.result = fuzz_notarget.fuzz(self.source_loc, self.ui, self.uiFuzz, self)
         else:
             fuzz.initGloablVariable()
-            self.result = fuzz.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
-        if isinstance(self.result,str):
+            self.result = fuzz.fuzz(self.source_loc, self.ui, self.uiFuzz, self)
+        if isinstance(self.result, str):
             self.errorSgn.emit(True)
         else:
             self.overSgn.emit(True)
     # 手写内容结束
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
