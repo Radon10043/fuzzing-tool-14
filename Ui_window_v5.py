@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-08 15:10:11
+LastEditTime: 2021-07-09 21:47:01
 Description: 模糊测试工具
 '''
 
@@ -160,12 +160,12 @@ class Ui_MainWindow(object):
         self.SAByManBtn.setGeometry(QtCore.QRect(230, 50, 93, 31))
         self.SAByManBtn.setObjectName("SAByManBtn")
         self.tabWidget.addTab(self.codeStructTab, "")
-        self.AITab = QtWidgets.QWidget()
-        self.AITab.setObjectName("AITab")
-        self.label_6 = QtWidgets.QLabel(self.AITab)
+        self.interfaceTab = QtWidgets.QWidget()
+        self.interfaceTab.setObjectName("interfaceTab")
+        self.label_6 = QtWidgets.QLabel(self.interfaceTab)
         self.label_6.setGeometry(QtCore.QRect(120, 30, 141, 16))
         self.label_6.setObjectName("label_6")
-        self.tabWidget.addTab(self.AITab, "")
+        self.tabWidget.addTab(self.interfaceTab, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 794, 26))
@@ -177,7 +177,6 @@ class Ui_MainWindow(object):
 
         # 以下为手写内容
         self.startFuzzBtn.clicked.connect(self.popFuzzDialog)
-        # self.popSeedDialogBtn.clicked.connect(self.popSeedDialog)
         self.popSeedDialogBtn.clicked.connect(self.popStructDialog)
         self.chooseCBtn.clicked.connect(self.chooseCFile)
         self.chooseHBtn.clicked.connect(self.chooseHFile)
@@ -194,6 +193,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -216,8 +216,8 @@ class Ui_MainWindow(object):
         self.HFileLoc.setPlaceholderText(_translate("MainWindow", "头文件位置"))
         self.chooseHBtn.setText(_translate("MainWindow", "选择头文件"))
         self.seedInputGroup.setTitle(_translate("MainWindow", "种子输入"))
-        self.popSeedDialogBtn.setText(_translate("MainWindow", "手动输入"))
-        self.label_3.setText(_translate("MainWindow", "如果不手动输入，系统会自动生成"))
+        self.popSeedDialogBtn.setText(_translate("MainWindow", "输入"))
+        # self.label_3.setText(_translate("MainWindow", "如果不手动输入，系统会自动生成"))
         self.stopOptionGroup.setTitle(_translate("MainWindow", "终止条件"))
         self.stopByTime.setText(_translate("MainWindow", "按时间"))
         self.stopByTC.setText(_translate("MainWindow", "按测试用例数量"))
@@ -246,7 +246,7 @@ class Ui_MainWindow(object):
         self.SAByManBtn.setText(_translate("MainWindow", "手动选择"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.codeStructTab), _translate("MainWindow", "基于代码结构"))
         self.label_6.setText(_translate("MainWindow", "基于交互接口规约"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.AITab), _translate("MainWindow", "基于交互接口规约"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.interfaceTab), _translate("MainWindow", "基于交互接口规约"))
 
         # 以下为手写内容
         self.TCNumPerCyc.setPlaceholderText("1-1000")
@@ -349,10 +349,9 @@ class Ui_MainWindow(object):
                 outFolderBackupBox.exec_()
                 return
 
-        # 如果不存在dll，则生成dll
-        if not os.path.exists(root_loc + "\\in\\mutate_instru.dll"):
-            os.chdir(root_loc + "\\in\\")
-            os.system("gcc -shared -o mutate_instru.dll mutate_instru.c")
+        # 因为用户每次可能会更改种子的相关设置，所以每次都需要重新生成一下dll
+        os.chdir(root_loc + "\\in\\")
+        os.system("gcc -shared -o mutate_instru.dll mutate_instru.c")
 
         # 防止出现bug，将手动输入按钮和开始测试按钮设置为false
         self.startFuzzBtn.setDisabled(True)
