@@ -162,6 +162,9 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.codeStructTab, "")
         self.AITab = QtWidgets.QWidget()
         self.AITab.setObjectName("AITab")
+        self.AIFuzz = QtWidgets.QRadioButton(self.AITab)
+        self.AIFuzz.setGeometry(QtCore.QRect(30, 30, 180, 16))
+
         self.label_6 = QtWidgets.QLabel(self.AITab)
         self.label_6.setGeometry(QtCore.QRect(120, 30, 141, 16))
         self.label_6.setObjectName("label_6")
@@ -220,6 +223,7 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "如果不手动输入，系统会自动生成"))
         self.stopOptionGroup.setTitle(_translate("MainWindow", "终止条件"))
         self.stopByTime.setText(_translate("MainWindow", "按时间"))
+        self.AIFuzz.setText(_translate("AITab", "基于AI的模糊测试"))
         self.stopByTC.setText(_translate("MainWindow", "按测试用例数量"))
         self.stopByCrash.setText(_translate("MainWindow", "检测到错误就停止"))
         self.timeUnit.setItemText(0, _translate("MainWindow", "分钟"))
@@ -245,8 +249,8 @@ class Ui_MainWindow(object):
         self.SAByCppcheckBtn.setText(_translate("MainWindow", "cppcheck"))
         self.SAByManBtn.setText(_translate("MainWindow", "手动选择"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.codeStructTab), _translate("MainWindow", "基于代码结构"))
-        self.label_6.setText(_translate("MainWindow", "基于交互接口规约"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.AITab), _translate("MainWindow", "基于交互接口规约"))
+        #self.label_6.setText(_translate("MainWindow", "基于交互接口规约"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.AITab), _translate("MainWindow", "基于AI"))
 
         # 以下为手写内容
         self.TCNumPerCyc.setPlaceholderText("1-1000")
@@ -319,7 +323,7 @@ class Ui_MainWindow(object):
             return
         self.fuzzDialog = QtWidgets.QDialog()
         self.uiFuzz = fuzzDialogPY.Ui_Dialog()
-        self.uiFuzz.setupUi(self.fuzzDialog)
+        self.uiFuzz.setupUi(self.fuzzDialog, self.AIFuzz.isChecked())
         self.fuzzDialog.show()
         self.uiFuzz.startFuzz(source_loc,ui,self.uiFuzz)
 
