@@ -59,9 +59,10 @@ class Ui_Dialog(object):
         self.yesBtn.setGeometry(QtCore.QRect(90, 340, 221, 51))
         self.yesBtn.setObjectName("yesBtn")
 
-        # 手写 =======================================
+        # =================================手写 =======================================
         self.yesBtn.clicked.connect(self.popSeedDialog)
-        # ============================================
+        self.yesBtn.clicked.connect(Dialog.accept)
+        # =============================================================================
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -89,8 +90,11 @@ class Ui_Dialog(object):
         # item.setText(_translate("Dialog", "struct3"))
         self.structTableWidget.setSortingEnabled(__sortingEnabled)
         self.yesBtn.setText(_translate("Dialog", "确定"))
+        # ===========================手写=================================
+        self.selectedStruct = ""
+        # ================================================================
 
-    # 手写
+    # ========================================手写===========================================
     '''
     @description: 设置界面的初始值
     @param {*} self
@@ -128,53 +132,56 @@ class Ui_Dialog(object):
             widget2.setLayout(hLayout2)
             self.structTableWidget.setCellWidget(i,0,widget2)
             self.checkboxs[i].clicked.connect(lambda x,i=i:self.selectStruct(self.checkboxs[i],self.structList[i]))
-        
+
         # 默认高度较矮，需要设置一下
         for i in range(len(self.structList)):
             self.structTableWidget.setRowHeight(i, 50)
-    
-    '''
-    @description: 选择了某个结构体，将其对应的checkbox打勾
-    @param {*} self
-    @param {*} checkbox
-    @param {*} label
-    @return {*}
-    '''
+
+
     def selectStruct(self,checkbox,label):
+        '''
+        @description: 选择了某个结构体，将其对应的checkbox打勾
+        @param {*} self
+        @param {*} checkbox
+        @param {*} label
+        @return {*}
+        '''
         self.unselectAll()
         checkbox.setChecked(True)
         self.selectedStruct = label
 
-    '''
-    @description: 因为结构体是单选，所以写一个取消全部选择的函数，在选择某个结构体前先取消全部选择
-    @param {*} self
-    @return {*}
-    '''
+
     def unselectAll(self):
+        '''
+        @description: 因为结构体是单选，所以写一个取消全部选择的函数，在选择某个结构体前先取消全部选择
+        @param {*} self
+        @return {*}
+        '''
         for i in range(len(self.structList)):
             self.checkboxs[i].setChecked(False)
+        self.selectedStruct = ""
 
-    '''
-    @description: 弹出输入种子输入的界面
-    @param {*} self
-    @return {*}
-    '''
+
     def popSeedDialog(self):
+        '''
+        @description: 弹出输入种子输入的界面
+        @param {*} self
+        @return {*}
+        '''
         try:
+            if self.selectedStruct == "":
+                raise ValueError("没有选择结构体")
             self.seedDialog = QtWidgets.QDialog()
             self.uiSeed = seedDialogPY.Ui_Dialog()
             self.uiSeed.setupUi(self.seedDialog)
             self.uiSeed.initStructDict(self.header_loc, False, self.selectedStruct, self.structList)
             self.seedDialog.show()
+        except ValueError as e:
+            print(repr(e))
+            exceptionBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "还没有选择结构体")
+            exceptionBox.exec_()
         except BaseException as e:
-            print(e)
-
-# 添加内容 --By Radon
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(dialog)
-    dialog.show()
-    sys.exit(app.exec_())
-# ==============================================
+            print(repr(e))
+            exceptionBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", repr(e))
+            exceptionBox.exec_()
+    # ====================================================================================================

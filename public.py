@@ -2,11 +2,11 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-01 15:35:15
+LastEditTime: 2021-07-08 15:04:50
 Description: Some pulic function
 '''
 
-import re, time, os
+import re, time, os, subprocess
 from win32 import win32api
 
 '''
@@ -55,7 +55,7 @@ def getAllFunctions(source_locs):
         lines = deleteNote(lines)
         for line in lines:
             # 程序有时候会误认为#pragma comment(lib, "ws2_32.lib")是函数，还没想到好方法
-            if "#pragram" in line:
+            if "#pragma" in line:
                 continue
             # 有左括号且没在{}内就认为有可能是函数
             if "(" in line and brace == 0:
@@ -85,7 +85,7 @@ def genSeed(header_loc, struct, structDict):
         os.mkdir(root)
     genSeedPath = root + "genSeed.cpp"
     # 开始写代码，先include相关内容
-    code = "#include <iostream>\n#include <Windows.h>\n"
+    code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
     # 把用户选择的头文件位置也include
     for header in header_loc:
         code += "#include \"" + header + "\"\n"
@@ -96,14 +96,12 @@ def genSeed(header_loc, struct, structDict):
     for key,value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
         code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
-    # 赋值结束后，向seed.txt文件中写入内容
-    code += "\n\tunsigned char* p = (unsigned char*)&data;\n\t"
-    code += "FILE *f = fopen(\"seed.txt\", \"w\");\n\t"
-    code += "for (; p < (unsigned char*)&data + sizeof(data); p++) {\n\t\t"
-    code += "fprintf(f, \"%d\", *p);\n\t\t"
-    code += "if (p != (unsigned char*)&data + sizeof(data) - 1) fprintf(f, \",\");\n\t"
-    code += "}\n\tfclose(f);\n\treturn 0;\n}"
-    # 写完代码后，编译并执行，在第一个头文件的同目录下会生成seed.txt，它就是种子测试用例
+    # 赋值结束后，向seed文件中写入内容
+    code += "\n\tofstream f(\"seed\");"
+    code += "\n\tf.write((char*)&data, sizeof(data));"
+    code += "\n\tf.close();"
+    code += "\n\treturn 0;\n}"
+    # 写完代码后，编译并执行，在第一个头文件的同目录下会生成seed，它就是种子测试用例
     f = open(genSeedPath, mode="w")
     f.write(code)
     f.close()
@@ -130,6 +128,7 @@ def genMutate(header_loc, struct, structDict):
     if not os.path.exists(root):
         os.mkdir(root)
     genMutatePath = root + "mutate_instru.c"
+
     # 开始写代码，先include相关内容
     code = "#include <stdio.h>\n#include <stdbool.h>\n"
     # 把用户选择的头文件位置也include
@@ -139,19 +138,23 @@ def genMutate(header_loc, struct, structDict):
     # r是一个随机数, 用于与原来的值进行异或
     code += "void mutate(" + struct + " data, char* savePath, int r){\n"
     # 变异操作
+    # ============================Note=================================
+    # 变异可能需要做一些修改，因为不知道是否要求变异后的结果也要在范围内
+    # 目前的思路是：随机生成一个值r，然后让变量与(r%(它的最大值))做异或操作
+    # 应该能产生一个符合范围的随机值，但是思路不一定对，还需要思考
+    # =================================================================
     for key,value in structDict[struct].items():
         if not value["mutation"]:
             continue
         dataName = key.split(" ")[-1].split(":")[0]
         code += "\tdata." + dataName + " ^= r;\n"
     # 变异体写入文件
-    code += "\tunsigned char* p = (unsigned char*)&data;\n\tFILE* f = fopen(savePath, \"w\");\n"
-    code += "\tfor (; p < (unsigned char*)&data + sizeof(data); p++) {\n"
-    code += "\t\tfprintf(f,\"%d\", *p);\n"
-    code += "\t\tif (p != (unsigned char*)&data + sizeof(data)-1)\n"
-    code += "\t\t\tfprintf(f, \",\");\n"
-    code += "\t}\n\tfclose(f);\n"
+    code += "\n\tFILE* f;"
+    code += "\n\tf = fopen(savePath, \"wb\");"
+    code += "\n\tfwrite(&data, sizeof(data), 1, f);"
+    code += "\n\tfclose(f);\n"
     code += "}\n\n"
+
     # 写一个获取插装变量的值的函数
     for key,value in structDict[struct].items():
         if not value["instrument"]:
@@ -163,18 +166,17 @@ def genMutate(header_loc, struct, structDict):
         code += dataType + " getInstrumentValue(" + struct + " data){\n"
         code += "\treturn data." + dataName + ";\n"
     code +="}"
-    mutateFile = open(root + "mutate_instru.c", mode="w")
+    mutateFile = open(root + "mutate_instru.c", mode = "w")
     mutateFile.write(code)
-    # 生成.dll文件
-    # 这里还有点问题，根据代码生成的dll文件执行过程中会出错，但手动生成的就不会出错
-    os.chdir(root)
-    os.system("gcc -shared -o mutate_instru.dll mutate_instru.c")
+
+    # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window_v5.py生成
     # gcc -shared -o mutate_instru.dll mutate_instru.c
+
 
 import ctypes
 if __name__ == "__main__":
-    MAIdll = ctypes.cdll.LoadLibrary("C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\in\\mutate_instru.dll")
-    temp = [102,0,33,92,90,0,0,0,21,6,19,11,47,48,100,0,96,0,0,0,0,0,0,0,107,0,0,0,44,0,0,0,1,1,0,0,76,0,0,0,107,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,111,16,64,0,116,45,1,108,117,1,71,42,1,60,39,1]
+    MAIdll = ctypes.cdll.LoadLibrary("C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example_21.7.5\\in\\mutate_instru.dll")
+    temp = [211, 18, 71, 118, 45, 48, 0, 0, 21, 11, 18, 15, 15, 15, 100, 0, 213, 0, 0, 0, 155, 164, 0, 0, 30, 72, 203, 131, 247, 87, 184, 26, 30, 197, 0, 0, 123, 0, 0, 0, 200, 1, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 7, 8, 64, 0, 114, 92, 1, 232, 77, 1, 250, 228, 1, 44, 112, 1]
     temp = bytes(temp)
     res = MAIdll.getInstrumentValue(temp)
     print(res)

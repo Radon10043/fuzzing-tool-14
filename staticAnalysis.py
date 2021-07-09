@@ -146,12 +146,12 @@ def getOneStruct(header_loc, struct, prefix, allStruct):
                             info = analyzeInternalStruct(data.type.type.decls, prefix + data.name)
                     # 如果数据类型是定义的某个结构体，则递归查看信息
                     if dataType in allStruct:
-                        # 如果结构体成员是二维数组
+                        # 如果结构体成员是二维数组，代码待添加
                         if isinstance(data.type.type, pycparser.c_ast.ArrayDecl):
-                            print("Hi, here is a [][].")
+                            print("Need add code to analyze two-dimensional array...")
                         # 如果结构体成员是以为数组
                         elif isinstance(data.type, pycparser.c_ast.ArrayDecl):
-                            print("Hi, there is a [].")
+                            print("Analyzing one-dimensional array...")
                             info = []
                             for i in range(2):
                                 info.extend(getOneStruct(header_loc, dataType, prefix + data.name + "[" + str(i) + "].", allStruct))

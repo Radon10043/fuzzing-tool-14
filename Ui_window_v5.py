@@ -2,12 +2,12 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-01 22:00:10
+LastEditTime: 2021-07-08 15:10:11
 Description: 模糊测试工具
 '''
 
 # =====================================Note==========================================
-# There are some words
+
 # ===================================================================================
 
 # -*- coding: utf-8 -*-
@@ -259,13 +259,13 @@ class Ui_MainWindow(object):
         # 手写内容结束
 
     # 以下为手写内容
-    '''
-    @description: 选择C文件
-    @param {*} self
-    @param {*} Filepath
-    @return {*}
-    '''
     def chooseCFile(self, Filepath):
+        '''
+        @description: 选择C文件
+        @param {*} self
+        @param {*} Filepath
+        @return {*}
+        '''
         # 注意！getOpenFileNames()中的filter如果想选择多个文件的话，需要用两个分号隔开！
         # temp = QtWidgets.QFileDialog.getOpenFileNames(None,"choose file","C:/Users/Radon/Desktop/",filter="c files (*.c);;cpp Files (*.cpp)")
         temp = QtWidgets.QFileDialog.getOpenFileNames(None,"choose file","C:/Users/Radon/Desktop/",filter="source file (*.c *.cpp)")
@@ -278,13 +278,14 @@ class Ui_MainWindow(object):
         path = path.rstrip("\n")
         self.CFileLoc.setText(path)
 
-    '''
-    @description: 选择头文件
-    @param {*} self
-    @param {*} Filepath
-    @return {*}
-    '''
+
     def chooseHFile(self, Filepath):
+        '''
+        @description: 选择头文件
+        @param {*} self
+        @param {*} Filepath
+        @return {*}
+        '''
         temp = QtWidgets.QFileDialog.getOpenFileNames(None,"choose file","C:/Users/Radon/Desktop/","h files (*.h)")
         path = ""
         if len(temp[0]) == 1:
@@ -295,39 +296,85 @@ class Ui_MainWindow(object):
         path = path.rstrip("\n")
         self.HFileLoc.setText(path)
 
-    '''
-    @description: 弹出模糊测试的窗口, 在测试前，会询问用户是否已将数据维持在了最新状态
-                  注意, 需要把C文件与H文件放在同一目录下
-    @param {*} self
-    @return {*}
-    '''
+
     def popFuzzDialog(self):
+        '''
+        @description: 弹出模糊测试的窗口, 在测试前，会询问用户是否已将数据维持在了最新状态
+                    注意, 需要把C文件与H文件放在同一目录下
+        @param {*} self
+        @return {*}
+        '''
         print(self.targetSetInfo.toPlainText())
         source_loc = self.CFileLoc.toPlainText().split("\n")
+        header_loc = self.HFileLoc.toPlainText().split("\n")
+
+        # 检测C文件是否存在
         for source in source_loc:
             if not os.path.exists(source):
                 sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在！")
                 sourceNotExistBox.exec_()
                 return
-        if not os.path.exists(re.sub(source_loc[0].split("\\")[-1],"",source_loc[0]) + "\\in\\"):
-            seedNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "种子文件不存在！")
-            seedNotExistBox.exec_()
-            return
-        seedLatestBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, '警告', '模糊测试即将开始, 请确认种子文件为最新状态')
-        yes = seedLatestBox.addButton('确定', QtWidgets.QMessageBox.YesRole)
-        no = seedLatestBox.addButton('修改种子', QtWidgets.QMessageBox.NoRole)
+
+        # 检测头文件是否存在
+        for header in header_loc:
+            if not os.path.exists(header):
+                headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在！")
+                headerNotExistBox.exec_()
+                return
+
+        root_loc = re.sub(source_loc[0].split("\\")[-1],"",source_loc[0])
+
+        # 检测一系列的必要文件是否存在
+        fileList = ["instrument.txt", "mutate_instru.c", "seed"]
+        for f in fileList:
+            if not os.path.exists(root_loc + "in\\" + f):
+                necessaryFileNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", str(f) + "不存在，请重新生成种子文件")
+                necessaryFileNotExistBox.exec_()
+                return
+
+        # 提示用户确认种子已是最新状态
+        seedLatestBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "模糊测试即将开始, 请确认种子文件为最新状态")
+        yes = seedLatestBox.addButton("确定", QtWidgets.QMessageBox.YesRole)
+        no = seedLatestBox.addButton("修改种子", QtWidgets.QMessageBox.NoRole)
         seedLatestBox.exec_()
         if seedLatestBox.clickedButton() == no:
             seedSetBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "您可以点击主页面中的手动输入按钮以更新种子")
             seedSetBox.exec_()
             return
+
+        # 检测是否已经存在out文件夹
+        if os.path.exists(root_loc + "\\out\\"):
+            outFolderExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "在同目录下发现了out文件夹，是否覆盖?")
+            yes = outFolderExistBox.addButton("确定", QtWidgets.QMessageBox.YesRole)
+            no = outFolderExistBox.addButton("取消", QtWidgets.QMessageBox.NoRole)
+            outFolderExistBox.exec_()
+            if outFolderExistBox.clickedButton() == no:
+                outFolderBackupBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "您可以选择手动将out文件夹移动到其他地方")
+                outFolderBackupBox.exec_()
+                return
+
+        # 如果不存在dll，则生成dll
+        if not os.path.exists(root_loc + "\\in\\mutate_instru.dll"):
+            os.chdir(root_loc + "\\in\\")
+            os.system("gcc -shared -o mutate_instru.dll mutate_instru.c")
+
+        # 防止出现bug，将手动输入按钮和开始测试按钮设置为false
+        self.startFuzzBtn.setDisabled(True)
+        self.popSeedDialogBtn.setDisabled(True)
+
         self.fuzzDialog = QtWidgets.QDialog()
         self.uiFuzz = fuzzDialogPY.Ui_Dialog()
         self.uiFuzz.setupUi(self.fuzzDialog, self.AIFuzz.isChecked())
         self.fuzzDialog.show()
         self.uiFuzz.startFuzz(source_loc,ui,self.uiFuzz)
 
+
     def popSeedDialog(self):
+        '''
+        @description: 弹出输入种子测试用例的界面
+        @param {*} self
+        @return {*}
+        '''
         header_loc = self.HFileLoc.toPlainText()
         readJSON = False
         header_loc = header_loc.split("\n")
@@ -347,12 +394,13 @@ class Ui_MainWindow(object):
         self.seedDialog.show()
         self.uiSeed.initStructDict(header_loc,readJSON)
 
-    '''
-    @description: 弹出一个dialog, 其中显示了c中所有的函数, 以让用户选择目标
-    @param {*} self
-    @return {*}
-    '''
+
     def popTargetDialog(self):
+        '''
+        @description: 弹出一个dialog, 其中显示了c中所有的函数, 以让用户选择目标
+        @param {*} self
+        @return {*}
+        '''
         self.targetSetInfo.clear()
         source_loc = self.CFileLoc.toPlainText()
         sourceList = source_loc.split("\n")
@@ -365,14 +413,14 @@ class Ui_MainWindow(object):
         self.uiTarget.setupUi(self.targetDialog)
         self.targetDialog.show()
         self.uiTarget.setValues(ui,source_loc,[])
-        # self.uiFuzz.startFuzz(source_loc,ui,self.uiFuzz,self.uiSeed)
 
-    '''
-    @description: 弹出选择输入结构体的界面，通过选择结构体来得知初始输入的格式
-    @param {*} self 需要将header_loc发送给选择结构体的界面。header_loc是列表
-    @return {*}
-    '''
+
     def popStructDialog(self):
+        '''
+        @description: 弹出选择输入结构体的界面，通过选择结构体来得知初始输入的格式
+        @param {*} self 需要将header_loc发送给选择结构体的界面。header_loc是列表
+        @return {*}
+        '''
         header_loc = self.HFileLoc.toPlainText()
         header_loc = header_loc.split("\n")
         # 查看是否已存在structDict.json
@@ -407,12 +455,13 @@ class Ui_MainWindow(object):
             self.structDialog.show()
             self.uiStruct.setValues(header_loc)
 
-    '''
-    @description: 通过CPPCHECK进行静态分析获取可能有缺陷的地方
-    @param {*} self
-    @return {*}
-    '''
+
     def SAByCppcheck(self):
+        '''
+        @description: 通过CPPCHECK进行静态分析获取可能有缺陷的地方
+        @param {*} self
+        @return {*}
+        '''
         self.targetSetInfo.clear()
         source_loc = self.CFileLoc.toPlainText()
         self.SAResult = sa.analyze(source_loc)
