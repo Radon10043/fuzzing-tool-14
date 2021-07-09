@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-08 15:04:50
+LastEditTime: 2021-07-09 22:16:45
 Description: Some pulic function
 '''
 
@@ -165,18 +165,16 @@ def genMutate(header_loc, struct, structDict):
         dataName = key.split(" ")[-1].split(":")[0]
         code += dataType + " getInstrumentValue(" + struct + " data){\n"
         code += "\treturn data." + dataName + ";\n"
-    code +="}"
+    code +="}\n\n"
+
+    # 写一个将插装变量置0的函数
+    code += "void setInstrumentValueToZero(" + struct + " data){\n"
+    code += "\t" + struct + "* temp = &data;\n"
+    code += "\ttemp->" + dataName + " = 0;\n"
+    code += "}"
+
     mutateFile = open(root + "mutate_instru.c", mode = "w")
     mutateFile.write(code)
 
     # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window_v5.py生成
     # gcc -shared -o mutate_instru.dll mutate_instru.c
-
-
-import ctypes
-if __name__ == "__main__":
-    MAIdll = ctypes.cdll.LoadLibrary("C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example_21.7.5\\in\\mutate_instru.dll")
-    temp = [211, 18, 71, 118, 45, 48, 0, 0, 21, 11, 18, 15, 15, 15, 100, 0, 213, 0, 0, 0, 155, 164, 0, 0, 30, 72, 203, 131, 247, 87, 184, 26, 30, 197, 0, 0, 123, 0, 0, 0, 200, 1, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 7, 8, 64, 0, 114, 92, 1, 232, 77, 1, 250, 228, 1, 44, 112, 1]
-    temp = bytes(temp)
-    res = MAIdll.getInstrumentValue(temp)
-    print(res)
