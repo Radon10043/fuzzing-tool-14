@@ -104,8 +104,8 @@ def multiFileCompile(source_loc):
         if os.system(cmd) != 0:
             print("出错!")
     # 移除插装的源文件
-    for source in source_loc:
-        os.remove(source)
+    # for source in source_loc:
+    #   os.remove(source)
     # 删掉.o文件
     for oFile in oFileName:
         os.remove(oFile)
