@@ -8,7 +8,9 @@ from subprocess import *
 import time
 
 isCrash = 0
-
+ROOT = "D:\\fuzzing-tool-14"
+returnUDPInfo =[]
+allNode = []
 
 def parse_array(text):
     # loc|sign|filename
@@ -74,10 +76,9 @@ def threadReceiver(program_loc):
 def threadMonitor():
     global returnUDPInfo
     # prog = "D:\\fuzzing-tool-14\\example\\cppudptest\\getudp.py"
-    prog = os.path.join(os.curdir, "example", "cppudptest", "getudp.py")
+    prog = os.path.join(ROOT, "example", "cppudptest", "getudp.py")
     out = getstatusoutput(prog)
     # print("getudp.py: ", out)
-    global returnUDPInfo
     returnUDPInfo = out[1]
 
 
@@ -87,6 +88,10 @@ def getCoverage(testcase, program_loc, MAIdll):
     @param {*} program_loc 程序位置
     @return {*} 返回(测试用例, 距离, 适应度, 覆盖点, 是否触发缺陷, 是否超时)，返回结果是一个元组
     """
+
+    print("old", testcase)
+    MAIdll.resetInstrumentValue(testcase)
+    print("new", testcase)
     # 先启动线程2，用于监控
     thread2 = threading.Thread(target=threadMonitor, name="thread_monitor",)
     thread2.start()
@@ -94,7 +99,7 @@ def getCoverage(testcase, program_loc, MAIdll):
     # 从而陷入一直等待线程2结束的状态
     time.sleep(0.2)
     # 一段时间后，启动线程1
-    thread1 = threading.Thread(target=threadReceiver, args=[program_loc, ], name="thread_receiver")
+    thread1 = threading.Thread(target=threadReceiver, args=(program_loc, ), name="thread_receiver")
     thread1.start()
     # 形参的测试用例是str类型的list，转换成int后再转为byte
     # data = bytes([int(data) for data in testcase])
@@ -119,15 +124,13 @@ def getCoverage(testcase, program_loc, MAIdll):
     # 获得覆盖的结点
     instrValue = MAIdll.getInstrumentValue(bytes(returnUDPInfo))
     print("instrValue:", instrValue)
+    crashResult = isCrash
     coverNode = getCoverNode(instrValue)
     print("coverNode:", coverNode)
 
-    crashResult = isCrash
+
     timeout = False
     return testcase, coverNode, crashResult, timeout
-
-
-from nn import PATH_PREFIX
 
 
 def mutate(a, add=True, delete=True):
@@ -158,9 +161,9 @@ def mutate(a, add=True, delete=True):
     return res
 
 
-def gen_training_data(seed_fn, num):
+def gen_training_data(PATH_PREFIX, seed_fn, num):
     # population = [bytearray([1, 2, 3, 4]), bytearray([0, 10, 100, 200])]
-    population = [bytes([int(i) for i in open(seed_fn, "r").read().split(",")])]
+    population = [open(seed_fn, "rb").read()]
     i = 0
     while len(population) <= num:
         new_population = []
@@ -171,7 +174,7 @@ def gen_training_data(seed_fn, num):
         population += new_population
     # res = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0}
     for tc in population:
-        input_fn = os.path.join(PATH_PREFIX, "./seeds/input_" + str(i).zfill(10))
+        input_fn = os.path.join(PATH_PREFIX, "seeds","input_" + str(i).zfill(10))
         with open(input_fn, "wb") as f:
             f.write(tc)
         i += 1

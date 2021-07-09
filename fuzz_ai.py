@@ -124,9 +124,9 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
 
     # now_loc = re.sub(source_loc[0].split("\\")[-1],"",source_loc[0])      # 当前所在目录
     now_loc = utils.ROOT
-    output_loc = now_loc  # 输出exe和obj的位置
+    output_loc = os.path.join(now_loc, "example")  # 输出exe和obj的位置
     program_loc = os.path.join(now_loc, "example", "instrument.exe")  # 可执行文件位置
-    seed_loc = os.path.join(now_loc, "example", "in", "seed.txt")  # 初始测试用例位置
+    seed_loc = os.path.join(now_loc, "example", "in", "seed")  # 初始测试用例位置
 
     # 插装后的文件位置，因为是多文件，所以这里用了列表
     instrument_loc = []
@@ -166,19 +166,21 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     start = time.time()
     end = time.time()
 
-    allNodes = public.getAllFunctions(source_loc)
-    allNodes = sorted(set(allNodes), key=allNodes.index)
-    print("allNode:", allNodes)
-    MAIdll = ctypes.cdll.LoadLibrary(os.path.join(now_loc, "example", "in", "mutate_instru_bkp.dll"))
+    allNode = public.getAllFunctions(source_loc)
+    allNode = sorted(set(allNode), key=allNode.index)
+    utils.allNode = allNode
+    print("allNode:", allNode)
+    MAIdll = ctypes.cdll.LoadLibrary(os.path.join(now_loc, "example", "in", "mutate_instru.dll"))
 
     # 待修改
-    testcase.append(open(seed_loc).read().split(","))
+    testcase = open(seed_loc, "rb").read()
 
     # testcase[0] = [str(data) for data in testcase[0]]
     utils.mkdir(now_loc + "\\AIFuzz\\seeds")
     utils.mkdir(now_loc + "\\AIFuzz\\splice_seeds")
     utils.mkdir(now_loc + "\\AIFuzz\\mutations")
     utils.mkdir(now_loc + "\\AIFuzz\\crashes")
+    utils.mkdir(now_loc + "\\AIFuzz\\bitmaps")
     uiFuzz.text_browser_nn.append("测试文件夹准备完成...\n")
     utils.gen_training_data(os.path.join(utils.ROOT, "AIFuzz"), seed_loc, 10)
     uiFuzz.text_browser_nn.append("已生成初始训练数据...\n")
@@ -197,8 +199,8 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
         stopNum = int(ui.stopByTCNum.text()) + 1
         condition = "mutateNum<" + str(stopNum)
 
-    exec_thread = FuzzExecThread(ui, uiFuzz, fuzzThread, program_loc, MAIdll, allNodes)
-    nn_thread =  nn.NNThread(ui, uiFuzz, fuzzThread, len(testcase), allNodes, 10, program_loc, MAIdll)
+    exec_thread = FuzzExecThread(ui, uiFuzz, fuzzThread, program_loc, MAIdll, allNode)
+    nn_thread = nn.NNThread(ui, uiFuzz, fuzzThread, len(testcase), allNode, 10, program_loc, MAIdll)
 
     nn_thread.start()
     time.sleep(1)
@@ -427,14 +429,18 @@ class FuzzExecThread(threading.Thread):
         seeds_dir = os.path.join(self.dir, "seeds")
         utils.mkdir(os.path.join(self.dir, "mutations", "0"))
         while True:
+            1==1
+            """
             if not s.recvfrom(5):
                 print("received failed\n")
             else:
+                print("receive\n\n\n")
                 if step == 0:
                     self.dry_run(seeds_dir, 2)
                     step = 1
                 self.fuzz_loop(s)
-                print("receive\n")
+            """
+
 
 
 """
