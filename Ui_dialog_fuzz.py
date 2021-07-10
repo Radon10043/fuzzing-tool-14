@@ -162,8 +162,8 @@ class FuzzThread(QThread):
         @description: 设置一些初始值
         @param {*} self
         @param {*} source_loc 列表，其中存储了所有源文件的地址
-        @param {*} ui Ui_window_v5的ui
-        @param {*} uiFuzz Ui_dialog_fuzz_v2的ui
+        @param {*} ui Ui_window的ui
+        @param {*} uiFuzz Ui_dialog_fuzz的ui
         @param {*} targetSetInfo 目标集信息
         @return {*}
         '''

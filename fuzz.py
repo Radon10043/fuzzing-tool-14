@@ -543,9 +543,3 @@ isCrash = 0             # 程序的返回值
 crashes = 0             # 统计触发了多少次缺陷
 returnUDPInfo = []      # 存储发送回来的UDP数据包
 # ============================================================================================
-
-if __name__ == "__main__":
-    data = bytes([251, 17, 111, 96, 45, 48, 0, 0, 22, 10, 16, 15, 13, 13, 101, 0, 214, 0, 0, 0, 153, 162, 1, 0, 30, 71, 202, 129, 247, 87, 182, 25, 30, 197, 1, 0, 121, 0, 0, 2, 200, 1, 1, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 2, 0, 7, 4, 62, 0, 114, 91, 1, 232, 78, 0, 248, 228, 1, 44, 112, 1])
-    dll = ctypes.cdll.LoadLibrary("C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example_21.7.5\\in\\mutate_instru.dll")
-    dll.setInstrumentValueToZero(data)
-    print("instrValue:", dll.getInstrumentValue(data))
