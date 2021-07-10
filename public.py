@@ -6,28 +6,31 @@ LastEditTime: 2021-07-10 18:42:53
 Description: Some pulic function
 '''
 
-import re, time, os, subprocess
+import os
+import re
 
 '''
 @description: 删除程序中的注释
 @param {*} source 代码列表，source = f.readlines()
 @return {*}
 '''
+
+
 def deleteNote(source):
     skip = False
     for i in range(len(source)):
         if "//" in source[i]:
-            source[i]=source[i].split("//")[0]+"\n"
+            source[i] = source[i].split("//")[0] + "\n"
         if "/*" in source[i]:
             skip = True
             if "*/" in source[i]:
                 skip = False
-                source[i]=source[i].split("/*")[0]+"\n"
+                source[i] = source[i].split("/*")[0] + "\n"
         elif "*/" in source[i]:
-            skip=False
-            source[i]="\n"
-        if skip==True:
-            source[i]="\n"
+            skip = False
+            source[i] = "\n"
+        if skip == True:
+            source[i] = "\n"
     return source
 
 
@@ -44,7 +47,7 @@ def getAllFunctions(source_locs):
     funcList = []
     for source in source_loc:
         try:
-            f = open(source,encoding="utf8")
+            f = open(source, encoding="utf8")
             lines = f.readlines()
         except UnicodeDecodeError:
             f = open(source)
@@ -60,7 +63,7 @@ def getAllFunctions(source_locs):
             if "(" in line and brace == 0:
                 code = line.split("(")[0]
                 code.rstrip()
-                code = re.sub("[^A-Za-z0-9_]","+",code)
+                code = re.sub("[^A-Za-z0-9_]", "+", code)
                 funcList.append(code.split("+")[-1])
             if "{" in line:
                 brace += 1
@@ -79,7 +82,7 @@ def genSeed(header_loc, struct, structDict):
     @return {*}
     '''
     # 先设置好相关的位置信息
-    root = re.sub(header_loc[0].split("/")[-1],"",header_loc[0]) + "/in/"
+    root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
     if not os.path.exists(root):
         os.mkdir(root)
     genSeedPath = root + "genSeed.cpp"
@@ -92,7 +95,7 @@ def genSeed(header_loc, struct, structDict):
     code += "int main(){\n"
     # 新建结构体变量，并向它的成员变量赋值
     code += "\t" + struct + " data;\n"
-    for key,value in structDict[struct].items():
+    for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
         code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
     # 赋值结束后，向seed文件中写入内容
@@ -123,7 +126,7 @@ def genMutate(header_loc, struct, structDict):
     @return {*}
     '''
     # 先设置好相关的位置信息
-    root = re.sub(header_loc[0].split("/")[-1],"",header_loc[0]) + "/in/"
+    root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
     if not os.path.exists(root):
         os.mkdir(root)
     genMutatePath = root + "mutate_instru.c"
@@ -142,7 +145,7 @@ def genMutate(header_loc, struct, structDict):
     # 目前的思路是：随机生成一个值r，然后让变量与(r%(它的最大值))做异或操作
     # 应该能产生一个符合范围的随机值，但是思路不一定对，还需要思考
     # =================================================================
-    for key,value in structDict[struct].items():
+    for key, value in structDict[struct].items():
         if not value["mutation"]:
             continue
         dataName = key.split(" ")[-1].split(":")[0]
@@ -155,7 +158,7 @@ def genMutate(header_loc, struct, structDict):
     code += "}\n\n"
 
     # 写一个获取插装变量的值的函数
-    for key,value in structDict[struct].items():
+    for key, value in structDict[struct].items():
         if not value["instrument"]:
             continue
         dataType = key.split(" ")
@@ -164,7 +167,7 @@ def genMutate(header_loc, struct, structDict):
         dataName = key.split(" ")[-1].split(":")[0]
         code += dataType + " getInstrumentValue(" + struct + " data){\n"
         code += "\treturn data." + dataName + ";\n"
-    code +="}\n\n"
+    code += "}\n\n"
 
     # 写一个将插装变量置0的函数
     code += "void setInstrumentValueToZero(" + struct + " data){\n"
@@ -172,14 +175,16 @@ def genMutate(header_loc, struct, structDict):
     code += "\ttemp->" + dataName + " = 0;\n"
     code += "}"
 
-    mutateFile = open(root + "mutate_instru.c", mode = "w")
+    mutateFile = open(root + "mutate_instru.c", mode="w")
     mutateFile.write(code)
 
     # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window.py生成
     # gcc -shared -o mutate_instru.dll mutate_instru.c
 
+
 import sys
 from PyQt5 import QtWidgets
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
