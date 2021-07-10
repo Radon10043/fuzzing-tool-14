@@ -5,17 +5,19 @@ LastEditors: Radon
 LastEditTime: 2021-07-10 19:23:30
 Description: Hi, say something
 '''
-import re
 import os
-import subprocess
+import re
+
 import public
+
 
 def get_str_btw(s, f, b):
     par = s.partition(f)
     return (par[2].partition(b))[0][:]
 
+
 def printInfo(msg):
-    print("\n\033[0;32mInfo:\033[0m"+msg)
+    print("\n\033[0;32mInfo:\033[0m" + msg)
 
 
 def instrument(source_loc, instrument_loc, output_loc, instrument_var):
@@ -29,10 +31,10 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
     '''
     # 获取所有函数结点，方便编号
     allNode = public.getAllFunctions(source_loc)
-    allNode = sorted(set(allNode),key=allNode.index)
+    allNode = sorted(set(allNode), key=allNode.index)
     print(allNode)
     for num in range(len(source_loc)):
-        brace = 0      # 记录大括号数量，方便后续操作
+        brace = 0  # 记录大括号数量，方便后续操作
         instr = False
         try:
             f = open(source_loc[num])
@@ -48,7 +50,7 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
         while j != length:
             if "(" in lines[j] and brace == 0:
                 code = lines[j].split("(")[0]
-                code = re.sub("[^A-Za-z1-9_]"," ",code)
+                code = re.sub("[^A-Za-z1-9_]", " ", code)
                 # 插桩语句，更换为改变结构体的值
                 funcName = code.split(" ")[-1]
                 if funcName == "main":
@@ -58,7 +60,7 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
                     if allNode[k] == funcName:
                         break
                 # 把变量的某一位置为1，用或操作
-                instrCode = "\tdtg->" + instrument_var + " |= " + str(2**k) + ";\n"
+                instrCode = "\tdtg->" + instrument_var + " |= " + str(2 ** k) + ";\n"
                 instr = True
             if "{" in lines[j]:
                 brace += 1
@@ -113,6 +115,7 @@ def multiFileCompile(source_loc):
 
 import sys
 from PyQt5 import QtWidgets
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
