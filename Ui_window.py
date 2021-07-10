@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-09 21:47:01
+LastEditTime: 2021-07-10 18:18:08
 Description: 模糊测试工具
 '''
 
@@ -26,8 +26,8 @@ import sys
 import re
 import os
 
-import Ui_dialog_fuzz_v2 as fuzzDialogPY
-import Ui_dialog_seed_v5 as seedDialogPY
+import Ui_dialog_fuzz as fuzzDialogPY
+import Ui_dialog_seed as seedDialogPY
 import Ui_dialog_selectTarget as targetDialogPY
 import Ui_dialog_selectStruct as structDialogPY
 import staticAnalysis as sa
@@ -266,11 +266,8 @@ class Ui_MainWindow(object):
         # temp = QtWidgets.QFileDialog.getOpenFileNames(None,"choose file","C:/Users/Radon/Desktop/",filter="c files (*.c);;cpp Files (*.cpp)")
         temp = QtWidgets.QFileDialog.getOpenFileNames(None,"choose file","C:/Users/Radon/Desktop/",filter="source file (*.c *.cpp)")
         path = ""
-        if len(temp[0]) == 1:
-            path = re.sub("/",r"\\",temp[0][0])
-        else:
-            for i in range(len(temp[0])):
-                path += re.sub("/",r"\\",temp[0][i]) + "\n"
+        for i in range(len(temp[0])):
+            path += re.sub("/",r"\\",temp[0][i]) + "\n"
         path = path.rstrip("\n")
         self.CFileLoc.setText(path)
 
@@ -284,11 +281,8 @@ class Ui_MainWindow(object):
         '''
         temp = QtWidgets.QFileDialog.getOpenFileNames(None,"choose file","C:/Users/Radon/Desktop/","h files (*.h)")
         path = ""
-        if len(temp[0]) == 1:
-            path = re.sub("/",r"\\",temp[0][0])
-        else:
-            for i in range(len(temp[0])):
-                path += re.sub("/",r"\\",temp[0][i]) + "\n"
+        for i in range(len(temp[0])):
+            path += re.sub("/",r"\\",temp[0][i]) + "\n"
         path = path.rstrip("\n")
         self.HFileLoc.setText(path)
 

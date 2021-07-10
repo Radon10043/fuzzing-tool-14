@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 import staticAnalysis
 import public
-import Ui_dialog_seed_v5 as seedDialogPY
+import Ui_dialog_seed as seedDialogPY
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):

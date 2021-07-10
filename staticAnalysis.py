@@ -61,30 +61,18 @@ def analyze(source_loc):
     suspLoc = []
     source = sourceList[0].split("\\")[-1]
     path = re.sub(source,"",sourceList[0])     #设定存储位置
-    cmd = "cppcheck --output-file="+path+"AnalyzeResult.txt "+re.sub(" ","",source_loc)
+    cmd = "cppcheck --output-file=" + path + "AnalyzeResult.txt " + re.sub("\n"," ",source_loc)
+    print("cppcheck cmd:", cmd)
     os.system(cmd)
-    f = open(path+"AnalyzeResult.txt")
+    f = open(path + "AnalyzeResult.txt")
     lines = f.readlines()
     f.close()
     for line in lines:
         if "error:" in line:
             suspLoc.append(line.split(" error:")[0].split("\\")[-1])
-    # print(suspLoc)
     suspFunction = getSuspFunction(suspLoc,sourceList)
+    suspFunction = list(set(suspFunction))
     return suspFunction
-
-def getAllVariablesName(source_loc):
-    f = open(source_loc)
-    lines = f.readlines()
-    f.close()
-    for line in lines:
-        if "scanf" in line:
-            data = line.split("\"")[-1]
-            data = data.lstrip(",")
-            data = re.sub("[^A-Za-z0-9_,]","",data)
-            variables = data.split(",")
-            break
-    return variables
 
 
 def getAllStruct(header_loc):

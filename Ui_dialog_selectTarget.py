@@ -90,10 +90,17 @@ class Ui_Dialog(object):
         self.funcTableWidget.setSortingEnabled(__sortingEnabled)
         self.unselectAllBtn.setText(_translate("Dialog", "全不选"))
         self.selectAllBtn.setText(_translate("Dialog", "全选"))
-    
+
     # 手写
     def setValues(self,ui,source_loc,SAResult):
-        # self.funcList = sa.getAllFunctions("C:\\Users\\Radon\\Desktop\\fuzztest\\main.c")
+        '''
+        @description: 设置一些初始值
+        @param {*} self
+        @param {*} ui Ui_window的ui
+        @param {*} source_loc 字符串，其中存储了所有的源文件地址，用\n隔开
+        @param {*} SAResult 列表，静态分析的结果，其中存储了哪些函数可能存在缺陷
+        @return {*}
+        '''
         if len(SAResult)==0:
             self.funcList = public.getAllFunctions(source_loc)
         else:
@@ -129,26 +136,15 @@ class Ui_Dialog(object):
             self.funcTableWidget.setCellWidget(i,0,widget2)
             self.checkboxs[i].clicked.connect(lambda x,i=i:self.selectTarget(self.checkboxs[i],self.funcList[i]))
 
-        # for i in range(len(self.funcList)):
-        #     checkbox1 = QtWidgets.QCheckBox()
-        #     hLayout = QtWidgets.QHBoxLayout()
-        #     hLayout.addWidget(checkbox1)
-        #     hLayout.setAlignment(checkbox1,QtCore.Qt.AlignCenter)
-        #     widget = QtWidgets.QWidget()
-        #     widget.setLayout(hLayout)
-        #     self.funcTableWidget.setCellWidget(i,1,widget)
-        #     self.funcTableWidget.setRowHeight(i,40)
-        #     label1 = QtWidgets.QLabel()
-        #     label1.setText(self.funcList[i])
-        #     hLayout2 = QtWidgets.QHBoxLayout()
-        #     hLayout2.addWidget(label1)
-        #     hLayout2.setAlignment(label1,QtCore.Qt.AlignCenter)
-        #     widget2 = QtWidgets.QWidget()
-        #     widget2.setLayout(hLayout2)
-        #     self.funcTableWidget.setCellWidget(i,0,widget2)
-        #     checkbox1.clicked.connect(lambda x,i=i:self.test(checkbox1,self.funcList[i]))
-    
-    def selectTarget(self,checkbox,label):
+
+    def selectTarget(self, checkbox, label):
+        '''
+        @description: 选择目标
+        @param {*} self
+        @param {*} checkbox 用户所点击的checkbox
+        @param {*} label 用户点击的checkbox所对应的label
+        @return {*}
+        '''
         self.ui.targetSetInfo.clear()
         if checkbox.isChecked():
             print("选中了"+label)
@@ -160,13 +156,25 @@ class Ui_Dialog(object):
         self.targetSet = sorted(set(self.targetSet))
         for i in range(len(self.targetSet)):
             self.ui.targetSetInfo.append(self.targetSet[i])
-    
+
+
     def selectAll(self):
+        '''
+        @description: 选择所有目标
+        @param {*} self
+        @return {*}
+        '''
         for i in range(len(self.funcList)):
             self.checkboxs[i].setChecked(True)
             self.selectTarget(self.checkboxs[i],self.funcList[i])
-    
+
+
     def unselectAll(self):
+        '''
+        @description: 将所有目标设置为未选中
+        @param {*} self
+        @return {*}
+        '''
         for i in range(len(self.funcList)):
             self.checkboxs[i].setChecked(False)
             self.selectTarget(self.checkboxs[i],self.funcList[i])
@@ -175,8 +183,5 @@ class Ui_Dialog(object):
 import sys
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(dialog)
-    dialog.show()
-    sys.exit(app.exec_())
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()
