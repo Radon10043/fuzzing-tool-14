@@ -87,7 +87,7 @@ def genSeed(header_loc, struct, structDict):
         os.mkdir(root)
     genSeedPath = root + "genSeed.cpp"
     # 开始写代码，先include相关内容
-    code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
+    code = "#include <iostream>\n#include <fstream>\n"
     # 把用户选择的头文件位置也include
     for header in header_loc:
         code += "#include \"" + header + "\"\n"
