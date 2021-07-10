@@ -17,7 +17,7 @@ def findFunction(lineNum, source):
         f = open(source, encoding="utf8")
         lines = f.readlines()
     except UnicodeDecodeError:
-        f = open(source)
+        f = open(source, encoding="GBK")
         lines = f.readlines()
     f.close()
     # 在到达可疑代码所在行前，最新检测到的函数就是可疑代码所在函数
