@@ -268,7 +268,7 @@ class Ui_Dialog(object):
             folder_loc = self.header_loc[0]
         else:
             folder_loc = self.header_loc
-        pwd = re.sub(folder_loc.split("\\")[-1],"",folder_loc) + "in\\"
+        pwd = re.sub(folder_loc.split("/")[-1],"",folder_loc) + "in/"
         jsonFile = open(pwd + "structDict.json", "w")
         self.delCheckBox()
         # jsonFile.write(json.dumps(
@@ -325,7 +325,7 @@ class Ui_Dialog(object):
         global structDict
         structDict.clear()
         if readJSON:
-            f = open(re.sub(header_loc[0].split("\\")[-1],"",header_loc[0]) + "in\\structDict.json","r")
+            f = open(re.sub(header_loc[0].split("/")[-1],"",header_loc[0]) + "in/structDict.json","r")
             structDict = json.load(f)
             f.close()
         else:
@@ -371,7 +371,7 @@ class Ui_Dialog(object):
         try:
             for key,value in structDict[struct].items():
                 if value["instrument"]:
-                    instrumentFile = open(re.sub(self.header_loc[0].split("\\")[-1], "", self.header_loc[0]) + "in\\instrument.txt", mode="w")
+                    instrumentFile = open(re.sub(self.header_loc[0].split("/")[-1], "", self.header_loc[0]) + "in/instrument.txt", mode="w")
                     instrumentFile.write(key)
                     instrumentFile.close()
                     break
@@ -395,3 +395,11 @@ class Ui_Dialog(object):
         genSeedMsgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "种子文件生成成功!")
         genSeedMsgBox.exec_()
     # 结束
+
+
+import sys
+from PyQt5 import QtWidgets
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()

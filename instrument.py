@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-07-01 14:43:08
+LastEditTime: 2021-07-10 19:23:30
 Description: Hi, say something
 '''
 import re
@@ -86,9 +86,9 @@ def multiFileCompile(source_loc):
     # 获取所有源文件的名字
     cppFileName = []
     for source in source_loc:
-        cppFileName.append(source.split("\\")[-1])
+        cppFileName.append(source.split("/")[-1])
     # 源文件所在的根目录
-    root_loc = re.sub(source_loc[0].split("\\")[-1], "", source_loc[0])
+    root_loc = re.sub(source_loc[0].split("/")[-1], "", source_loc[0])
     # 指令集合
     cmds = []
     oFileName = []
@@ -110,7 +110,10 @@ def multiFileCompile(source_loc):
     for oFile in oFileName:
         os.remove(oFile)
 
-if __name__=="__main__":
-    source_loc = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\CheckData.cpp", "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\main.cpp"]
-    instrument_loc = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\ins_CheckData.cpp", "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\ins_main.cpp"]
-    instrument(source_loc,instrument_loc,"", "trajectory.radonInstr")
+
+import sys
+from PyQt5 import QtWidgets
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()

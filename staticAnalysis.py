@@ -43,7 +43,7 @@ def getSuspFunction(suspLoc, sourceList):
     suspFunction = []
     for loc in suspLoc:
         for source in sourceList:
-            if loc.split(":")[0] == source.split("\\")[-1]:
+            if loc.split(":")[0] == source.split("/")[-1]:
                 suspFunction.append(findFunction(int(loc.split(":")[1]), source))
     return suspFunction
 
@@ -59,7 +59,7 @@ def analyze(source_loc):
             return "被测文件不存在!"
     suspCode = []
     suspLoc = []
-    source = sourceList[0].split("\\")[-1]
+    source = sourceList[0].split("/")[-1]
     path = re.sub(source,"",sourceList[0])     #设定存储位置
     cmd = "cppcheck --output-file=" + path + "AnalyzeResult.txt " + re.sub("\n"," ",source_loc)
     print("cppcheck cmd:", cmd)
@@ -68,8 +68,9 @@ def analyze(source_loc):
     lines = f.readlines()
     f.close()
     for line in lines:
+        line = line.replace("\\", "/")
         if "error:" in line:
-            suspLoc.append(line.split(" error:")[0].split("\\")[-1])
+            suspLoc.append(line.split(" error:")[0].split("/")[-1])
     suspFunction = getSuspFunction(suspLoc,sourceList)
     suspFunction = list(set(suspFunction))
     return suspFunction
@@ -239,15 +240,9 @@ def analyzeHeader(header_loc):
     return infoList
 
 
+import sys
+from PyQt5 import QtWidgets
 if __name__ == "__main__":
-    source_loc = "C:\\Users\\Radon\\Desktop\\fuzztest\\main.c"
-    # print(getAllFunctions(source_loc))
-    # print(analyze(source_loc))
-    # print(getAllVariablesName(source_loc))
-    header_loc1 = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\Trajectory.h","C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\Datagram.h"]
-    header_loc2 = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\headers\\header.h"]
-    # print(analyzeHeader(header_loc1))
-    # print(analyzeHeader(header_loc2))
-    allStruct = getAllStruct(header_loc1)
-    structInfo = getOneStruct(header_loc1, "Datagram", "", allStruct)
-    print("getOneStruct:\n", "\n".join(structInfo))
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()

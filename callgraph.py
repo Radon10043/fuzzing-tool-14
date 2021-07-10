@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2020-09-28 13:18:56
 LastEditors: Radon
-LastEditTime: 2021-07-10 18:19:10
+LastEditTime: 2021-07-10 19:11:56
 Description: Hi, say something
 '''
 import re
@@ -75,7 +75,10 @@ def createCallGraph(source_loc, graph_loc):
     f_graph.close()
     f_source.close()
 
-if __name__ == '__main__':
-    source_loc = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\main.cpp","C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\CheckData.cpp"]
-    graph_loc = "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\graph_cg.txt"
-    createCallGraph(source_loc,graph_loc)
+
+import sys
+from PyQt5 import QtWidgets
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()

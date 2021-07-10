@@ -2,12 +2,11 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-10 18:19:03
+LastEditTime: 2021-07-10 18:42:53
 Description: Some pulic function
 '''
 
 import re, time, os, subprocess
-from win32 import win32api
 
 '''
 @description: 删除程序中的注释
@@ -80,7 +79,7 @@ def genSeed(header_loc, struct, structDict):
     @return {*}
     '''
     # 先设置好相关的位置信息
-    root = re.sub(header_loc[0].split("\\")[-1],"",header_loc[0]) + "\\in\\"
+    root = re.sub(header_loc[0].split("/")[-1],"",header_loc[0]) + "/in/"
     if not os.path.exists(root):
         os.mkdir(root)
     genSeedPath = root + "genSeed.cpp"
@@ -124,7 +123,7 @@ def genMutate(header_loc, struct, structDict):
     @return {*}
     '''
     # 先设置好相关的位置信息
-    root = re.sub(header_loc[0].split("\\")[-1],"",header_loc[0]) + "\\in\\"
+    root = re.sub(header_loc[0].split("/")[-1],"",header_loc[0]) + "/in/"
     if not os.path.exists(root):
         os.mkdir(root)
     genMutatePath = root + "mutate_instru.c"
@@ -178,3 +177,10 @@ def genMutate(header_loc, struct, structDict):
 
     # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window.py生成
     # gcc -shared -o mutate_instru.dll mutate_instru.c
+
+import sys
+from PyQt5 import QtWidgets
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()

@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-10 18:18:08
+LastEditTime: 2021-07-10 19:06:38
 Description: 模糊测试工具
 '''
 
@@ -186,7 +186,7 @@ class Ui_MainWindow(object):
         regExp1 = QtCore.QRegExp("^([1-9]\d{0,2}|1000)$")
         self.TCNumPerCyc.setValidator(QtGui.QRegExpValidator(regExp1))
         self.timeoutLEdit.setValidator(QtGui.QRegExpValidator(regExp1))
-        regExp2 = QtCore.QRegExp("^\\d+$")
+        regExp2 = QtCore.QRegExp("^\d+$")
         self.stopByTCNum.setValidator(QtGui.QRegExpValidator(regExp2))
         # 手写内容结束
 
@@ -267,7 +267,7 @@ class Ui_MainWindow(object):
         temp = QtWidgets.QFileDialog.getOpenFileNames(None,"choose file","C:/Users/Radon/Desktop/",filter="source file (*.c *.cpp)")
         path = ""
         for i in range(len(temp[0])):
-            path += re.sub("/",r"\\",temp[0][i]) + "\n"
+            path += temp[0][i] + "\n"
         path = path.rstrip("\n")
         self.CFileLoc.setText(path)
 
@@ -282,7 +282,7 @@ class Ui_MainWindow(object):
         temp = QtWidgets.QFileDialog.getOpenFileNames(None,"choose file","C:/Users/Radon/Desktop/","h files (*.h)")
         path = ""
         for i in range(len(temp[0])):
-            path += re.sub("/",r"\\",temp[0][i]) + "\n"
+            path += temp[0][i] + "\n"
         path = path.rstrip("\n")
         self.HFileLoc.setText(path)
 
@@ -312,12 +312,12 @@ class Ui_MainWindow(object):
                 headerNotExistBox.exec_()
                 return
 
-        root_loc = re.sub(source_loc[0].split("\\")[-1],"",source_loc[0])
+        root_loc = re.sub(source_loc[0].split("/")[-1],"",source_loc[0])
 
         # 检测一系列的必要文件是否存在
         fileList = ["instrument.txt", "mutate_instru.c", "seed"]
         for f in fileList:
-            if not os.path.exists(root_loc + "in\\" + f):
+            if not os.path.exists(root_loc + "in/" + f):
                 necessaryFileNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", str(f) + "不存在，请重新生成种子文件")
                 necessaryFileNotExistBox.exec_()
                 return
@@ -333,7 +333,7 @@ class Ui_MainWindow(object):
             return
 
         # 检测是否已经存在out文件夹
-        if os.path.exists(root_loc + "\\out\\"):
+        if os.path.exists(root_loc + "/out/"):
             outFolderExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "在同目录下发现了out文件夹，是否覆盖?")
             yes = outFolderExistBox.addButton("确定", QtWidgets.QMessageBox.YesRole)
             no = outFolderExistBox.addButton("取消", QtWidgets.QMessageBox.NoRole)
@@ -344,7 +344,7 @@ class Ui_MainWindow(object):
                 return
 
         # 因为用户每次可能会更改种子的相关设置，所以每次都需要重新生成一下dll
-        os.chdir(root_loc + "\\in\\")
+        os.chdir(root_loc + "/in/")
         os.system("gcc -shared -o mutate_instru.dll mutate_instru.c")
 
         # 防止出现bug，将手动输入按钮和开始测试按钮设置为false
@@ -376,7 +376,7 @@ class Ui_MainWindow(object):
         headerMsgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, '发现JSON文件', '发现structDict.json，是否读取？')
         yes = headerMsgBox.addButton('是', QtWidgets.QMessageBox.YesRole)
         no = headerMsgBox.addButton('否', QtWidgets.QMessageBox.NoRole)
-        if os.path.exists(re.sub(header_loc[0].split("\\")[-1],"",header_loc[0]) + "\\structDict.json"):
+        if os.path.exists(re.sub(header_loc[0].split("/")[-1],"",header_loc[0]) + "/structDict.json"):
             headerMsgBox.exec_()
             if headerMsgBox.clickedButton() == yes:
                 readJSON = True
@@ -424,7 +424,7 @@ class Ui_MainWindow(object):
                 headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在！")
                 headerNotExistBox.exec_()
                 return
-        if os.path.exists(re.sub(header_loc[0].split("\\")[-1],"",header_loc[0]) + "in\\structDict.json"):
+        if os.path.exists(re.sub(header_loc[0].split("/")[-1],"",header_loc[0]) + "in/structDict.json"):
             headerMsgBox.exec_()
             if headerMsgBox.clickedButton() == yes:
                 readJSON = True

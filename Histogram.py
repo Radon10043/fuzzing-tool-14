@@ -28,7 +28,7 @@ def cycleHistogram():
     plt.ylabel("循环次数（次）",fontsize=15)
     plt.yticks(fontsize=15)
     plt.title("有目标与无目标对比",fontsize=18)
-    
+
     plt.show()
 
 def timeHistogram():
@@ -58,7 +58,7 @@ def timeHistogram():
     plt.ylabel("测试时间（秒）",fontsize=15)
     plt.yticks(fontsize=15)
     plt.title("有目标与无目标对比",fontsize=18)
-    
+
     plt.show()
 
 def multiTarCycleHistogram():
@@ -88,7 +88,7 @@ def multiTarCycleHistogram():
     plt.ylabel("循环次数（次）",fontsize=15)
     plt.yticks(fontsize=15)
     plt.title("多目标情况下有目标与无目标对比",fontsize=18)
-    
+
     plt.show()
 
 def multiTarTimeHistogram():
@@ -118,7 +118,7 @@ def multiTarTimeHistogram():
     plt.ylabel("测试时间（秒）",fontsize=15)
     plt.yticks(fontsize=15)
     plt.title("多目标情况下有目标与无目标对比",fontsize=18)
-    
+
     plt.show()
 
 if __name__ == "__main__":
