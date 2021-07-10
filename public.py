@@ -109,8 +109,12 @@ def genSeed(header_loc, struct, structDict):
     f.close()
     # 编辑命令集合
     cmds = []
-    cmds.append("g++ -o genSeed.exe genSeed.cpp")
-    cmds.append("genSeed.exe")
+    if sys.platform == 'windows':
+        cmds.append("g++ -o genSeed.exe genSeed.cpp")
+        cmds.append("genSeed.exe")
+    else:
+        cmds.append("g++ -o ./genSeed.out ./genSeed.cpp")
+        cmds.append("./genSeed.out")
     # 切换目录并执行命令
     os.chdir(root)
     for cmd in cmds:
