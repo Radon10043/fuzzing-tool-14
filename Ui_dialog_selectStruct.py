@@ -185,3 +185,11 @@ class Ui_Dialog(object):
             exceptionBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", repr(e))
             exceptionBox.exec_()
     # ====================================================================================================
+
+
+import sys
+from PyQt5 import QtWidgets
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()

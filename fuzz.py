@@ -26,7 +26,7 @@ def mkdir(path):
     @return {*} True表示创建成功，False表示文件夹已存在，创建失败
     '''
     path=path.strip()
-    path=path.rstrip("\\")
+    path=path.rstrip("/")
     isExists=os.path.exists(path)
     if not isExists:
         os.makedirs(path)
@@ -125,7 +125,7 @@ def getDirContent(position):
     content = []
     files = os.listdir(position)        # 读取position下的文件列表
     for file in files:                  # 挨个读取txt文件
-        position2 = position + "\\" + file
+        position2 = position + "/" + file
         with open(position2, "r", encoding="utf-8") as f:   # 用with open as的话不必加close()
             content.append(f.read())
     return content
@@ -152,7 +152,7 @@ def threadMonitor():
     '''
     global returnUDPInfo
     # 启动同目录下的getudp.py
-    prog = os.path.dirname(os.path.abspath(__file__)) + "\\getudp.py"
+    prog = os.path.dirname(os.path.abspath(__file__)) + "/getudp.py"
     out = getstatusoutput(prog)
     # print("getudp.py: ", out)
     global returnUDPInfo
@@ -273,9 +273,9 @@ def CMutate(testcase,maxTCLen):
     return res
 
 def generateReport(source_loc,fuzzInfoDict):
-    basic_loc = re.sub(source_loc.split("\\")[-1],"",source_loc)
+    basic_loc = re.sub(source_loc.split("/")[-1],"",source_loc)
     allCoveredNode =  fuzzInfoDict["已覆盖结点"]
-    report_loc = basic_loc+"out\\测试报告.txt"
+    report_loc = basic_loc+"out/测试报告.txt"
     reportContent = "________________________________________________________________\n"
     reportContent+= "|\t\t\t测试报告\t\t\t|\n"
     reportContent+= "|——————————————————————————|\n"
@@ -288,8 +288,8 @@ def generateReport(source_loc,fuzzInfoDict):
     reportContent+= "|            执行速度： "+fuzzInfoDict["执行速度"]+"个/s\t|     已覆盖结点数量： "+str(len(allCoveredNode))+"\t|\n"
     reportContent+= "|  已生成测试用例： "+fuzzInfoDict["已生成测试用例"]+"个\t|            整体覆盖率： "+fuzzInfoDict["整体覆盖率"]+"%\t|\n"
     reportContent+= "|——————————————————————————|\n"
-    # testcases = getDirContent(basic_loc+"out\\testcases")
-    # savedCrashes = getDirContent(basic_loc+"out\\crash")
+    # testcases = getDirContent(basic_loc+"out/testcases")
+    # savedCrashes = getDirContent(basic_loc+"out/crash")
     # for i in range(len(testcases)):
     #     reportContent += "已保存的测试用例"+str(i+1)+": "+testcases[i]+"\n"
     # for i in range(len(savedCrashes)):
@@ -297,10 +297,10 @@ def generateReport(source_loc,fuzzInfoDict):
     reportContent += "已发现结点名称: "+str(allNode)+"\n"
     reportContent += "已覆盖结点名称: "+str(allCoveredNode)+"\n"
     reportContent += "\n当前位置: \t\t\t"+basic_loc+"out\n"
-    reportContent += "已保存的测试用例位置: \t"+basic_loc+"out\\testcases\n"
+    reportContent += "已保存的测试用例位置: \t"+basic_loc+"out/testcases\n"
     reportContent += "已保存的触发缺陷用例位置: \t"+basic_loc+"out\crash\n"
-    reportContent += "所有变异体位置: \t\t"+basic_loc+"out\\mutate\n"
-    reportContent += "保存的超时测试用例位置: \t"+basic_loc+"out\\timeout\n"
+    reportContent += "所有变异体位置: \t\t"+basic_loc+"out/mutate\n"
+    reportContent += "保存的超时测试用例位置: \t"+basic_loc+"out/timeout\n"
     f = open(report_loc,mode="w")
     f.write(reportContent)
     f.close()
@@ -322,13 +322,13 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
             return "source not exist!"
 
     # 当前所在目录
-    now_loc = re.sub(source_loc[0].split("\\")[-1],"",source_loc[0])
+    now_loc = re.sub(source_loc[0].split("/")[-1],"",source_loc[0])
     # 输出exe和obj的位置
     output_loc = now_loc
     # 可执行文件位置
     program_loc = now_loc + "instrument.exe"
     # 初始测试用例位置
-    seed_loc = now_loc + "in\\seed"
+    seed_loc = now_loc + "in/seed"
     # 调用图位置
     graph_loc = now_loc + "graph_cg.txt"
     # 插装后的文件位置，因为是多文件，所以这里用了列表
@@ -336,23 +336,31 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
 
     # 因为要多文件编译，所以记录一下每个文件的位置，以便生成插装的源文件
     for source in source_loc:
-        sourceName = source.split("\\")[-1]
+        sourceName = source.split("/")[-1]
         instrument_loc.append(re.sub(sourceName, "ins_" + sourceName, source))
 
-    # 获取插装变量的名字
-    instrument_var = open(now_loc + "in\\instrument.txt").readline()
+    # 获取插装变量的名字，并进行插装与编译
+    # 如果存在旧的插装程序，则需要先删除
+    if os.path.exists(program_loc):
+        os.remove(program_loc)
+    instrument_var = open(now_loc + "in/instrument.txt").readline()
     instrument_var = instrument_var.split(" ")[-1].split(":")[0].rstrip("\n")
-    instr.instrument(source_loc, instrument_loc, output_loc, instrument_var)
+    # 尝试生成instrument.exe，如果失败了，表示被测程序的源码可能有误
+    try:
+        instr.instrument(source_loc, instrument_loc, output_loc, instrument_var)
+    except:
+        return "编译程序失败，请检查代码是否正确!"
+
     # 创建函数调用图
     cg.createCallGraph(source_loc,graph_loc)
 
     # 加载所需的DLL文件
     # MAI是Mutate And Instrument的缩写
-    MAIdll = ctypes.cdll.LoadLibrary(now_loc + "in\\mutate_instru.dll")
+    MAIdll = ctypes.cdll.LoadLibrary(now_loc + "in/mutate_instru.dll")
 
     # 如果已经有out了, 就删掉它
-    if os.path.exists(now_loc+"\\out"):
-        shutil.rmtree(now_loc + "\\out")
+    if os.path.exists(now_loc+"/out"):
+        shutil.rmtree(now_loc + "/out")
 
     coverage = [0,0]
     allCoveredNode = []     # 储存了所有被覆盖到的结点
@@ -397,9 +405,9 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
     # 读取初始种子测试用例
     testcase.append(open(seed_loc, mode="rb").read())
     # testcase[0] = [str(data) for data in testcase[0]]
-    mkdir(now_loc + "\\out\\testcases")
-    mkdir(now_loc+"\\out\\crash")
-    mkdir(now_loc+"\\out\\timeout")
+    mkdir(now_loc + "/out/testcases")
+    mkdir(now_loc+"/out/crash")
+    mkdir(now_loc+"/out/timeout")
 
     # 设置终止条件
     if ui.stopByCrash.isChecked():
@@ -431,12 +439,12 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
             crash = returnData[4]
             timeout = returnData[5]
             if crash:
-                crashFile = open(now_loc + "\\out\\crash\\crash" + str(uniq_crash), mode="wb")
+                crashFile = open(now_loc + "/out/crash/crash" + str(uniq_crash), mode="wb")
                 crashFile.write(testcase[i])
                 crashFile.close()
                 uniq_crash += 1
             if timeout:
-                timeoutFile = open(now_loc + "\\out\\timeout\\timeout" + str(count_timeout), mode="wb")
+                timeoutFile = open(now_loc + "/out/timeout/timeout" + str(count_timeout), mode="wb")
                 timeoutFile.write(testcase[i])
                 timeoutFile.close()
                 count_timeout += 1
@@ -448,7 +456,7 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
             if coverage[1] > coverage[0]:
                 # 把能让覆盖率增加的测试用例保存到output\testcase文件夹中
                 coverage[0] = coverage[1]
-                testN = open(now_loc + "\\out\\testcases\\test" + str(count_test).zfill(6), mode="wb")
+                testN = open(now_loc + "/out/testcases/test" + str(count_test).zfill(6), mode="wb")
                 testN.write(testcase[i])
                 testN.close()
                 count_test += 1
@@ -456,7 +464,7 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
         # TC_data存储了测试用例及所对应的距离、适应度和覆盖到的点，是一个二维列表，并根据距离从小到大进行排序
         executeEnd = time.time()
         TC_data = sorted(TC_data,key=itemgetter(1))
-        mkdir(now_loc + "\\out\\mutate\\cycle"+str(cycle))
+        mkdir(now_loc + "/out/mutate/cycle"+str(cycle))
         mutateStart = time.time()               # 记录变异开始时间
         checkpoint = mutateNum
         while mutateNum - checkpoint < maxMutateTC:
@@ -469,7 +477,7 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
             pm = 98.0
             for data in TC_data:
                 if random.randint(0,100) < pm:    # 小于阈值就进行下列变异操作
-                    mutateSavePath = now_loc + "\\out\\mutate\\cycle"+str(cycle)+"\\mutate" + str(mutateNum).zfill(6)
+                    mutateSavePath = now_loc + "/out/mutate/cycle"+str(cycle)+"/mutate" + str(mutateNum).zfill(6)
                     mutate(data[0], mutateSavePath, MAIdll)
                     mutateNum += 1
                 pTargetMutate -= (98.0/maxMutateTC)
@@ -477,7 +485,7 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
                     break
         # 读取文件夹下的变异的测试用例, 赋值到testcase
         testcase.clear()
-        mutateSavePath = now_loc + "\\out\\mutate\\cycle"+str(cycle)+"\\"
+        mutateSavePath = now_loc + "/out/mutate/cycle"+str(cycle)+"/"
         files = os.listdir(mutateSavePath)
         for file in files:
             f = open(mutateSavePath + file, mode = "rb")
@@ -498,7 +506,7 @@ def fuzz(source_loc,ui,uiFuzz,fuzzThread):
     # 生成测试报告
     fuzzThread.fuzzInfoSgn.emit(fuzzInfo)
     fuzzInfoDict = {"测试时间" : str(int(end-start)),
-                    "测试对象" : source_loc[0].split("\\")[-1],
+                    "测试对象" : source_loc[0].split("/")[-1],
                     "循环次数" : str(cycle),
                     "制导目标数量" : str(len(targetSet)),
                     "生成速度" : str(int(maxMutateTC/mutateTime)),
@@ -543,3 +551,11 @@ isCrash = 0             # 程序的返回值
 crashes = 0             # 统计触发了多少次缺陷
 returnUDPInfo = []      # 存储发送回来的UDP数据包
 # ============================================================================================
+
+
+import sys
+from PyQt5 import QtWidgets
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()

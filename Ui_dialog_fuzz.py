@@ -54,6 +54,9 @@ class Ui_Dialog(object):
         self.stopBtn.clicked.connect(self.stopFuzz)
         self.checkResultBtn.setText("查看结果")
         self.checkResultBtn.clicked.connect(self.openFolder)
+
+        # 用于存储错误信息的变量
+        self.errorInfo = ""
         # =======================================手写内容结束===============================================
 
     def retranslateUi(self, Dialog):
@@ -121,6 +124,9 @@ class Ui_Dialog(object):
         self.checkResultBtn.setEnabled(False)
         self.stopBtn.setEnabled(False)
         self.closeBtn.setEnabled(True)
+        self.ui.startFuzzBtn.setEnabled(True)
+        self.ui.popSeedDialogBtn.setEnabled(True)
+        self.textBrowser.setText("\n\n" + self.errorInfo)
 
 
     def stopFuzz(self):
@@ -140,7 +146,7 @@ class Ui_Dialog(object):
         @return {*}
         '''
         out_loc = self.source_loc[0]
-        out_loc = re.sub(out_loc.split("\\")[-1],"",out_loc)+"out"
+        out_loc = re.sub(out_loc.split("/")[-1],"",out_loc)+"out"
         if os.path.exists(out_loc):
             os.system("explorer.exe "+out_loc)
         else:
@@ -185,6 +191,15 @@ class FuzzThread(QThread):
         self.result = fuzz.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
         if isinstance(self.result,str):
             self.errorSgn.emit(True)
+            self.uiFuzz.errorInfo = self.result
         else:
             self.overSgn.emit(True)
     # 手写内容结束
+
+
+import sys
+from PyQt5 import QtWidgets
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()
