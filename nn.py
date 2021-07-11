@@ -297,7 +297,7 @@ class NN():
         # do not generate spliced seed for the first round
         if splice == 1 and self.round_cnt != 0:
             self.splice_seed(fl[0], fl[1], idxx)
-            splice_fn = os.path.join(self.dir, "splice_seeds", "tmp" + str(idxx))
+            splice_fn = os.path.join(self.dir, "splice_seeds", "tmp_" + str(idxx))
             x = self.vectorize_file(splice_fn)
             loss_value, grads_value = iterate([x])
             idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)), 0)
@@ -362,7 +362,7 @@ class NN():
         info = "已生成梯度信息！\n"
         info += "轮次：\t\t\t" + str(self.round_cnt+1) + "\n"
         info += "生成梯度信息的种子数：\t\t" + str(edge_num) + "\n"
-        info += "梯度类型：\t\t" + "有符号" if sign else "无符号(随机)" + "\n"
+        info += "梯度类型：\t\t" + ("有符号" if sign else "无符号(随机)") + "\n"
         info += "时间：\t\t" + str(end-start) + "秒\n"
         info += "梯度文件保存路径：\n\t" + grad_fn + "\n"
         info += "可以开始测试...\n"

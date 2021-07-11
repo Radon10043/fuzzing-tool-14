@@ -1,5 +1,6 @@
 import ctypes
 import nn
+import numpy as np
 import random
 import socket
 import time
@@ -12,7 +13,7 @@ import threading
 from shutil import copyfile, rmtree
 from subprocess import *
 
-from fuzz import getFitness
+from fuzz import generateReport
 
 HOST = '127.0.0.1'
 PORT = 12012
@@ -187,56 +188,57 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经生成初始训练数据...\n")
 
     # 设置终止条件
+    condition = ""
     if ui.stopByCrash.isChecked():
-        condition = "uniq_crash < 2"
+        condition = "self.crash_cnt >= 1"
     elif ui.stopByTime.isChecked():
         fuzzTime = int(ui.fuzzTime.text())
         if ui.timeUnit.currentText() == "分钟":
             fuzzTime *= 60
         else:
             fuzzTime *= 3600
-        condition = "end-start<" + str(fuzzTime)
+        condition = "time.time() - self.start > " + str(fuzzTime)
     else:
         stopNum = int(ui.stopByTCNum.text()) + 1
-        condition = "mutateNum<" + str(stopNum)
+        condition = "self.mut_cnt > " + str(stopNum)
 
-    exec_thread = FuzzExecThread(ui, uiFuzz, fuzzThread, program_loc, MAIdll, allNode)
-    nn_thread = nn.NN(ui, uiFuzz, fuzzThread, len(testcase), allNode, 10, program_loc, MAIdll)
+    condition += " or self.uiFuzz.stop"
+    n = nn.NN(ui, uiFuzz, fuzzThread, len(testcase), allNode, 1, program_loc, MAIdll)
+    e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, MAIdll, allNode, n, condition)
 
-    nn_thread.start()
-    time.sleep(1)
-    exec_thread.start()
+    start = time.time()
+    e.run()
+    end = time.time()
+    """
     # Ready to start fuzz!
     while eval(condition):
         if uiFuzz.stop == True:
             break
         # 运行.exe文件并向其中输入，根据插桩的内容获取覆盖信息
-
+"""
     # 生成测试报告
-    fuzzThread.fuzzInfoSgn.emit(fuzzInfo)
+    fuzzThread.execInfoSgn.emit(e.genFuzzInfo()+"\n测试完成！")
     fuzzInfoDict = {"测试时间": str(int(end - start)),
                     "测试对象": source_loc[0].split("\\")[-1],
-                    "循环次数": str(cycle),
-                    "制导目标数量": str(len(targetSet)),
-                    "生成速度": str(int(maxMutateTC / mutateTime)),
-                    "执行速度": str((int(executeNum / executeTime))),
-                    "已生成测试用例": str(mutateNum - 1),
-                    "已保存测试用例": str(count_test - 1),
-                    "已检测到缺陷数量": str(uniq_crash - 1),
-                    "已触发缺陷次数": str(crashes),
-                    "超时测试用例数量": str(count_timeout - 1),
+                    "循环次数": str(e.round_cnt+1),
+                    "生成速度": 0 if e.mut_cnt == 0 else(int(e.mut_cnt / e.mut_time)),
+                    "执行速度": 0 if e.exec_time == 0 else str((int(e.exec_cnt / e.exec_time))),
+                    "已生成测试用例": str(e.mut_cnt),
+                    "已触发缺陷次数": str(e.crash_cnt),
                     "已发现结点数量": str(len(allNode)),
-                    "已覆盖结点": allCoveredNode,
-                    "整体覆盖率": str(int(coverage[1] * 100))}
-    generateReport(source_loc[0], fuzzInfoDict)
-    uiFuzz.textBrowser.append("\n已生成测试报告! 点击<查看结果>按钮以查看")
+                    "已覆盖结点": str(len(e.program_cov)),
+                    "整体覆盖率": str(len(e.program_cov)/len(allNode))}
+    with open(os.path.join(now_loc, 'example', 'out','测试报告.txt'), 'w', encoding='utf-8') as f:
+        f.write(str(fuzzInfoDict))
+    # generateReport(source_loc[0], fuzzInfoDict)
+    uiFuzz.text_browser_exec.append("\n已生成测试报告! 点击<查看结果>按钮以查看")
 
     print("\n", allCoveredNode)
-    print("\nfuzz over! cycle = %d, coverage = %.2f, time = %.2fs" % (cycle, coverage[1], end - start))
+    print("\nfuzz over! cycle = %d, coverage = %.2f, time = %.2fs" % (e.round_cnt+1, len(e.program_cov)/len(allNode), end - start))
 
 
 class FuzzExec():
-    def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes, nn):
+    def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes, nn, cond):
         self.ui = ui
         self.uiFuzz = ui_fuzz
         self.fuzzThread = fuzz_thread
@@ -255,19 +257,39 @@ class FuzzExec():
         self.all_nodes = set(all_nodes)
         self.program_cov = set()
         self.nn = nn
+        self.cond = cond
+        self.start = time.time()
+        self.stop = False
+
+    def genFuzzInfo(self):
+        info = "轮次：\t\t" + str(self.round_cnt + 1) + "\n"
+        info += "覆盖节点数：\t\t" + str(len(self.program_cov)) + "\n"
+        info += "覆盖率：\t\t" + str(len(self.program_cov)/len(self.all_nodes)) + "\n"
+        info += "生成测试用例数：\t\t" + str(self.mut_cnt) + "\n"
+        info += "生成测试用例速度\t\t" + ("0" if self.mut_time == 0 else str(self.mut_cnt/self.mut_time)) + "个/秒\n"
+        info += "执行测试用例数：\t\t" + str(self.exec_cnt) + "\n"
+        info += "执行测试用例速度\t\t" + ("0" if self.exec_time == 0 else str(self.exec_cnt / self.exec_time)) + "个/秒\n"
+        info += "缺陷数：\t\t" + str(self.crash_cnt) + "\n"
+        return info
 
     def update_program_cov(self, cov):
-        if cov.issubset(self.program_cov):
-            return False
+        cov = set(cov)
+        if cov == self.program_cov:
+            return 1
+        elif cov.issubset(self.program_cov):
+            return 0
         else:
-            self.program_loc = self.program_loc | cov
-            return True
+            self.program_cov = self.program_cov | cov
+            return 2
 
     def dry_run(self, dir, stage):
         files = os.listdir(dir)
-        for f in files:
+        start = time.time()
+        time_ckpt = start
+        for i, f in enumerate(files):
             fn = os.path.join(os.path.abspath(dir), f)
             # crash, timeout = run_target([program_loc, fn])
+            print(fn)
             tc = open(fn, "rb").read()
             _, cur_cov, crash, _ = utils.getCoverage(tc, self.program_loc, self.MAIdll)
             if crash:
@@ -279,8 +301,19 @@ class FuzzExec():
                 cov_fn = os.path.join(self.dir, "seeds", "id_" + str(self.round_cnt) + "_" + str(self.cov_gain_cnt))
                 copyfile(fn, cov_fn)
                 self.cov_gain_cnt += 1
+            if stage == 1:
+                self.exec_cnt += 1
+                self.exec_time += (time.time() - time_ckpt)
+            time_ckpt = time.time()
+            info = self.genFuzzInfo()
+            info += "\n正在执行测试用例：\n" + fn + "\n"
+            info += "执行速度：" + ("-" if time.time()-start < 1e-4 else str((i+1)/ (time.time() - start))) + "个/秒\n"
+            self.fuzzThread.execInfoSgn.emit(info)
+            if eval(self.cond):
+                self.stop = True
+                return
 
-    def fuzz_loop(self, sock):
+    def fuzz_loop(self):
         self.dry_run(os.path.join(self.dir, "splice_seeds"), 1)
         dest = os.path.join(self.dir, "gradient_info")
         src = os.path.join(self.dir, "gradient_info_p")
@@ -292,34 +325,34 @@ class FuzzExec():
             for line in f:
                 loc, sign, fn = utils.parse_array(line)
                 self.gen_mutate(loc, sign, fn)
+                if self.stop:
+                    return
 
         n1 = len(self.program_cov)
 
-        self.round_cnt += 1
-        utils.mkdir(os.path.join(self.dir, 'mutations', str(self.round_cnt)))
-        if n1 - n >= 10 or self.fast == 0:
-            sock.send(b"train")
-            self.fast = 1
-            print("fast stage\n")
-        else:
-            sock.send(b"sloww")
-            self.fast = 0
-            print("slow stage\n")
-
     def gen_mutate(self, loc, sign, seed_fn):
-        flag = True
+        N = 10
         out_buf = open(seed_fn, "rb").read()
         save_dir = os.path.join(self.dir, "mutations", str(self.round_cnt), seed_fn.split("\\")[-1])
-        for iter in range(0, 3):
+        utils.mkdir(save_dir)
+        start = time.time()
+        cnt = 0
+        time_ckpt = start
+        for iter in range(0, 10):
+            if self.uiFuzz.stop:
+                self.stop = True
+                return
             out_buf1 = bytearray(out_buf)
             out_buf2 = bytearray(out_buf)
             low_index = num_index[iter]
             up_index = num_index[iter + 1]
+            if low_index >= len(sign):
+                up_index = low_index - 1
+            elif up_index >= len(sign):
+                up_index = len(sign)
             up_step = 0
             low_step = 0
             for index in range(low_index, up_index):
-                if index >= len(sign):
-                    break
                 if sign[index] == 1:
                     cur_up_step = 255 - out_buf[loc[index]]
                     if cur_up_step > up_step:
@@ -336,13 +369,17 @@ class FuzzExec():
                         low_step = cur_low_step
 
             # print(iter, low_step, up_step)
-            flag = True
-            for step in range(0, up_step):
+            N = N if N <= up_step else up_step
+            up_step = [] if up_step == 0 else np.random.choice(up_step, N, replace=False)
+            N = N if N <= low_step else low_step
+            low_step = [] if low_step ==0 else np.random.choice(low_step, N, replace=False)
+
+            #for step in range(0, up_step):
+            for step in up_step:
+                if step == 0:
+                    continue
                 for index in range(low_index, up_index):
-                    if index >= len(sign):
-                        flag = False
-                        break
-                    mut_val = int(out_buf1[loc[index]]) + sign[index]
+                    mut_val = int(out_buf1[loc[index]]) + sign[index] * step
                     if mut_val < 0:
                         out_buf1[loc[index]] = 0
                     elif mut_val > 255:
@@ -352,11 +389,17 @@ class FuzzExec():
 
                 # fn = os.path.join(self.dir, 'mutations', str(self.round_cnt),
                 #                  "input_{:d}_{:06d}".format(iter, self.mut_cnt))
-                fn = os.path.join(save_dir, str(self.mut_cnt))
+                fn = save_dir + "\\" + str(self.mut_cnt)
                 write_to_testcase(fn, out_buf1)
                 self.mut_cnt += 1
-                if not flag:
-                    break
+                self.mut_time += (time.time() - time_ckpt)
+                time_ckpt = time.time()
+                cnt += 1
+                info = self.genFuzzInfo()
+                info += "\n正在变异种子文件：\n"+seed_fn+"\n"
+                info += "变异速度：" + ("-" if time.time() - start < 1e-4 else str(cnt/(time.time()-start))) + "个/秒\n"
+                self.fuzzThread.execInfoSgn.emit(info)
+
                 """
                 crash, timeout = run_target([program_loc, fn])
                 if crash:
@@ -378,13 +421,12 @@ class FuzzExec():
                     write_to_testcase(mut_fn, out_buf1)
                 """
 
-            flag = True
-            for step in range(0, low_step):
+            #for step in range(0, low_step):
+            for step in low_step:
+                if step == 0:
+                    continue
                 for index in range(low_index, up_index):
-                    if index >= len(sign):
-                        flag = False
-                        break
-                    mut_val = int(out_buf2[loc[index]]) - sign[index]
+                    mut_val = int(out_buf2[loc[index]]) - sign[index] * step
                     if mut_val < 0:
                         out_buf2[loc[index]] = 0
                     elif mut_val > 255:
@@ -394,11 +436,17 @@ class FuzzExec():
 
                 # fn = os.path.join(self.dir, 'mutations', str(self.round_cnt),
                 #                  "input_{:d}_{:06d}".format(iter, self.mut_cnt))
-                fn = os.path.join(save_dir, str(self.mut_cnt))
+                fn = save_dir + "\\" + str(self.mut_cnt)
                 write_to_testcase(fn, out_buf2)
                 self.mut_cnt += 1
-                if not flag:
-                    break
+                self.mut_time += (time.time() - time_ckpt)
+                time_ckpt = time.time()
+                cnt += 1
+                info = self.genFuzzInfo()
+                info += "\n正在变异种子文件：\n"+seed_fn+"\n"
+                info += "变异速度：" + ("-" if time.time() - start < 1e-4 else str(cnt/(time.time()-start))) + "个/秒\n"
+                self.fuzzThread.execInfoSgn.emit(info)
+
                 """
                 crash, timeout = run_target([program_loc, fn])
                 if crash:
@@ -419,29 +467,33 @@ class FuzzExec():
                     mut_fn = "seeds/id_{:d}_{:d}_{:06d}".format(round_cnt, iter, mut_cnt)
                     write_to_testcase(mut_fn, out_buf2)
                 """
-            if not flag:
-                break
+
         self.dry_run(save_dir, 1)
 
     def run(self):
         step = 0
-        s = socket.socket()
-        s.connect((HOST, PORT))
+        # s = socket.socket()
+        # s.connect((HOST, PORT))
+        self.start = time.time()
         seeds_dir = os.path.join(self.dir, "seeds")
         utils.mkdir(os.path.join(self.dir, "mutations", "0"))
+        self.dry_run(seeds_dir, 2)
         self.nn.gen_grad(b'train')
         while True:
-            1==1
-            """
-            if not s.recvfrom(5):
-                print("received failed\n")
+            old_cov = self.program_cov
+            self.fuzz_loop()
+            if self.stop:
+                return
+            new_cov = self.program_cov
+            self.round_cnt += 1
+            utils.mkdir(os.path.join(self.dir, 'mutations', str(self.round_cnt)))
+            if len(new_cov) - len(old_cov) or self.fast == 0:
+                self.nn.gen_grad(b"train")
+                self.fast = 1
             else:
-                print("receive\n\n\n")
-                if step == 0:
-                    self.dry_run(seeds_dir, 2)
-                    step = 1
-                self.fuzz_loop(s)
-            """
+                self.nn.gen_grad(b"sloww")
+                self.fast = 0
+
 
 
 
