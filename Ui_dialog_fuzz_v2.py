@@ -122,12 +122,12 @@ class Ui_Dialog(object):
     def nnInfoPrint(self, fuzzInfo):
         self.text_browser_nn.setText(fuzzInfo)
         QtWidgets.QApplication.processEvents()
-        print(fuzzInfo)
+        # print(fuzzInfo)
 
     def execInfoPrint(self, fuzzInfo):
         self.text_browser_exec.setText(fuzzInfo)
         QtWidgets.QApplication.processEvents()
-        print(fuzzInfo)
+        # print(fuzzInfo)
 
     def overFuzz(self):
         '''
