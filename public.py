@@ -2,10 +2,12 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-10 18:42:53
+LastEditTime: 2021-07-12 10:50:18
 Description: Some pulic function
 '''
 
+from PyQt5 import QtWidgets
+import sys
 import os
 import re
 
@@ -169,10 +171,16 @@ def genMutate(header_loc, struct, structDict):
         code += "\treturn data." + dataName + ";\n"
     code += "}\n\n"
 
-    # 写一个将插装变量置0的函数
-    code += "void setInstrumentValueToZero(" + struct + " data){\n"
+    # 写一个将结构体的值设定在用户指定范围内的方法
+    code += "void setValueInRange(" + struct + " data){\n"
     code += "\t" + struct + "* temp = &data;\n"
+    # 先将插装变量置为0
     code += "\ttemp->" + dataName + " = 0;\n"
+    for key, value in structDict[struct].items():
+        if not value["mutation"]:
+            continue
+        dataName = key.split(" ")[-1].split(":")[0]
+        code += "\ttemp->" + dataName + " %= " + str(value["upper"]) + ";\n"
     code += "}"
 
     mutateFile = open(root + "mutate_instru.c", mode="w")
@@ -182,10 +190,8 @@ def genMutate(header_loc, struct, structDict):
     # gcc -shared -o mutate_instru.dll mutate_instru.c
 
 
-import sys
-from PyQt5 import QtWidgets
-
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox = QtWidgets.QMessageBox(
+        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
     headerNotExistBox.exec_()

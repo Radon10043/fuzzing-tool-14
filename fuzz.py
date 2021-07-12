@@ -151,7 +151,11 @@ def threadMonitor():
     global returnUDPInfo
     # 启动同目录下的getudp.py
     prog = os.path.dirname(os.path.abspath(__file__)) + "/getudp.py"
-    out = getstatusoutput(prog)
+    try:
+        out = getstatusoutput(prog)
+    except BaseException as e:
+        print("监视程序出错:", e)
+        out = [[],[]]
     # print("getudp.py: ", out)
     global returnUDPInfo
     returnUDPInfo = out[1]
@@ -179,7 +183,7 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll):
     # 形参的测试用例bytes
     data = testcase
     # 发送前，将测试用例的插装变量设置为0
-    MAIdll.setInstrumentValueToZero(data)
+    MAIdll.setValueInRange(data)
     # 发送测试用例
     s = socket.socket()
     host = socket.gethostname()
@@ -189,20 +193,24 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll):
     s.close()
     # 等待线程1和线程2结束
     thread1.join()
-    thread2.join()
+    thread2.join(maxTimeout)
 
     # 读取返回的UDP包的内容
     global returnUDPInfo
-    returnUDPInfo = returnUDPInfo.split(",")
-    returnUDPInfo.pop(-1)
-    returnUDPInfo[0] = re.sub("[^0-9]", "", returnUDPInfo[0])
-    returnUDPInfo = [int(data) for data in returnUDPInfo]
-    print("returnData", returnUDPInfo)
-    # 获得覆盖的结点
-    instrValue = MAIdll.getInstrumentValue(bytes(returnUDPInfo))
-    print("instrValue:", instrValue)
-    coverNode = getCoverNode(instrValue)
-    print("coverNode:", coverNode)
+    try:
+        returnUDPInfo = returnUDPInfo.split(",")
+        returnUDPInfo.pop(-1)
+        returnUDPInfo[0] = re.sub("[^0-9]", "", returnUDPInfo[0])
+        returnUDPInfo = [int(data) for data in returnUDPInfo]
+        print("returnData", returnUDPInfo)
+        # 获得覆盖的结点
+        instrValue = MAIdll.getInstrumentValue(bytes(returnUDPInfo))
+        print("instrValue:", instrValue)
+        coverNode = getCoverNode(instrValue)
+        print("coverNode:", coverNode)
+    except BaseException as e:
+        print("解析失败: ", e)
+        coverNode = ["main"]
     # 计算距离
     distance = 500
     for target in targetSet:

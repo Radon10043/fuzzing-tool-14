@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-10 19:06:38
+LastEditTime: 2021-07-10 20:22:33
 Description: 模糊测试工具
 '''
 
@@ -199,19 +199,19 @@ class Ui_MainWindow(object):
         self.title.setText(_translate("MainWindow", "基于代码结构的模糊测试工具"))
         self.chooseFileGroup.setTitle(_translate("MainWindow", "选择文件"))
         self.CFileLoc.setHtml(_translate("MainWindow",
-                                         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-                                         "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-                                         "p, li { white-space: pre-wrap; }\n"
-                                         "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-                                         "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+                                        "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                        "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                        "p, li { white-space: pre-wrap; }\n"
+                                        "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                        "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.CFileLoc.setPlaceholderText(_translate("MainWindow", "C文件位置"))
         self.chooseCBtn.setText(_translate("MainWindow", "选择C文件"))
         self.HFileLoc.setHtml(_translate("MainWindow",
-                                         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-                                         "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-                                         "p, li { white-space: pre-wrap; }\n"
-                                         "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-                                         "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+                                        "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                        "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                        "p, li { white-space: pre-wrap; }\n"
+                                        "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                        "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.HFileLoc.setPlaceholderText(_translate("MainWindow", "头文件位置"))
         self.chooseHBtn.setText(_translate("MainWindow", "选择头文件"))
         self.seedInputGroup.setTitle(_translate("MainWindow", "种子输入"))
@@ -236,11 +236,11 @@ class Ui_MainWindow(object):
         self.timeoutLEdit.setText(_translate("MainWindow", "10"))
         self.label_5.setText(_translate("MainWindow", "秒"))
         self.targetSetInfo.setHtml(_translate("MainWindow",
-                                              "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-                                              "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-                                              "p, li { white-space: pre-wrap; }\n"
-                                              "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-                                              "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+                                            "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                            "p, li { white-space: pre-wrap; }\n"
+                                            "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                            "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.targetSetInfo.setPlaceholderText(_translate("MainWindow", "目标集信息"))
         self.SAByCppcheckBtn.setText(_translate("MainWindow", "cppcheck"))
         self.SAByManBtn.setText(_translate("MainWindow", "手动选择"))
@@ -318,7 +318,7 @@ class Ui_MainWindow(object):
         for f in fileList:
             if not os.path.exists(root_loc + "in/" + f):
                 necessaryFileNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告",
-                                                                 str(f) + "不存在，请重新生成种子文件")
+                                                                str(f) + "不存在，请重新生成种子文件")
                 necessaryFileNotExistBox.exec_()
                 return
 
@@ -340,7 +340,7 @@ class Ui_MainWindow(object):
             outFolderExistBox.exec_()
             if outFolderExistBox.clickedButton() == no:
                 outFolderBackupBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息",
-                                                           "您可以选择手动将out文件夹移动到其他地方")
+                                                            "您可以选择手动将out文件夹移动到其他地方")
                 outFolderBackupBox.exec_()
                 return
 
