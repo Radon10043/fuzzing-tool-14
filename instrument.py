@@ -2,20 +2,22 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-07-01 14:43:08
+LastEditTime: 2021-07-12 10:41:40
 Description: Hi, say something
 '''
-import re
 import os
-import subprocess
+import re
+
 import public
+
 
 def get_str_btw(s, f, b):
     par = s.partition(f)
     return (par[2].partition(b))[0][:]
 
+
 def printInfo(msg):
-    print("\n\033[0;32mInfo:\033[0m"+msg)
+    print("\n\033[0;32mInfo:\033[0m" + msg)
 
 
 def instrument(source_loc, instrument_loc, output_loc, instrument_var):
@@ -29,10 +31,10 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
     '''
     # 获取所有函数结点，方便编号
     allNode = public.getAllFunctions(source_loc)
-    allNode = sorted(set(allNode),key=allNode.index)
+    allNode = sorted(set(allNode), key=allNode.index)
     print(allNode)
     for num in range(len(source_loc)):
-        brace = 0      # 记录大括号数量，方便后续操作
+        brace = 0  # 记录大括号数量，方便后续操作
         instr = False
         try:
             f = open(source_loc[num])
@@ -48,7 +50,7 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
         while j != length:
             if "(" in lines[j] and brace == 0:
                 code = lines[j].split("(")[0]
-                code = re.sub("[^A-Za-z1-9_]"," ",code)
+                code = re.sub("[^A-Za-z1-9_]", " ", code)
                 # 插桩语句，更换为改变结构体的值
                 funcName = code.split(" ")[-1]
                 if funcName == "main":
@@ -58,7 +60,7 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
                     if allNode[k] == funcName:
                         break
                 # 把变量的某一位置为1，用或操作
-                instrCode = "\tdtg->" + instrument_var + " |= " + str(2**k) + ";\n"
+                instrCode = "\tdtg->" + instrument_var + " |= " + str(2 ** k) + ";\n"
                 instr = True
             if "{" in lines[j]:
                 brace += 1
@@ -73,7 +75,7 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
         for code in lines:
             f.write(code)
         f.close()
-    printInfo("Successfully inserted.")
+    printInfo("Instrument complete.")
     multiFileCompile(instrument_loc)
 
 
@@ -86,9 +88,9 @@ def multiFileCompile(source_loc):
     # 获取所有源文件的名字
     cppFileName = []
     for source in source_loc:
-        cppFileName.append(source.split("\\")[-1])
+        cppFileName.append(source.split("/")[-1])
     # 源文件所在的根目录
-    root_loc = re.sub(source_loc[0].split("\\")[-1], "", source_loc[0])
+    root_loc = re.sub(source_loc[0].split("/")[-1], "", source_loc[0])
     # 指令集合
     cmds = []
     oFileName = []
@@ -110,7 +112,11 @@ def multiFileCompile(source_loc):
     for oFile in oFileName:
         os.remove(oFile)
 
-if __name__=="__main__":
-    source_loc = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\CheckData.cpp", "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\main.cpp"]
-    instrument_loc = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\ins_CheckData.cpp", "C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\ins_main.cpp"]
-    instrument(source_loc,instrument_loc,"", "trajectory.radonInstr")
+
+import sys
+from PyQt5 import QtWidgets
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()
