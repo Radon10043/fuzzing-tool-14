@@ -1,10 +1,8 @@
 import os
 import re
-import callgraph
-import public
-from instrument import printInfo
 
 import pycparser
+
 
 def findFunction(lineNum, source):
     '''
@@ -33,6 +31,7 @@ def findFunction(lineNum, source):
         i += 1
     return function
 
+
 def getSuspFunction(suspLoc, sourceList):
     '''
     @description: 获取可疑函数列表
@@ -43,9 +42,10 @@ def getSuspFunction(suspLoc, sourceList):
     suspFunction = []
     for loc in suspLoc:
         for source in sourceList:
-            if loc.split(":")[0] == source.split("\\")[-1]:
+            if loc.split(":")[0] == source.split("/")[-1]:
                 suspFunction.append(findFunction(int(loc.split(":")[1]), source))
     return suspFunction
+
 
 def analyze(source_loc):
     '''
@@ -59,32 +59,21 @@ def analyze(source_loc):
             return "被测文件不存在!"
     suspCode = []
     suspLoc = []
-    source = sourceList[0].split("\\")[-1]
-    path = re.sub(source,"",sourceList[0])     #设定存储位置
-    cmd = "cppcheck --output-file="+path+"AnalyzeResult.txt "+re.sub(" ","",source_loc)
+    source = sourceList[0].split("/")[-1]
+    path = re.sub(source, "", sourceList[0])  # 设定存储位置
+    cmd = "cppcheck --output-file=" + path + "AnalyzeResult.txt " + re.sub("\n", " ", source_loc)
+    print("cppcheck cmd:", cmd)
     os.system(cmd)
-    f = open(path+"AnalyzeResult.txt")
+    f = open(path + "AnalyzeResult.txt")
     lines = f.readlines()
     f.close()
     for line in lines:
+        line = line.replace("\\", "/")
         if "error:" in line:
-            suspLoc.append(line.split(" error:")[0].split("\\")[-1])
-    # print(suspLoc)
-    suspFunction = getSuspFunction(suspLoc,sourceList)
+            suspLoc.append(line.split(" error:")[0].split("/")[-1])
+    suspFunction = getSuspFunction(suspLoc, sourceList)
+    suspFunction = list(set(suspFunction))
     return suspFunction
-
-def getAllVariablesName(source_loc):
-    f = open(source_loc)
-    lines = f.readlines()
-    f.close()
-    for line in lines:
-        if "scanf" in line:
-            data = line.split("\"")[-1]
-            data = data.lstrip(",")
-            data = re.sub("[^A-Za-z0-9_,]","",data)
-            variables = data.split(",")
-            break
-    return variables
 
 
 def getAllStruct(header_loc):
@@ -96,7 +85,7 @@ def getAllStruct(header_loc):
     allStruct = []
     # 获取所有头文件中结构体的名称
     for header in header_loc:
-        ast = pycparser.parse_file(header,use_cpp=True,cpp_path='gcc',cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         for decl in ast:
             # 如果当前decl是函数声明，不是结构体，则跳过
             if isinstance(decl.type, pycparser.c_ast.FuncDecl):
@@ -118,7 +107,7 @@ def getOneStruct(header_loc, struct, prefix, allStruct):
     '''
     structInfo = []
     for header in header_loc:
-        ast = pycparser.parse_file(header,use_cpp=True,cpp_path='gcc',cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         for decl in ast:
             # 如果是函数声明，则跳过
             if isinstance(decl.type, pycparser.c_ast.FuncDecl):
@@ -131,16 +120,16 @@ def getOneStruct(header_loc, struct, prefix, allStruct):
                     try:
                         # 如果是普通的变量
                         dataType = " ".join(data.type.type.names)
-                        info =  dataType + " " + prefix + data.name
+                        info = dataType + " " + prefix + data.name
                     except AttributeError:
                         # 如果是二维数组
                         if isinstance(data.type.type, pycparser.c_ast.ArrayDecl):
                             dataType = " ".join(data.type.type.type.type.names)
-                            info =  dataType + " " + prefix + data.name + "["+data.type.dim.value+"]" + "["+data.type.type.dim.value+"]"
+                            info = dataType + " " + prefix + data.name + "[" + data.type.dim.value + "]" + "[" + data.type.type.dim.value + "]"
                         # 如果是一维数组
                         elif isinstance(data.type, pycparser.c_ast.ArrayDecl):
                             dataType = " ".join(data.type.type.type.names)
-                            info = dataType + " " + prefix + data.name+"["+data.type.dim.value+"]"
+                            info = dataType + " " + prefix + data.name + "[" + data.type.dim.value + "]"
                         # 如果是结构体
                         elif isinstance(data.type.type, pycparser.c_ast.Struct):
                             info = analyzeInternalStruct(data.type.type.decls, prefix + data.name)
@@ -154,7 +143,8 @@ def getOneStruct(header_loc, struct, prefix, allStruct):
                             print("Analyzing one-dimensional array...")
                             info = []
                             for i in range(2):
-                                info.extend(getOneStruct(header_loc, dataType, prefix + data.name + "[" + str(i) + "].", allStruct))
+                                info.extend(getOneStruct(header_loc, dataType, prefix + data.name + "[" + str(i) + "].",
+                                                        allStruct))
                         # 如果结构体成员不是数组
                         else:
                             info = getOneStruct(header_loc, dataType, prefix + data.name + ".", allStruct)
@@ -185,7 +175,8 @@ def analyzeInternalStruct(decls, struct):
         try:
             # 查看是否指定了bitsize
             if data.bitsize:
-                internalInfoList.append(" ".join(data.type.type.names) + " " + struct + "." + data.name + ":" + str(data.bitsize.value))
+                internalInfoList.append(
+                    " ".join(data.type.type.names) + " " + struct + "." + data.name + ":" + str(data.bitsize.value))
             else:
                 internalInfoList.append(" ".join(data.type.type.names) + " " + struct + "." + data.name)
         except AttributeError:
@@ -211,7 +202,7 @@ def analyzeHeader(header_loc):
     '''
     infoList = []
     for header in header_loc:
-        ast = pycparser.parse_file(header,use_cpp=True,cpp_path='gcc',cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         # ast.show()
         info = ""
         for decl in ast:
@@ -227,16 +218,16 @@ def analyzeHeader(header_loc):
                 try:
                     # 如果是普通的变量
                     dataType = " ".join(data.type.type.names)
-                    info =  dataType + " " + data.name
+                    info = dataType + " " + data.name
                 except AttributeError:
                     # 如果是二维数组
                     if isinstance(data.type.type, pycparser.c_ast.ArrayDecl):
                         dataType = " ".join(data.type.type.type.type.names)
-                        info =  dataType + " " + data.name + "["+data.type.dim.value+"]" + "["+data.type.type.dim.value+"]"
+                        info = dataType + " " + data.name + "[" + data.type.dim.value + "]" + "[" + data.type.type.dim.value + "]"
                     # 如果是一维数组
                     elif isinstance(data.type, pycparser.c_ast.ArrayDecl):
                         dataType = " ".join(data.type.type.type.names)
-                        info = dataType + " " + data.name+"["+data.type.dim.value+"]"
+                        info = dataType + " " + data.name + "[" + data.type.dim.value + "]"
                     # 如果是结构体
                     elif isinstance(data.type.type, pycparser.c_ast.Struct):
                         info = analyzeInternalStruct(data.type.type.decls, data.name)
@@ -251,15 +242,10 @@ def analyzeHeader(header_loc):
     return infoList
 
 
+import sys
+from PyQt5 import QtWidgets
+
 if __name__ == "__main__":
-    source_loc = "C:\\Users\\Radon\\Desktop\\fuzztest\\main.c"
-    # print(getAllFunctions(source_loc))
-    # print(analyze(source_loc))
-    # print(getAllVariablesName(source_loc))
-    header_loc1 = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\Trajectory.h","C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\Datagram.h"]
-    header_loc2 = ["C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example\\headers\\header.h"]
-    # print(analyzeHeader(header_loc1))
-    # print(analyzeHeader(header_loc2))
-    allStruct = getAllStruct(header_loc1)
-    structInfo = getOneStruct(header_loc1, "Datagram", "", allStruct)
-    print("getOneStruct:\n", "\n".join(structInfo))
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()
