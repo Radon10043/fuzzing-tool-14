@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-07-10 19:23:30
+LastEditTime: 2021-07-12 10:41:40
 Description: Hi, say something
 '''
 import os
@@ -75,7 +75,7 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
         for code in lines:
             f.write(code)
         f.close()
-    printInfo("Successfully inserted.")
+    printInfo("Instrument complete.")
     multiFileCompile(instrument_loc)
 
 

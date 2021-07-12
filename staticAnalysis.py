@@ -144,7 +144,7 @@ def getOneStruct(header_loc, struct, prefix, allStruct):
                             info = []
                             for i in range(2):
                                 info.extend(getOneStruct(header_loc, dataType, prefix + data.name + "[" + str(i) + "].",
-                                                         allStruct))
+                                                        allStruct))
                         # 如果结构体成员不是数组
                         else:
                             info = getOneStruct(header_loc, dataType, prefix + data.name + ".", allStruct)
