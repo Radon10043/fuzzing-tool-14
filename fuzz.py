@@ -333,7 +333,7 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     # 输出exe和obj的位置
     output_loc = now_loc
     # 可执行文件位置
-    program_loc = now_loc + "instrument.exe"
+    program_loc = now_loc + "instrument.out"
     # 初始测试用例位置
     seed_loc = now_loc + "in/seed"
     # 调用图位置
@@ -354,8 +354,9 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     instrument_var = instrument_var.split(" ")[-1].split(":")[0].rstrip("\n")
     # 尝试生成instrument.exe，如果失败了，表示被测程序的源码可能有误
     try:
-        instr.instrument(source_loc, instrument_loc, output_loc, instrument_var)
-    except:
+        instr.instrument(source_loc, instrument_loc, instrument_var)
+    except Exception as e:
+        print(e)
         return "编译程序失败，请检查代码是否正确!"
 
     # 创建函数调用图

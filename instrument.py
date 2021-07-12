@@ -20,7 +20,7 @@ def printInfo(msg):
     print("\n\033[0;32mInfo:\033[0m" + msg)
 
 
-def instrument(source_loc, instrument_loc, output_loc, instrument_var):
+def instrument(source_loc, instrument_loc, instrument_var):
     '''
     @description: 多文件插装的方法
     @param {*} source_loc 列表，存储了所有源文件位置
@@ -37,7 +37,7 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
         brace = 0  # 记录大括号数量，方便后续操作
         instr = False
         try:
-            f = open(source_loc[num])
+            f = open(source_loc[num], encoding="GBK")
             lines = f.readlines()
         except UnicodeDecodeError:
             f = open(source_loc[num], encoding="utf8")
@@ -101,7 +101,7 @@ def multiFileCompile(source_loc):
 
     # 切换工作目录，开始编译
     os.chdir(root_loc)
-    cmds.append("g++ -o instrument.exe " + " ".join(oFileName) + " -lws2_32")
+    cmds.append("g++ -o instrument.out " + " ".join(oFileName) + " -lws2_32")
     for cmd in cmds:
         if os.system(cmd) != 0:
             print("出错!")

@@ -29,7 +29,7 @@ def deleteNote(source):
         elif "*/" in source[i]:
             skip = False
             source[i] = "\n"
-        if skip == True:
+        if skip:
             source[i] = "\n"
     return source
 
@@ -50,7 +50,7 @@ def getAllFunctions(source_locs):
             f = open(source, encoding="utf8")
             lines = f.readlines()
         except UnicodeDecodeError:
-            f = open(source)
+            f = open(source, encoding="GBK")
             lines = f.readlines()
         brace = 0
         f.close()
