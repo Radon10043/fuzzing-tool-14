@@ -224,7 +224,7 @@ class Ui_MainWindow(object):
         # self.label_3.setText(_translate("MainWindow", "如果不手动输入，系统会自动生成"))
         self.stopOptionGroup.setTitle(_translate("MainWindow", "终止条件"))
         self.stopByTime.setText(_translate("MainWindow", "按时间"))
-        self.AIFuzz.setText(_translate("AITab", "基于AI的模糊测试"))
+        self.AIFuzz.setText(_translate("AITab", "AIFuzz"))
         self.stopByTC.setText(_translate("MainWindow", "按测试用例数量"))
         self.stopByCrash.setText(_translate("MainWindow", "检测到错误就停止"))
         self.timeUnit.setItemText(0, _translate("MainWindow", "分钟"))

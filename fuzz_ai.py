@@ -221,13 +221,13 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     fuzzInfoDict = {"测试时间": str(int(end - start)),
                     "测试对象": source_loc[0].split("\\")[-1],
                     "循环次数": str(e.round_cnt+1),
-                    "生成速度": 0 if e.mut_cnt == 0 else(int(e.mut_cnt / e.mut_time)),
-                    "执行速度": 0 if e.exec_time == 0 else str((int(e.exec_cnt / e.exec_time))),
+                    "生成速度": 0 if e.mut_cnt == 0 else "{:.2f}".format(e.mut_cnt / e.mut_time),
+                    "执行速度": 0 if e.exec_time == 0 else "{:.2f}".format(int(e.exec_cnt / e.exec_time)),
                     "已生成测试用例": str(e.mut_cnt),
                     "已触发缺陷次数": str(e.crash_cnt),
                     "已发现结点数量": str(len(allNode)),
                     "已覆盖结点": str(len(e.program_cov)),
-                    "整体覆盖率": str(len(e.program_cov)/len(allNode))}
+                    "整体覆盖率": "{:.2f}".format(len(e.program_cov)/len(allNode))}
     with open(os.path.join(now_loc, 'example', 'out','测试报告.txt'), 'w', encoding='utf-8') as f:
         f.write(str(fuzzInfoDict))
     # generateReport(source_loc[0], fuzzInfoDict)
@@ -262,13 +262,13 @@ class FuzzExec():
         self.stop = False
 
     def genFuzzInfo(self):
-        info = "轮次：\t\t" + str(self.round_cnt + 1) + "\n"
-        info += "覆盖节点数：\t\t" + str(len(self.program_cov)) + "\n"
-        info += "覆盖率：\t\t" + str(len(self.program_cov)/len(self.all_nodes)) + "\n"
+        info = "轮次：\t\t\t" + str(self.round_cnt + 1) + "\n"
+        info += "覆盖节点数：\t\t\t" + str(len(self.program_cov)) + "\n"
+        info += "覆盖率：\t\t\t" + "{:.2f}".format(len(self.program_cov)/len(self.all_nodes)) + "\n"
         info += "生成测试用例数：\t\t" + str(self.mut_cnt) + "\n"
-        info += "生成测试用例速度\t\t" + ("0" if self.mut_time == 0 else str(self.mut_cnt/self.mut_time)) + "个/秒\n"
+        info += "生成测试用例速度\t\t" + ("0" if self.mut_time == 0 else "{:.2f}".format(self.mut_cnt/self.mut_time)) + "个/秒\n"
         info += "执行测试用例数：\t\t" + str(self.exec_cnt) + "\n"
-        info += "执行测试用例速度\t\t" + ("0" if self.exec_time == 0 else str(self.exec_cnt / self.exec_time)) + "个/秒\n"
+        info += "执行测试用例速度\t\t" + ("0" if self.exec_time == 0 else "{:.2f}".format(self.exec_cnt / self.exec_time)) + "个/秒\n"
         info += "缺陷数：\t\t" + str(self.crash_cnt) + "\n"
         return info
 
@@ -307,7 +307,7 @@ class FuzzExec():
             time_ckpt = time.time()
             info = self.genFuzzInfo()
             info += "\n正在执行测试用例：\n" + fn + "\n"
-            info += "执行速度：" + ("-" if time.time()-start < 1e-4 else str((i+1)/ (time.time() - start))) + "个/秒\n"
+            info += "执行速度：" + ("-" if time.time()-start < 1e-4 else "{:.2f}".format((i+1)/ (time.time() - start))) + "个/秒\n"
             self.fuzzThread.execInfoSgn.emit(info)
             if eval(self.cond):
                 self.stop = True
@@ -339,9 +339,6 @@ class FuzzExec():
         cnt = 0
         time_ckpt = start
         for iter in range(0, 10):
-            if self.uiFuzz.stop:
-                self.stop = True
-                return
             out_buf1 = bytearray(out_buf)
             out_buf2 = bytearray(out_buf)
             low_index = num_index[iter]
@@ -353,6 +350,9 @@ class FuzzExec():
             up_step = 0
             low_step = 0
             for index in range(low_index, up_index):
+                if self.uiFuzz.stop:
+                    self.stop = True
+                    return
                 if sign[index] == 1:
                     cur_up_step = 255 - out_buf[loc[index]]
                     if cur_up_step > up_step:
@@ -376,6 +376,9 @@ class FuzzExec():
 
             #for step in range(0, up_step):
             for step in up_step:
+                if self.uiFuzz.stop:
+                    self.stop = True
+                    return
                 if step == 0:
                     continue
                 for index in range(low_index, up_index):
@@ -397,7 +400,7 @@ class FuzzExec():
                 cnt += 1
                 info = self.genFuzzInfo()
                 info += "\n正在变异种子文件：\n"+seed_fn+"\n"
-                info += "变异速度：" + ("-" if time.time() - start < 1e-4 else str(cnt/(time.time()-start))) + "个/秒\n"
+                info += "变异速度：" + ("-" if time.time() - start < 1e-4 else "{:.2f}".format(cnt/(time.time()-start))) + "个/秒\n"
                 self.fuzzThread.execInfoSgn.emit(info)
 
                 """
@@ -423,6 +426,9 @@ class FuzzExec():
 
             #for step in range(0, low_step):
             for step in low_step:
+                if self.uiFuzz.stop:
+                    self.stop = True
+                    return
                 if step == 0:
                     continue
                 for index in range(low_index, up_index):
@@ -444,7 +450,7 @@ class FuzzExec():
                 cnt += 1
                 info = self.genFuzzInfo()
                 info += "\n正在变异种子文件：\n"+seed_fn+"\n"
-                info += "变异速度：" + ("-" if time.time() - start < 1e-4 else str(cnt/(time.time()-start))) + "个/秒\n"
+                info += "变异速度：" + ("-" if time.time() - start < 1e-4 else "{:.2f}".format(cnt/(time.time()-start))) + "个/秒\n"
                 self.fuzzThread.execInfoSgn.emit(info)
 
                 """

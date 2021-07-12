@@ -89,9 +89,9 @@ def getCoverage(testcase, program_loc, MAIdll):
     @return {*} 返回(测试用例, 距离, 适应度, 覆盖点, 是否触发缺陷, 是否超时)，返回结果是一个元组
     """
 
-    print("old", testcase)
+    # print("old", testcase)
     MAIdll.setInstrumentValueToZero(testcase)
-    print("new", testcase)
+    # print("new", testcase)
     # 先启动线程2，用于监控
     thread2 = threading.Thread(target=threadMonitor, name="thread_monitor",)
     thread2.start()

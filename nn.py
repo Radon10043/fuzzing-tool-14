@@ -362,12 +362,11 @@ class NN():
         info = "已生成梯度信息！\n"
         info += "轮次：\t\t\t" + str(self.round_cnt+1) + "\n"
         info += "生成梯度信息的种子数：\t\t" + str(edge_num) + "\n"
-        info += "梯度类型：\t\t" + ("有符号" if sign else "无符号(随机)") + "\n"
-        info += "时间：\t\t" + str(end-start) + "秒\n"
-        info += "梯度文件保存路径：\n\t" + grad_fn + "\n"
+        info += "梯度类型：\t\t\t" + ("有符号" if sign else "无符号(随机)") + "\n"
+        info += "时间：\t\t\t" + "{:.2f}".format(end-start) + "秒\n"
+        info += "梯度文件保存路径：\n" + grad_fn + "\n"
         info += "可以开始测试...\n"
         self.uiFuzz.text_browser_nn.append(info)
-
 
     def train(self, model):
         start = time.time()
@@ -383,10 +382,10 @@ class NN():
         model.save(save_loc)
         info = "模型训练完成！\n"
         info += "轮次：\t\t\t" + str(self.round_cnt+1) + "\n"
-        info += "输入维数：\t\t" + str(self.input_dim) + "\n"
-        info += "输出维数：\t\t" + str(self.output_dim) + "\n"
-        info += "训练时间：\t\t" + str(end-start) + "秒\n"
-        info += "保存路径：\n\t" + save_loc + "\n"
+        info += "输入维数：\t\t\t" + str(self.input_dim) + "\n"
+        info += "输出维数：\t\t\t" + str(self.output_dim) + "\n"
+        info += "训练时间：\t\t\t" + "{:.2f}".format(end-start) + "秒\n"
+        info += "保存路径：\n" + save_loc + "\n"
         self.fuzzThread.nnInfoSgn.emit(info)
 
     def build_model(self):
