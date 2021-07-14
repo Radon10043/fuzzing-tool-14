@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-12 10:47:39
+LastEditTime: 2021-07-12 14:16:24
 Description:
 '''
 # -*- coding: utf-8 -*-
@@ -347,7 +347,12 @@ class Ui_Dialog(object):
                 tempDict[structInfo[i]] = {"value": None, "lower": 0, "upper": 999, "instrument": False,
                                             "mutation": False, "bitsize": 8}
                 tempDict[structInfo[i]]["bitsize"] = self.getBitsize(structInfo[i])
-                tempDict[structInfo[i]]["upper"] = 2 ** tempDict[structInfo[i]]["bitsize"] - 1
+                if structInfo[i].split(" ")[0] in ["unsigned", "_Bool"]:
+                    tempDict[structInfo[i]]["upper"] = 2 ** tempDict[structInfo[i]]["bitsize"] - 1
+                else:
+                    bitsize = tempDict[structInfo[i]]["bitsize"]
+                    tempDict[structInfo[i]]["upper"] = 2 ** (bitsize - 1) - 1
+                    tempDict[structInfo[i]]["lower"] = 0 - 2 ** (bitsize - 1)
             structDict[struct] = tempDict
         # 设置Table
         self.setTableContent(structDict)

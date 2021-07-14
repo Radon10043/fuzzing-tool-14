@@ -32,7 +32,7 @@ def findFunction(lineNum, source):
     return function
 
 
-def getSuspFunction(suspLoc, sourceList):
+def getSuspFunction(suspLoc, source_loc_list):
     '''
     @description: 获取可疑函数列表
     @param {*} suspLoc 可疑位置，格式形如main.c:14:15
@@ -41,27 +41,27 @@ def getSuspFunction(suspLoc, sourceList):
     '''
     suspFunction = []
     for loc in suspLoc:
-        for source in sourceList:
+        for source in source_loc_list:
             if loc.split(":")[0] == source.split("/")[-1]:
                 suspFunction.append(findFunction(int(loc.split(":")[1]), source))
     return suspFunction
 
 
-def analyze(source_loc):
+def analyze(source_loc_str):
     '''
     @description: 通过cppcheck进行静态分析，获取可能有缺陷的代码及其所在行
-    @param {*} source_loc
+    @param {*} source_loc_str
     @return {*}
     '''
-    sourceList = source_loc.split("\n")
-    for source in sourceList:
+    source_loc_list = source_loc_str.split("\n")
+    for source in source_loc_list:
         if not os.path.exists(source):
             return "被测文件不存在!"
     suspCode = []
     suspLoc = []
-    source = sourceList[0].split("/")[-1]
-    path = re.sub(source, "", sourceList[0])  # 设定存储位置
-    cmd = "cppcheck --output-file=" + path + "AnalyzeResult.txt " + re.sub("\n", " ", source_loc)
+    source = source_loc_list[0].split("/")[-1]
+    path = re.sub(source, "", source_loc_list[0])  # 设定存储位置
+    cmd = "cppcheck --output-file=" + path + "AnalyzeResult.txt " + re.sub("\n", " ", source_loc_str)
     print("cppcheck cmd:", cmd)
     os.system(cmd)
     f = open(path + "AnalyzeResult.txt")
@@ -71,7 +71,7 @@ def analyze(source_loc):
         line = line.replace("\\", "/")
         if "error:" in line:
             suspLoc.append(line.split(" error:")[0].split("/")[-1])
-    suspFunction = getSuspFunction(suspLoc, sourceList)
+    suspFunction = getSuspFunction(suspLoc, source_loc_list)
     suspFunction = list(set(suspFunction))
     return suspFunction
 
