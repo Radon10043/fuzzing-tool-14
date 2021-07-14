@@ -340,6 +340,7 @@ def generateReport(source_loc_list, fuzzInfoDict):
     reportContent += "整体覆盖率:" + fuzzInfoDict["整体覆盖率"] + "%\n"
     reportContent += "================================================================\n\n"
 
+    # TODO 考虑一下下面的东西怎么改
     # testcases = getDirContent(basic_loc+"out/testcases")
     # savedCrashes = getDirContent(basic_loc+"out/crash")
     # for i in range(len(testcases)):
