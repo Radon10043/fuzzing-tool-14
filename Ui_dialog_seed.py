@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-12 14:16:24
+LastEditTime: 2021-07-14 16:50:29
 Description:
 '''
 # -*- coding: utf-8 -*-
@@ -211,8 +211,6 @@ class Ui_Dialog(object):
                 if val['instrument']:
                     val['checkBox'].setChecked(False)
         structDict[struct][memVal]['instrument'] = checkBool
-        if checkBool == True:
-            print("yes.")
         # print(structDict)
 
     # 表格插装变量-CheckBox-end
