@@ -9,6 +9,8 @@
 
 from PyQt5 import QtCore
 
+import traceback
+
 import Ui_dialog_seed as seedDialogPY
 import staticAnalysis
 
@@ -178,7 +180,9 @@ class Ui_Dialog(object):
             exceptionBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "还没有选择结构体")
             exceptionBox.exec_()
         except BaseException as e:
-            print(repr(e))
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
             exceptionBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", repr(e))
             exceptionBox.exec_()
     # ====================================================================================================
