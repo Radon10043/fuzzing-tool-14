@@ -142,7 +142,7 @@ def getOneStruct(header_loc, struct, prefix, allStruct):
                         elif isinstance(data.type, pycparser.c_ast.ArrayDecl):
                             print("Analyzing one-dimensional array...")
                             info = []
-                            for i in range(2):
+                            for i in range(int(data.type.dim.value)):
                                 info.extend(getOneStruct(header_loc, dataType, prefix + data.name + "[" + str(i) + "].",
                                                         allStruct))
                         # 如果结构体成员不是数组

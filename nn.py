@@ -265,7 +265,7 @@ class NN():
                 val = np.sign(grads_value[0][idx])
                 adv_list.append((idx, val, splice_fn))
             else:
-                self.splice_seed(fl[0], fl[1], idxx + 500)
+                self.splice_seed(fl[0], fl[1], idxx + self.grads_cnt)
                 splice_fn = os.path.join(self.dir, 'splice_seeds', 'tmp_' + str(idxx + self.grads_cnt))
                 x = self.vectorize_file(splice_fn)
                 loss_value, grads_value = iterate([x])

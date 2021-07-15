@@ -24,7 +24,6 @@ class Ui_Dialog(object):
     fuzz_ai = False
     def setupUi(self, Dialog, fuzz_ai):
         Dialog.setObjectName("Dialog")
-
         self.fuzz_ai = fuzz_ai
         self.text_browser_nn = None
         self.text_browser_exec = None
@@ -109,7 +108,7 @@ class Ui_Dialog(object):
         else:
             self.textBrowser.setText("\n\n\t\t初始化中...\n\t即将开始目标制导的模糊测试...")
 
-    def fuzzInfoPrint(self,fuzzInfo):
+    def fuzzInfoPrint(self, fuzzInfo):
         '''
         @description: 打印发送回来的模糊测试信息
         @param {*} self
@@ -218,7 +217,7 @@ class FuzzThread(QThread):
         '''
         print("FuzzThread has started.")
         if self.fuzz_ai:
-            self.result=fuzz_ai.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
+            self.result = fuzz_ai.fuzz(self.source_loc, self.ui, self.uiFuzz, self)
         else:
             fuzz.initGloablVariable()
             self.result = fuzz.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
