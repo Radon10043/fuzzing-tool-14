@@ -177,8 +177,8 @@ def genMutate(header_loc, struct, structDict):
     # 先将插装变量置为0
     code += "\ttemp->" + dataName + " = 0;\n"
     for key, value in structDict[struct].items():
-        if not value["mutation"]:
-            continue
+        # if not value["mutation"]:
+        #     continue
         dataName = key.split(" ")[-1].split(":")[0]
         code += "\ttemp->" + dataName + " %= " + str(value["upper"]) + ";\n"
     code += "}"

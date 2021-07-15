@@ -90,7 +90,8 @@ def getCoverage(testcase, program_loc, MAIdll):
     """
 
     # print("old", testcase)
-    MAIdll.setInstrumentValueToZero(testcase)
+    # MAIdll.setInstrumentValueToZero(testcase)
+    MAIdll.setValueInRange(testcase)
     # print("new", testcase)
     # 先启动线程2，用于监控
     thread2 = threading.Thread(target=threadMonitor, name="thread_monitor",)
@@ -136,9 +137,6 @@ def getCoverage(testcase, program_loc, MAIdll):
 def mutate(a, add=True, delete=True):
     res = bytearray()
     for i in range(0, len(a)):
-        if a[i] == 204:
-            res.append(a[i])
-            continue
         prob = random.random()
         number = random.randint(0, 255)
         step = random.randint(1,2)
@@ -147,15 +145,8 @@ def mutate(a, add=True, delete=True):
         elif prob <= 0.2 and add:
             res.append(number)
             i-=1
-        elif prob <= 0.4:
-            #down
-            if a[i] < step:
-                res.append(a[i])
-                continue
-            res.append(a[i]-step)
         elif prob <= 0.6:
-            #up
-            res.append(a[i]+step)
+            res.append(a[i] ^ number)
         else:
             res.append(a[i])
     return res
