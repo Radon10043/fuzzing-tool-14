@@ -91,17 +91,17 @@ class Ui_Dialog(object):
         self.selectAllBtn.setText(_translate("Dialog", "全选"))
 
     # 手写
-    def setValues(self, ui, source_loc, SAResult):
+    def setValues(self, ui, source_loc_list, SAResult):
         '''
         @description: 设置一些初始值
         @param {*} self
         @param {*} ui Ui_window的ui
-        @param {*} source_loc 字符串，其中存储了所有的源文件地址，用\n隔开
+        @param {*} source_loc_list 列表，其中存储了所有的源文件地址
         @param {*} SAResult 列表，静态分析的结果，其中存储了哪些函数可能存在缺陷
         @return {*}
         '''
         if len(SAResult) == 0:
-            self.funcList = public.getAllFunctions(source_loc)
+            self.funcList = public.getAllFunctions(source_loc_list)
         else:
             self.funcList = SAResult
         self.funcTableWidget.setRowCount(len(self.funcList))

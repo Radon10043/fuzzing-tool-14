@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-10 20:22:33
+LastEditTime: 2021-07-15 11:54:29
 Description: 模糊测试工具
 '''
 
@@ -201,6 +201,12 @@ class Ui_MainWindow(object):
         self.timeoutLEdit.setValidator(QtGui.QRegExpValidator(regExp1))
         regExp2 = QtCore.QRegExp("^\d+$")
         self.stopByTCNum.setValidator(QtGui.QRegExpValidator(regExp2))
+
+        self.isMutateInRangeCheckbox = QtWidgets.QCheckBox(self.seedInputGroup)
+        self.isMutateInRangeCheckbox.setGeometry(QtCore.QRect(75, 75, 200, 31))
+        self.isMutateInRangeCheckbox.setText("变异体在范围内")
+        self.isMutateInRangeCheckbox.setObjectName("isMutateInRangeCheckbox")
+        self.isMutateInRangeCheckbox.setChecked(True)
         # 手写内容结束
 
         self.retranslateUi(MainWindow)
@@ -316,18 +322,18 @@ class Ui_MainWindow(object):
         @return {*}
         '''
         print(self.targetSetInfo.toPlainText())
-        source_loc = self.CFileLoc.toPlainText().split("\n")
-        header_loc = self.HFileLoc.toPlainText().split("\n")
+        source_loc_list = self.CFileLoc.toPlainText().split("\n")
+        header_loc_list = self.HFileLoc.toPlainText().split("\n")
 
         # 检测C文件是否存在
-        for source in source_loc:
+        for source in source_loc_list:
             if not os.path.exists(source):
                 sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在！")
                 sourceNotExistBox.exec_()
                 return
 
         # 检测头文件是否存在
-        for header in header_loc:
+        for header in header_loc_list:
             if not os.path.exists(header):
                 headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在！")
                 headerNotExistBox.exec_()
@@ -339,7 +345,7 @@ class Ui_MainWindow(object):
             msg.exec_()
             return
 
-        root_loc = re.sub(source_loc[0].split("/")[-1], "", source_loc[0])
+        root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
 
         # 检测一系列的必要文件是否存在
         fileList = ["instrument.txt", "mutate_instru.c", "seed"]
@@ -389,7 +395,7 @@ class Ui_MainWindow(object):
         self.uiFuzz = fuzzDialogPY.Ui_Dialog()
         self.uiFuzz.setupUi(self.fuzzDialog, self.AIFuzz.isChecked())
         self.fuzzDialog.show()
-        self.uiFuzz.startFuzz(source_loc, ui, self.uiFuzz)
+        self.uiFuzz.startFuzz(source_loc_list, ui, self.uiFuzz)
 
     def popSeedDialog(self):
         '''
@@ -423,9 +429,9 @@ class Ui_MainWindow(object):
         @return {*}
         '''
         self.targetSetInfo.clear()
-        source_loc = self.CFileLoc.toPlainText()
-        sourceList = source_loc.split("\n")
-        for source in sourceList:
+        source_loc_str = self.CFileLoc.toPlainText()
+        source_loc_list = source_loc_str.split("\n")
+        for source in source_loc_list:
             if not os.path.exists(source):
                 self.targetSetInfo.append("被测文件不存在!")
                 return
@@ -433,7 +439,7 @@ class Ui_MainWindow(object):
         self.uiTarget = targetDialogPY.Ui_Dialog()
         self.uiTarget.setupUi(self.targetDialog)
         self.targetDialog.show()
-        self.uiTarget.setValues(ui, source_loc, [])
+        self.uiTarget.setValues(ui, source_loc_list, [])
 
     def popStructDialog(self):
         '''
@@ -482,8 +488,8 @@ class Ui_MainWindow(object):
         @return {*}
         '''
         self.targetSetInfo.clear()
-        source_loc = self.CFileLoc.toPlainText()
-        self.SAResult = sa.analyze(source_loc)
+        source_loc_str = self.CFileLoc.toPlainText()
+        self.SAResult = sa.analyze(source_loc_str)
         if len(self.SAResult) == 0:
             self.targetSetInfo.setText("暂无目标!")
             return
@@ -494,7 +500,7 @@ class Ui_MainWindow(object):
         self.uiTarget = targetDialogPY.Ui_Dialog()
         self.uiTarget.setupUi(self.targetDialog)
         self.targetDialog.show()
-        self.uiTarget.setValues(ui, source_loc, self.SAResult)
+        self.uiTarget.setValues(ui, source_loc_str.split("\n"), self.SAResult)
     # 手写内容结束
 
 

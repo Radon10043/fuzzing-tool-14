@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-12 10:50:18
+LastEditTime: 2021-07-14 14:19:37
 Description: Some pulic function
 '''
 
@@ -36,18 +36,14 @@ def deleteNote(source):
     return source
 
 
-def getAllFunctions(source_locs):
+def getAllFunctions(source_loc_list):
     '''
     @description: 获取所有定义的函数
-    @param {*} source_locs 所有源文件地址的字符串，用\n隔开
+    @param {*} source_loc_list 列表，存储了所有源文件地址
     @return {*} 返回包含所有自定义函数的列表
     '''
-    if isinstance(source_locs, str):
-        source_loc = source_locs.split("\n")
-    elif isinstance(source_locs, list):
-        source_loc = source_locs
     funcList = []
-    for source in source_loc:
+    for source in source_loc_list:
         try:
             f = open(source, encoding="utf8")
             lines = f.readlines()
@@ -142,11 +138,6 @@ def genMutate(header_loc, struct, structDict):
     # r是一个随机数, 用于与原来的值进行异或
     code += "\nvoid mutate(" + struct + " data, char* savePath, int r){\n"
     # 变异操作
-    # ============================Note=================================
-    # 变异可能需要做一些修改，因为不知道是否要求变异后的结果也要在范围内
-    # 目前的思路是：随机生成一个值r，然后让变量与(r%(它的最大值))做异或操作
-    # 应该能产生一个符合范围的随机值，但是思路不一定对，还需要思考
-    # =================================================================
     for key, value in structDict[struct].items():
         if not value["mutation"]:
             continue
@@ -171,14 +162,23 @@ def genMutate(header_loc, struct, structDict):
         code += "\treturn data." + dataName + ";\n"
     code += "}\n\n"
 
+    # 写一个将插装值设置为0的方法
+    code += "void setInstrumentValueToZero(" + struct + " data){\n"
+    code += "\t" + struct + "* temp = &data;\n"
+    code += "\ttemp->" + dataName + " = 0;\n"
+    code += "}\n\n"
+
     # 写一个将结构体的值设定在用户指定范围内的方法
     code += "void setValueInRange(" + struct + " data){\n"
     code += "\t" + struct + "* temp = &data;\n"
     # 先将插装变量置为0
     code += "\ttemp->" + dataName + " = 0;\n"
     for key, value in structDict[struct].items():
+<<<<<<< HEAD
         # if not value["mutation"]:
         #     continue
+=======
+>>>>>>> upstream/main
         dataName = key.split(" ")[-1].split(":")[0]
         code += "\ttemp->" + dataName + " %= " + str(value["upper"]) + ";\n"
     code += "}"

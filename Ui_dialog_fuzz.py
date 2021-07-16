@@ -88,9 +88,9 @@ class Ui_Dialog(object):
                                             "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">测试信息</p></body></html>"))
 
     # 以下为手写内容
-    def startFuzz(self, source_loc, ui, uiFuzz):
-        # fuzz.fuzz(source_loc,ui,ui2)
-        self.source_loc = source_loc
+    def startFuzz(self, source_loc_list, ui, uiFuzz):
+        # fuzz.fuzz(source_loc_list,ui,ui2)
+        self.source_loc_list = source_loc_list
         self.ui = ui
         self.targetSetInfo = re.sub("[^A-Za-z1-9_\n]", "", ui.targetSetInfo.toPlainText())
         self.fuzzThread = FuzzThread()
@@ -99,7 +99,7 @@ class Ui_Dialog(object):
         self.fuzzThread.execInfoSgn.connect(self.execInfoPrint)
         self.fuzzThread.overSgn.connect(self.overFuzz)
         self.fuzzThread.errorSgn.connect(self.errorFuzz)
-        self.fuzzThread.setValues(source_loc, ui, uiFuzz, self.targetSetInfo, self.fuzz_ai)
+        self.fuzzThread.setValues(source_loc_list, ui, uiFuzz, self.targetSetInfo, self.fuzz_ai)
         if self.fuzz_ai:
             self.text_browser_nn.setText("\n\n\t\t初始化中...\n\t即将开始基于机器学习的模糊测试...")
             self.text_browser_exec.setText("\n\n\t\t初始化中...\n\t即将开始基于机器学习的模糊测试...")
@@ -171,8 +171,10 @@ class Ui_Dialog(object):
         @param {*} self
         @return {*}
         '''
-        out_loc = self.source_loc[0]
+        out_loc = self.source_loc_list[0]
         out_loc = re.sub(out_loc.split("/")[-1], "", out_loc) + "out"
+        out_loc = out_loc.replace("/", "\\")
+        print(out_loc)
         if os.path.exists(out_loc):
             os.system("explorer.exe " + out_loc)
         else:
@@ -191,19 +193,18 @@ class FuzzThread(QThread):
     def __init__(self):
         super().__init__()
 
-    def setValues(self, source_loc, ui, uiFuzz, targetSetInfo, fuzz_ai):
-
+    def setValues(self, source_loc_list, ui, uiFuzz, targetSetInfo, fuzz_ai):
         '''
         @description: 设置一些初始值
         @param {*} self
-        @param {*} source_loc 列表，其中存储了所有源文件的地址
+        @param {*} source_loc_list 列表，其中存储了所有源文件的地址
         @param {*} ui Ui_window的ui
         @param {*} uiFuzz Ui_dialog_fuzz的ui
         @param {*} targetSetInfo 目标集信息
         @return {*}
         '''
         self.fuzz_ai = fuzz_ai
-        self.source_loc = source_loc
+        self.source_loc_list = source_loc_list
         self.ui = ui
         self.uiFuzz = uiFuzz
         self.targetSetInfo = targetSetInfo
@@ -220,8 +221,8 @@ class FuzzThread(QThread):
             self.result = fuzz_ai.fuzz(self.source_loc, self.ui, self.uiFuzz, self)
         else:
             fuzz.initGloablVariable()
-            self.result = fuzz.fuzz(self.source_loc,self.ui,self.uiFuzz,self)
-        if isinstance(self.result,str):
+            self.result = fuzz.fuzz(self.source_loc_list, self.ui, self.uiFuzz, self)
+        if isinstance(self.result, str):
             self.errorSgn.emit(True)
             self.uiFuzz.errorInfo = self.result
         else:

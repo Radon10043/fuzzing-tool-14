@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-12 10:47:39
+LastEditTime: 2021-07-15 16:37:51
 Description:
 '''
 # -*- coding: utf-8 -*-
@@ -19,6 +19,7 @@ import sys
 import json
 import random
 import re
+import traceback
 
 from PyQt5 import QtCore
 # from PyQt5.QtWidgets import *
@@ -80,7 +81,7 @@ structDict = {
 
 # 数据类型字典-start
 # 其中存储了数据类型和它对应的位
-dataTypeDict = {
+dataBitsizeDict = {
     "_Bool": 8,
     "char": 8,
     "int": 32,
@@ -88,10 +89,25 @@ dataTypeDict = {
     "unsigned char": 8,
     "unsigned short": 16,
     "unsigned int": 32,
+    "float": 32,
+    "double": 64
 }
-
-
 # 数据类型字典-end
+
+# 数据类型上下限字典-start
+dataRangeDict = {
+    "_Bool" : {"lower" : 0, "upper" : 1},
+    "char" : {"lower" : -128, "upper" : 127},
+    "int" : {"lower" : 0 - 2 ** 31, "upper" : 2 ** 31 - 1},
+    "short" : {"lower" : 0 - 2 ** 15, "upper" : 2 ** 15 - 1},
+    "unsigned char" : {"lower" : 0, "upper" : 2 ** 8 - 1},
+    "unsigned short" : {"lower" : 0, "upper" : 2 ** 16 - 1},
+    "unsigned int" : {"lower" : 0, "upper" : 2 ** 32 - 1},
+    # TODO float和double的上下限太大了，看起来很长，所以暂时设置成了int的上下限
+    "float" : {"lower" : float(0 - 2 ** 31), "upper" : float(2 ** 31 - 1)},
+    "double" : {"lower" : float(0 - 2 ** 31), "upper" : float(2 ** 31 - 1)}
+}
+# 数据类型上下限字典-end
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -211,8 +227,6 @@ class Ui_Dialog(object):
                 if val['instrument']:
                     val['checkBox'].setChecked(False)
         structDict[struct][memVal]['instrument'] = checkBool
-        if checkBool == True:
-            print("yes.")
         # print(structDict)
 
     # 表格插装变量-CheckBox-end
@@ -231,12 +245,22 @@ class Ui_Dialog(object):
             lineEdit.setValidator(pValidator)  # 加入正则文本文本验证
 
         if whatThing == "value" and placeholderText == None:
-            structDict[struct][memVal]['value'] = self.getRanNum(
-                structDict[struct][memVal]['lower'], structDict[struct][memVal]['upper'])
-            lineEdit.setPlaceholderText(
-                "随机值(%.2f)" % structDict[struct][memVal]['value'])  # 默认文字
+            # 获取数据类型，并根据类型设置是浮点类型的值还是整数
+            dataType = memVal.split(" ")
+            dataType.pop(-1)
+            dataType = " ".join(dataType)
+            if "float" in dataType or "double" in dataType:
+                structDict[struct][memVal]['value'] = self.getRanFloatNum(
+                    structDict[struct][memVal]['lower'], structDict[struct][memVal]['upper'])
+                lineEdit.setPlaceholderText(
+                    "随机值(%.2f)" % structDict[struct][memVal]['value'])  # 浮点型默认文字
+            else:
+                structDict[struct][memVal]['value'] = self.getRanIntNum(
+                    structDict[struct][memVal]['lower'], structDict[struct][memVal]['upper'])
+                lineEdit.setPlaceholderText(
+                    "随机值(%d)" % structDict[struct][memVal]['value'])  # 整型默认文字
         else:
-            lineEdit.setPlaceholderText(str(placeholderText))  # 默认文字
+            lineEdit.setPlaceholderText(str(placeholderText))
 
         # print(lineEdit.hasFocus())
         lineEdit.editingFinished.connect(
@@ -245,31 +269,76 @@ class Ui_Dialog(object):
 
     def editFinish(self, text, whatThing, struct, memVal, lineEdit):
         global structDict
-        # lineEdit.hasFocus() and
+        # lineEdit.hasFocus()
+        # 获取变量上下限可以改的范围，防止用户修改上下限后导致溢出
+        try:
+            if ":" in memVal:
+                if "unsigned" in memVal:
+                    maxUpper = 2 ** structDict[struct][memVal]["bitsize"] - 1
+                    minLower = 0
+                else:
+                    maxUpper = 2 ** (structDict[struct][memVal]["bitsize"] - 1) - 1
+                    minLower = 0 - 2 ** (structDict[struct][memVal]["bitsize"] - 1)
+            else:
+                dataType = memVal.split(" ")
+                dataType.pop(-1)
+                dataType = " ".join(dataType)
+                maxUpper = dataRangeDict[dataType]["upper"]
+                minLower = dataRangeDict[dataType]["lower"]
+        except BaseException as e:
+            print("获取上下限时出错:", e, "将默认为int的上下限\033[1;31m")
+            traceback.print_exec()
+            print("\033[0m")
+
+        dataType = memVal.split(" ")
+        dataType.pop(-1)
+        dataType = " ".join(dataType)
+        # 如果编辑的是值的内容
         if text != "" and whatThing == 'value':
             # 数值范围验证
             if float(text) <= structDict[struct][memVal]["upper"] and float(text) >= structDict[struct][memVal][
                     "lower"]:
-                structDict[struct][memVal][whatThing] = float(text)
+                if "float" in dataType or "double" in dataType:
+                    structDict[struct][memVal][whatThing] = float(text)
+                else:
+                    structDict[struct][memVal][whatThing] = int(float(text))
             else:
                 # 超范围错误提醒-start
                 msg_box = QMessageBox(
                     QMessageBox.Warning, '错误',
                     '请输入%s-%s内的值' % (structDict[struct][memVal]["lower"], structDict[struct][memVal]["upper"]))
                 msg_box.exec_()
-                lineEdit.setText("")
+                lineEdit.clear()
                 # 超范围错误提醒-end
+
+        outOfRangeBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "设置的值超出范围，有溢出风险!")
+        # 如果编辑的是下限的内容
         if whatThing == 'lower':
-            structDict[struct][memVal][whatThing] = float(text)
+            if float(text) < minLower or float(text) > maxUpper:
+                outOfRangeBox.exec_()
+                lineEdit.clear()
+            else:
+                if "float" in dataType or "double" in dataType:
+                    structDict[struct][memVal][whatThing] = float(text)
+                else:
+                    structDict[struct][memVal][whatThing] = int(text)
+
+        # 如果编辑的是上限的内容
         if whatThing == 'upper':
-            structDict[struct][memVal][whatThing] = float(text)
+            if float(text) < minLower or float(text) > maxUpper:
+                lineEdit.clear()
+                outOfRangeBox.exec_()
+            else:
+                if "float" in dataType or "double" in dataType:
+                    structDict[struct][memVal][whatThing] = float(text)
+                else:
+                    structDict[struct][memVal][whatThing] = int(text)
 
     '''
     @description: 将strctDict保存为JSON文件
     @param {*} self
     @return {*}
     '''
-
     def saveData(self):
         global structDict
         if isinstance(self.header_loc, list):
@@ -296,8 +365,11 @@ class Ui_Dialog(object):
                 if 'checkBox' in val.keys():
                     del val['checkBox']
 
-    def getRanNum(self, lower, upper):
-        return int(round(random.uniform(lower, upper), 2))
+    def getRanFloatNum(self, lower, upper):
+        return round(random.uniform(lower, upper), 2)
+
+    def getRanIntNum(self, lower, upper):
+        return int(random.uniform(lower, upper))
 
     def getBitsize(self, variable):
         '''
@@ -313,7 +385,7 @@ class Ui_Dialog(object):
             variable = variable.split(" ")
             variable.pop(-1)
             dataType = " ".join(variable).rstrip()
-            for key, value in dataTypeDict.items():
+            for key, value in dataBitsizeDict.items():
                 if key == dataType:
                     return value
             return -1
@@ -347,7 +419,27 @@ class Ui_Dialog(object):
                 tempDict[structInfo[i]] = {"value": None, "lower": 0, "upper": 999, "instrument": False,
                                             "mutation": False, "bitsize": 8}
                 tempDict[structInfo[i]]["bitsize"] = self.getBitsize(structInfo[i])
-                tempDict[structInfo[i]]["upper"] = 2 ** tempDict[structInfo[i]]["bitsize"] - 1
+                # 如果用户指定了位大小
+                if ":" in structInfo[i]:
+                    if "unsigned" in structInfo[i]:
+                        tempDict[structInfo[i]]["upper"] = 2 ** tempDict[structInfo[i]]["bitsize"] - 1
+                        tempDict[structInfo[i]]["lower"] = 0
+                    else:
+                        tempDict[structInfo[i]]["upper"] = 2 ** (tempDict[structInfo[i]]["bitsize"] - 1) - 1
+                        tempDict[structInfo[i]]["lower"] = 0 - (2 ** tempDict[structInfo[i]]["bitsize"] - 1)
+                else:
+                    # 如果用户没指定位大小，自动获取
+                    # dataType: 表示数据类型，从list变为str
+                    dataType = structInfo[i].split(" ")
+                    dataType.pop(-1)
+                    dataType = " ".join(dataType)
+                    try:
+                        tempDict[structInfo[i]]["upper"] = dataRangeDict[dataType]["upper"]
+                        tempDict[structInfo[i]]["lower"] = dataRangeDict[dataType]["lower"]
+                    except BaseException as e:
+                        print("分析" + dataType + "类型时出错:", e)
+                        tempDict[structInfo[i]]["upper"] = 999
+                        tempDict[structInfo[i]]["lower"] = -999
             structDict[struct] = tempDict
         # 设置Table
         self.setTableContent(structDict)
