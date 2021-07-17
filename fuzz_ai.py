@@ -281,7 +281,7 @@ class FuzzExec():
         info += "执行测试用例数：\t\t" + str(self.exec_cnt) + "\n"
         info += "执行测试用例速度\t\t" + (
             "0" if self.exec_time == 0 else "{:.2f}".format(self.exec_cnt / self.exec_time)) + "个/秒\n"
-        info += "缺陷数：\t\t" + str(self.crash_cnt) + "\n"
+        info += "崩溃次数：\t\t\t" + str(self.crash_cnt) + "\n"
         return info
 
     def update_program_cov(self, cov):
@@ -303,10 +303,17 @@ class FuzzExec():
             # crash, timeout = run_target([program_loc, fn])
             print(fn)
             tc = open(fn, "rb").read()
-            self.MAIdll.setValueInRange(tc)
-            _, cur_cov, crash, _ = utils.getCoverage(tc, self.program_loc, self.MAIdll)
+            # self.MAIdll.setValueInRange(tc)
+            cur_cov = None
+            crash = None
             if stage == 2:
-                self.cov_map[fn] = cur_cov
+                if fn in self.cov_map.keys():
+                    cur_cov, crash = self.cov_map[fn]
+                else:
+                    _, cur_cov, crash, _ = utils.getCoverage(tc, self.program_loc, self.MAIdll)
+                    self.cov_map[fn] = cur_cov, crash
+            else:
+                _, cur_cov, crash, _ = utils.getCoverage(tc, self.program_loc, self.MAIdll)
             if crash:
                 crash_fn = os.path.join(self.dir, "crashes", str(self.round_cnt) + "_" + str(self.crash_cnt))
                 copyfile(fn, crash_fn)
@@ -319,12 +326,15 @@ class FuzzExec():
             if stage == 1:
                 self.exec_cnt += 1
                 self.exec_time += (time.time() - time_ckpt)
-            time_ckpt = time.time()
-            info = self.genFuzzInfo()
-            info += "\n正在执行测试用例：\n" + fn + "\n"
-            info += "执行速度：" + (
-                "-" if time.time() - start < 1e-4 else "{:.2f}".format((i + 1) / (time.time() - start))) + "个/秒\n"
-            self.fuzzThread.execInfoSgn.emit(info)
+            if stage != 2:
+                time_ckpt = time.time()
+                info = self.genFuzzInfo()
+                info += "\n正在执行测试用例：\n" + fn + "\n"
+                info += "执行速度：" + (
+                    "-" if time.time() - start < 1e-4 else "{:.2f}".format((i + 1) / (time.time() - start))) + "个/秒\n"
+                self.fuzzThread.execInfoSgn.emit(info)
+            else:
+                self.fuzzThread.nnInfoSgn.emit("正在执行训练数据：" + fn + "\n")
             if eval(self.cond):
                 self.stop = True
                 return
@@ -414,7 +424,9 @@ class FuzzExec():
                 # fn = os.path.join(self.dir, 'mutations', str(self.round_cnt),
                 #                  "input_{:d}_{:06d}".format(iter, self.mut_cnt))
                 fn = save_dir + "\\" + str(self.mut_cnt)
-                write_to_testcase(fn, out_buf1)
+                tmp = bytes(out_buf1)
+                self.MAIdll.setValueInRange(tmp)
+                write_to_testcase(fn, tmp)
                 self.mut_cnt += 1
                 self.mut_time += (time.time() - time_ckpt)
                 time_ckpt = time.time()
@@ -465,7 +477,9 @@ class FuzzExec():
                 # fn = os.path.join(self.dir, 'mutations', str(self.round_cnt),
                 #                  "input_{:d}_{:06d}".format(iter, self.mut_cnt))
                 fn = save_dir + "\\" + str(self.mut_cnt)
-                write_to_testcase(fn, out_buf2)
+                tmp = bytes(out_buf2)
+                self.MAIdll.setValueInRange(tmp)
+                write_to_testcase(fn, tmp)
                 self.mut_cnt += 1
                 self.mut_time += (time.time() - time_ckpt)
                 time_ckpt = time.time()
