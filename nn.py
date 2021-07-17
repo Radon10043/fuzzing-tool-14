@@ -112,11 +112,14 @@ class NN():
         self.SPLIT_RATIO = 0
         self.round_cnt = 0
         self.all_node = all_node
+
         for idx, node in enumerate(all_node):
             self.nodes_map[node] = idx
 
-    # splice two seeds to a new seed
-    def splice_seed(self, fl1, fl2, idxx):
+    def setExec(self, exec_module):
+        self.exec_module = exec_module
+
+    def crossover(self, fl1, fl2, idxx):
         tmp1 = open(fl1, 'rb').read()
         ret = 1
         randd = fl2
@@ -145,8 +148,10 @@ class NN():
                 head = list(head)
                 tail = list(tail)
                 tail[:splice_at] = head[:splice_at]
-                with open(os.path.join(self.dir, 'splice_seeds', 'tmp_' + str(idxx)), 'wb') as f:
-                    f.write(bytearray(tail))
+                tail = bytes(tail)
+                with open(os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx)), 'wb') as f:
+                    self.MAIdll.setValureInRange(tail)
+                    f.write(tail)
                 ret = 0
             print(f_diff, l_diff)
             randd = random.choice(self.seed_list)
@@ -155,14 +160,23 @@ class NN():
         # obtain raw bitmaps
         raw_bitmap = {}
         tmp_cnt = []
-        for f in self.seed_list:
+        cov = set()
+        for i, f in enumerate(self.seed_list):
             tmp_list = []
-            # out = get_coverage([PROGRAM_LOC, f])
-            _, out, _, _ = utils.getCoverage(open(f, "rb").read(), self.program_loc, self.MAIdll)
+            out = None
+            if f in self.exec_module.cov_map.keys():
+                out, crash = self.exec_module.cov_map[f]
+            else:
+                _, out, _, _ = utils.getCoverage(open(f, "rb").read(), self.program_loc, self.MAIdll)
+            cov = cov.union(set(out))
             for edge in out:
                 tmp_cnt.append(edge)
                 tmp_list.append(edge)
             raw_bitmap[f] = tmp_list
+        info = "训练集信息："
+        info += "训练集数量：" + str(len(self.seed_list) + 1) + "\n"
+        info += "覆盖节点数：" + str(len(cov)) + "\n"
+        self.fuzzThread.nnInfoSgn.emit(info)
         counter = Counter(tmp_cnt).most_common()
 
         # save bitmaps to individual numpy label
@@ -257,7 +271,7 @@ class NN():
         if splice == 1 and self.round_cnt != 0:
             if self.round_cnt % 2 == 0:
                 splice_fn = os.path.join(self.dir, 'splice_seeds', 'tmp_' + str(idxx))
-                self.splice_seed(fl[0], fl[1], idxx)
+                self.crossover(fl[0], fl[1], idxx)
                 x = self.vectorize_file(splice_fn)
                 loss_value, grads_value = iterate([x])
                 idx = np.flip(
@@ -265,8 +279,8 @@ class NN():
                 val = np.sign(grads_value[0][idx])
                 adv_list.append((idx, val, splice_fn))
             else:
-                self.splice_seed(fl[0], fl[1], idxx + self.grads_cnt)
-                splice_fn = os.path.join(self.dir, 'splice_seeds', 'tmp_' + str(idxx + self.grads_cnt))
+                self.crossover(fl[0], fl[1], idxx + self.grads_cnt)
+                splice_fn = os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx + self.grads_cnt))
                 x = self.vectorize_file(splice_fn)
                 loss_value, grads_value = iterate([x])
                 idx = np.flip(
@@ -296,8 +310,8 @@ class NN():
 
         # do not generate spliced seed for the first round
         if splice == 1 and self.round_cnt != 0:
-            self.splice_seed(fl[0], fl[1], idxx)
-            splice_fn = os.path.join(self.dir, "splice_seeds", "tmp_" + str(idxx))
+            self.crossover(fl[0], fl[1], idxx)
+            splice_fn = os.path.join(self.dir, "crossovers", "tmp_" + str(idxx))
             x = self.vectorize_file(splice_fn)
             loss_value, grads_value = iterate([x])
             idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)), 0)
@@ -386,7 +400,7 @@ class NN():
         info += "输出维数：\t\t\t" + str(self.output_dim) + "\n"
         info += "训练时间：\t\t\t" + "{:.2f}".format(end-start) + "秒\n"
         info += "保存路径：\n" + save_loc + "\n"
-        self.fuzzThread.nnInfoSgn.emit(info)
+        self.uiFuzz.text_browser_nn.append(info)
 
     def build_model(self):
         batch_size = 32
@@ -404,8 +418,9 @@ class NN():
         return model
 
     def gen_grad(self, data):
-        self.seed_list = [os.path.abspath(i) for i in glob.glob(os.path.join(self.dir, "seeds", "*"))]
-        self.new_seeds = [os.path.abspath(i) for i in glob.glob(os.path.join(self.dir, "seeds", "id*"))]
+        seeds_dir = os.path.join(self.dir, "seeds")
+        self.seed_list = [os.path.join(seeds_dir, i) for i in glob.glob(os.path.join(seeds_dir, "*"))]
+        self.new_seeds = [os.path.join(seeds_dir, i) for i in glob.glob(os.path.join(seeds_dir, "id*"))]
         self.SPLIT_RATIO = len(self.seed_list)
         t0 = time.time()
         self.process_data()
