@@ -1,51 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
 import glob
 import math
-import time
-import keras
+import os
 import random
 import socket
-import subprocess
-import threading
-import utils
-import numpy as np
-from subprocess import *
-import tensorflow as tf
-import keras.backend as K
-from keras.models import load_model
+import sys
+import time
 from collections import Counter
-#from tensorflow import random
+from subprocess import *
+
+import keras
+import keras.backend as K
+import numpy as np
+import tensorflow as tf
+from keras.layers import Dense, Activation
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation
-from keras.callbacks import ModelCheckpoint
+from keras.models import load_model
+
+import utils
 
 HOST = '127.0.0.1'
 PORT = 12012
-
-#MAX_FILE_SIZE = 10000
-#MAX_BITMAP_SIZE = 2000
-
-
-#round_cnt = 0
-# Choose a seed for random initilzation
-# seed = int(time.time())
 seed = 12
 np.random.seed(seed)
 random.seed(seed)
 tf.random.set_seed(seed)
-#set_random_seed(seed)
-#seed_list = [os.path.abspath(i) for i in glob.glob('./seeds/*')]
-#new_seeds = [os.path.abspath(i) for i in glob.glob('./seeds/id*')]
-#SPLIT_RATIO = len(seed_list)
-# get binary argv
 argvv = sys.argv[1:]
 PROGRAM_LOC = "D:\\fuzzer_new\\example\\main.exe"
-#EDGE_MAP = {"main": 0, "CheckDate": 1, "CheckRadarInfo": 2, "CheckUiNo": 3, "TestA": 4, "TestB": 5, "TestC": 6, "TestD": 7, "CheckData": 8}
-#EDGE_MAP = {"main": 0, "func1": 1, "func2": 2, "func3": 3, "func4": 4, "func5": 5, "func6": 6, "func7": 7}
 
 
 def get_str_btw(s, f, b):
@@ -55,7 +38,7 @@ def get_str_btw(s, f, b):
 
 def get_coverage(cmd):
     coverNode = []
-    p=Popen(cmd,stdout=PIPE,stdin=PIPE,stderr=STDOUT)
+    p = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
     try:
         out = p.communicate(timeout=2)[0]
     except TimeoutExpired:
@@ -63,13 +46,11 @@ def get_coverage(cmd):
         out = b"timeout"
     p.kill()
     output = out.decode().split("\n")
-    for j in range(0,len(output)):
+    for j in range(0, len(output)):
         if "execute-" in output[j]:
-            coverNode.append(get_str_btw(output[j],"execute-","\r"))
+            coverNode.append(get_str_btw(output[j], "execute-", "\r"))
             coverNode = sorted(set(coverNode), key=coverNode.index)
     return coverNode
-
-
 
 
 # learning rate decay
@@ -268,7 +249,8 @@ class NN():
         for index in range(ll):
             x = self.vectorize_file(fl[index])
             loss_value, grads_value = iterate([x])
-            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)), 0)
+            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)),
+                          0)
             val = np.sign(grads_value[0][idx])
             adv_list.append((idx, val, fl[index]))
 
@@ -308,7 +290,8 @@ class NN():
         for index in range(ll):
             x = self.vectorize_file(fl[index])
             loss_value, grads_value = iterate([x])
-            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)), 0)
+            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)),
+                          0)
             # val = np.sign(grads_value[0][idx])
             val = np.random.choice([1, -1], self.input_dim, replace=True)
             adv_list.append((idx, val, fl[index]))
@@ -319,7 +302,8 @@ class NN():
             splice_fn = os.path.join(self.dir, "crossovers", "tmp_" + str(idxx))
             x = self.vectorize_file(splice_fn)
             loss_value, grads_value = iterate([x])
-            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)), 0)
+            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)),
+                          0)
             # val = np.sign(grads_value[0][idx])
             val = np.random.choice([1, -1], self.input_dim, replace=True)
             adv_list.append((idx, val, splice_fn))
@@ -364,7 +348,8 @@ class NN():
                     K.clear_session()
                     # model = build_model()
                     # model.load_weights('hard_label.h5')
-                    model = load_model(os.path.join(self.dir, 'hard_label.h5'),custom_objects={"accur_1": self.accur_1})
+                    model = load_model(os.path.join(self.dir, 'hard_label.h5'),
+                                       custom_objects={"accur_1": self.accur_1})
                     layer_list = [(layer.name, layer) for layer in model.layers]
 
                 print("number of feature " + str(idxx))
@@ -379,10 +364,10 @@ class NN():
                     f.write(",".join(ele0) + '|' + ",".join(ele1) + '|' + ele2 + "\n")
         end = time.time()
         info = "已生成梯度信息！\n"
-        info += "轮次：\t\t\t" + str(self.round_cnt+1) + "\n"
+        info += "轮次：\t\t\t" + str(self.round_cnt + 1) + "\n"
         info += "生成梯度信息的种子数：\t\t" + str(edge_num) + "\n"
         info += "梯度类型：\t\t\t" + ("有符号" if sign else "无符号(随机)") + "\n"
-        info += "时间：\t\t\t" + "{:.2f}".format(end-start) + "秒\n"
+        info += "时间：\t\t\t" + "{:.2f}".format(end - start) + "秒\n"
         info += "梯度文件保存路径：\n" + grad_fn + "\n"
         info += "可以开始测试...\n"
         self.uiFuzz.text_browser_nn.append(info)
@@ -400,10 +385,10 @@ class NN():
         save_loc = os.path.join(self.dir, "hard_label.h5")
         model.save(save_loc)
         info = "模型训练完成！\n"
-        info += "轮次：\t\t\t" + str(self.round_cnt+1) + "\n"
+        info += "轮次：\t\t\t" + str(self.round_cnt + 1) + "\n"
         info += "输入维数：\t\t\t" + str(self.input_dim) + "\n"
         info += "输出维数：\t\t\t" + str(self.output_dim) + "\n"
-        info += "训练时间：\t\t\t" + "{:.2f}".format(end-start) + "秒\n"
+        info += "训练时间：\t\t\t" + "{:.2f}".format(end - start) + "秒\n"
         info += "保存路径：\n" + save_loc + "\n"
         self.uiFuzz.text_browser_nn.append(info)
 
@@ -453,11 +438,3 @@ class NN():
                 self.gen_grad(data)
                 conn.sendall(b"start")
         conn.close()
-
-
-
-
-if __name__ == '__main__':
-
-    setup_server()
-    #gen_grad(b"train")

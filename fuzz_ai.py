@@ -1,19 +1,15 @@
 import ctypes
-import nn
-import numpy as np
-import random
-import socket
-import time
 import os
-import public
 import re
-import utils
-import instrument as instr
-import threading
-from shutil import copyfile, rmtree, copy
-from subprocess import *
+import time
+from shutil import copyfile, copy
 
-from fuzz import generateReport
+import numpy as np
+
+import instrument as instr
+import nn
+import public
+import utils
 
 HOST = '127.0.0.1'
 PORT = 12012
@@ -28,10 +24,7 @@ cover_node = {}
 input_len = 0
 old_edge_map = {}
 program_loc = "D:\\fuzzer_new\\example\\main.exe"
-# overall coverage achieved by now
 program_cov = set()
-# coverage achieved by current execution
-
 fast = 1
 stage_num = 1
 cov_gain = 0
@@ -150,9 +143,7 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     instrument_var = instrument_var.split(" ")[-1].split(":")[0].rstrip("\n")
     instr.instrument(source_loc, instrument_loc, output_loc, instrument_var)
 
-
     allCoveredNode = []  # 储存了所有被覆盖到的结点
-
 
     allNode = public.getAllFunctions(source_loc)
     allNode = sorted(set(allNode), key=allNode.index)
@@ -178,7 +169,8 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     if ui.AICfgDialog.randTS.isChecked():
         for f in [os.path.join(seeds_dir, path) for path in os.listdir(seeds_dir)]:
             os.remove(f)
-        utils.gen_training_data(os.path.join(utils.ROOT, "AIFuzz"), seed_loc, int(ui.AICfgDialog.randTSSize.text()), MAIdll)
+        utils.gen_training_data(os.path.join(utils.ROOT, "AIFuzz"), seed_loc, int(ui.AICfgDialog.randTSSize.text()),
+                                MAIdll)
         # uiFuzz.text_browser_nn.append("已生成初始训练数据...\n")
         fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经生成初始训练数据，训练集规模：" + ui.AICfgDialog.randTSSize.text() + "\n")
     else:
@@ -192,7 +184,6 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
             for f in files:
                 copy(f, seeds_dir)
             fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经拷贝初始训练数据，训练集规模：" + str(len(files)) + '\n')
-
 
     # 设置终止条件
     condition = ""
@@ -210,8 +201,10 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
         condition = "self.mut_cnt > " + str(stopNum)
 
     condition += " or self.uiFuzz.stop"
-    n = nn.NN(ui, uiFuzz, fuzzThread, len(testcase), allNode, int(ui.AICfgDialog.seedPerRound.text()), program_loc, MAIdll)
-    e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, MAIdll, allNode, n, condition, ui.AICfgDialog.mutSize.currentText())
+    n = nn.NN(ui, uiFuzz, fuzzThread, len(testcase), allNode, int(ui.AICfgDialog.seedPerRound.text()), program_loc,
+              MAIdll)
+    e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, MAIdll, allNode, n, condition,
+                 ui.AICfgDialog.mutSize.currentText())
     n.setExec(e)
     start = time.time()
     e.run()
@@ -242,7 +235,7 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
 
     print("\n", allCoveredNode)
     print("\nfuzz over! cycle = %d, coverage = %.2f, time = %.2fs" % (
-    e.round_cnt + 1, len(e.program_cov) / len(allNode), end - start))
+        e.round_cnt + 1, len(e.program_cov) / len(allNode), end - start))
 
 
 class FuzzExec():
