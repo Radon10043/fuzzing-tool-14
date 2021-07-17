@@ -76,7 +76,7 @@ def threadReceiver(program_loc):
 def threadMonitor():
     global returnUDPInfo
     # prog = "D:\\fuzzing-tool-14\\example\\cppudptest\\getudp.py"
-    prog = os.path.join(ROOT, "example", "cppudptest", "getudp.py")
+    prog = prog = os.path.dirname(os.path.abspath(__file__)) + "/getudp.py"
     out = getstatusoutput(prog)
     # print("getudp.py: ", out)
     returnUDPInfo = out[1]
