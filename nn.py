@@ -150,7 +150,7 @@ class NN():
                 tail[:splice_at] = head[:splice_at]
                 tail = bytes(tail)
                 with open(os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx)), 'wb') as f:
-                    self.MAIdll.setValureInRange(tail)
+                    self.MAIdll.setValueInRange(tail)
                     f.write(tail)
                 ret = 0
             print(f_diff, l_diff)
@@ -161,21 +161,26 @@ class NN():
         raw_bitmap = {}
         tmp_cnt = []
         cov = set()
+        crash_cnt = 0
         for i, f in enumerate(self.seed_list):
             tmp_list = []
             out = None
+            crash = None
             if f in self.exec_module.cov_map.keys():
                 out, crash = self.exec_module.cov_map[f]
             else:
-                _, out, _, _ = utils.getCoverage(open(f, "rb").read(), self.program_loc, self.MAIdll)
+                _, out, crash, _ = utils.getCoverage(open(f, "rb").read(), self.program_loc, self.MAIdll)
             cov = cov.union(set(out))
+            if crash:
+                crash_cnt += 1
             for edge in out:
                 tmp_cnt.append(edge)
                 tmp_list.append(edge)
             raw_bitmap[f] = tmp_list
-        info = "训练集信息："
-        info += "训练集数量：" + str(len(self.seed_list) + 1) + "\n"
-        info += "覆盖节点数：" + str(len(cov)) + "\n"
+        info = "训练集信息：\n"
+        info += "训练集数量：\t\t" + str(len(self.seed_list) + 1) + "\n"
+        info += "覆盖节点数：\t\t" + str(len(cov)) + "\n"
+        info += "崩溃次数：\t\t" + str(crash_cnt) + "\n"
         self.fuzzThread.nnInfoSgn.emit(info)
         counter = Counter(tmp_cnt).most_common()
 
@@ -270,7 +275,7 @@ class NN():
         # do not generate spliced seed for the first round
         if splice == 1 and self.round_cnt != 0:
             if self.round_cnt % 2 == 0:
-                splice_fn = os.path.join(self.dir, 'splice_seeds', 'tmp_' + str(idxx))
+                splice_fn = os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx))
                 self.crossover(fl[0], fl[1], idxx)
                 x = self.vectorize_file(splice_fn)
                 loss_value, grads_value = iterate([x])
