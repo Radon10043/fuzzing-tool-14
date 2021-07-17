@@ -1,16 +1,17 @@
 import os
 import random
 import re
-import threading
 import shutil
 import socket
-from subprocess import *
+import threading
 import time
+from subprocess import *
 
 isCrash = 0
 ROOT = "D:\\fuzzing-tool-14"
-returnUDPInfo =[]
+returnUDPInfo = []
 allNode = []
+
 
 def parse_array(text):
     # loc|sign|filename
@@ -73,6 +74,8 @@ def threadReceiver(program_loc):
 @param {*}
 @return {*}
 '''
+
+
 def threadMonitor():
     global returnUDPInfo
     # prog = "D:\\fuzzing-tool-14\\example\\cppudptest\\getudp.py"
@@ -94,13 +97,13 @@ def getCoverage(testcase, program_loc, MAIdll):
     # MAIdll.setValueInRange(testcase)
     # print("new", testcase)
     # 先启动线程2，用于监控
-    thread2 = threading.Thread(target=threadMonitor, name="thread_monitor",)
+    thread2 = threading.Thread(target=threadMonitor, name="thread_monitor", )
     thread2.start()
     # 启动线程2后，稍微等下，如果线程1速度快了可能会导致线程2无法获得返回的UDP包
     # 从而陷入一直等待线程2结束的状态
     time.sleep(0.2)
     # 一段时间后，启动线程1
-    thread1 = threading.Thread(target=threadReceiver, args=(program_loc, ), name="thread_receiver")
+    thread1 = threading.Thread(target=threadReceiver, args=(program_loc,), name="thread_receiver")
     thread1.start()
     # 形参的测试用例是str类型的list，转换成int后再转为byte
     # data = bytes([int(data) for data in testcase])
@@ -109,7 +112,7 @@ def getCoverage(testcase, program_loc, MAIdll):
     host = socket.gethostname()
     port = 8888
     s.connect((host, port))
-    #s.send(data)
+    # s.send(data)
     s.send(testcase)
     s.close()
     # 等待线程1和线程2结束
@@ -129,7 +132,6 @@ def getCoverage(testcase, program_loc, MAIdll):
     coverNode = getCoverNode(instrValue)
     print("coverNode:", coverNode)
 
-
     timeout = False
     return testcase, coverNode, crashResult, timeout
 
@@ -139,12 +141,12 @@ def mutate(a, add=True, delete=True):
     for i in range(0, len(a)):
         prob = random.random()
         number = random.randint(0, 255)
-        step = random.randint(1,2)
+        step = random.randint(1, 2)
         if prob <= 0.1 and delete:
             continue
         elif prob <= 0.2 and add:
             res.append(number)
-            i-=1
+            i -= 1
         elif prob <= 0.8:
             res.append(a[i] ^ number)
         else:
