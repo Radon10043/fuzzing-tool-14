@@ -157,7 +157,6 @@ def mutate(a, add=True, delete=True):
 def gen_training_data(PATH_PREFIX, seed_fn, num, MAIdll):
     # population = [bytearray([1, 2, 3, 4]), bytearray([0, 10, 100, 200])]
     population = [open(seed_fn, "rb").read()]
-    i = 0
     while len(population) <= num:
         new_population = []
         for tc in population:
@@ -173,5 +172,4 @@ def gen_training_data(PATH_PREFIX, seed_fn, num, MAIdll):
         with open(input_fn, "wb") as f:
             MAIdll.setValueInRange(tc)
             f.write(tc)
-        i += 1
     return population

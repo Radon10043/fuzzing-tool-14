@@ -159,7 +159,7 @@ class NN():
                 tmp_list.append(edge)
             raw_bitmap[f] = tmp_list
         info = "训练集信息：\n"
-        info += "训练集数量：\t\t" + str(len(self.seed_list) + 1) + "\n"
+        info += "训练集数量：\t\t" + str(len(self.seed_list)) + "\n"
         info += "覆盖节点数：\t\t" + str(len(cov)) + "\n"
         info += "崩溃次数：\t\t" + str(crash_cnt) + "\n"
         self.fuzzThread.nnInfoSgn.emit(info)
