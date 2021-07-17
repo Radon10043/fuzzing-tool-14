@@ -28,10 +28,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 import Ui_dialog_fuzz as fuzzDialogPY
 import Ui_dialog_seed as seedDialogPY
+import Ui_dialog_AICfg as aicfgDialogPY
 import Ui_dialog_selectStruct as structDialogPY
 import Ui_dialog_selectTarget as targetDialogPY
 import staticAnalysis as sa
-
+import utils
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -158,11 +159,23 @@ class Ui_MainWindow(object):
         self.SAByManBtn.setGeometry(QtCore.QRect(230, 50, 93, 31))
         self.SAByManBtn.setObjectName("SAByManBtn")
         self.tabWidget.addTab(self.codeStructTab, "")
+
         self.interfaceTab = QtWidgets.QWidget()
         self.interfaceTab.setObjectName("interfaceTab")
-        self.label_6 = QtWidgets.QLabel(self.interfaceTab)
-        self.label_6.setGeometry(QtCore.QRect(120, 30, 141, 16))
-        self.label_6.setObjectName("label_6")
+        self.AICfgInfo = QtWidgets.QTextBrowser(self.interfaceTab)
+        self.AICfgInfo.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.AICfgInfo.setGeometry(QtCore.QRect(20, 10, 201, 71))
+        self.AIFuzz = QtWidgets.QRadioButton(self.interfaceTab)
+        self.AIFuzz.setGeometry(QtCore.QRect(230, 10, 93, 31))
+        self.AICfgBtn = QtWidgets.QPushButton(self.interfaceTab)
+        self.AICfgBtn.setGeometry(QtCore.QRect(230, 50, 93, 31))
+        self.AICfgBtn.setObjectName("AICfgBtn")
+        self.AICfgBtn.setEnabled(False)
+        self.AICfgDialog = None
+        # self.label_6 = QtWidgets.QLabel(self.interfaceTab)
+
+        # self.label_6.setGeometry(QtCore.QRect(120, 30, 141, 16))
+        # self.label_6.setObjectName("label_6")
         self.tabWidget.addTab(self.interfaceTab, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -180,6 +193,8 @@ class Ui_MainWindow(object):
         self.chooseHBtn.clicked.connect(self.chooseHFile)
         self.SAByCppcheckBtn.clicked.connect(self.SAByCppcheck)
         self.SAByManBtn.clicked.connect(self.popTargetDialog)
+        self.AIFuzz.clicked.connect(lambda x: self.AICfgBtn.setEnabled(self.AIFuzz.isChecked()))
+        self.AICfgBtn.clicked.connect(self.popAICfgDialog)
 
         regExp1 = QtCore.QRegExp("^([1-9]\d{0,2}|1000)$")
         self.TCNumPerCyc.setValidator(QtGui.QRegExpValidator(regExp1))
@@ -225,6 +240,8 @@ class Ui_MainWindow(object):
         # self.label_3.setText(_translate("MainWindow", "如果不手动输入，系统会自动生成"))
         self.stopOptionGroup.setTitle(_translate("MainWindow", "终止条件"))
         self.stopByTime.setText(_translate("MainWindow", "按时间"))
+        self.AIFuzz.setText(_translate("AITab", "AIFuzz"))
+        self.AICfgBtn.setText(_translate("AITab", "设置"))
         self.stopByTC.setText(_translate("MainWindow", "按测试用例数量"))
         self.stopByCrash.setText(_translate("MainWindow", "检测到错误就停止"))
         self.timeUnit.setItemText(0, _translate("MainWindow", "分钟"))
@@ -251,7 +268,8 @@ class Ui_MainWindow(object):
         self.SAByCppcheckBtn.setText(_translate("MainWindow", "cppcheck"))
         self.SAByManBtn.setText(_translate("MainWindow", "手动选择"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.codeStructTab), _translate("MainWindow", "基于代码结构"))
-        self.label_6.setText(_translate("MainWindow", "基于交互接口规约"))
+
+        #self.label_6.setText(_translate("MainWindow", "基于交互接口规约"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.interfaceTab), _translate("MainWindow", "基于交互接口规约"))
 
         # 以下为手写内容
@@ -277,6 +295,10 @@ class Ui_MainWindow(object):
             path += temp[0][i] + "\n"
         path = path.rstrip("\n")
         self.CFileLoc.setText(path)
+
+    def popAICfgDialog(self):
+        self.AICfgDialog = aicfgDialogPY.Ui_Dialog(self.AICfgInfo)
+        self.AICfgDialog.show()
 
     def chooseHFile(self, Filepath):
         '''
@@ -317,6 +339,12 @@ class Ui_MainWindow(object):
                 headerNotExistBox.exec_()
                 return
 
+        if self.AICfgDialog is None and self.AIFuzz.isChecked():
+            msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "错误", "请先进行相关配置！")
+            msg.addButton("确定", QtWidgets.QMessageBox.YesRole)
+            msg.exec_()
+            return
+
         root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
 
         # 检测一系列的必要文件是否存在
@@ -350,6 +378,11 @@ class Ui_MainWindow(object):
                 outFolderBackupBox.exec_()
                 return
 
+        if self.AICfgDialog.existTS.isChecked() and self.AICfgDialog.tsLoc.toPlainText() == "":
+            msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请确保已将初始训练集拷贝到" + os.path.join(utils.ROOT, "AIFuzz", "seeds") + "目录下！")
+            msg.addButton("确定", QtWidgets.QMessageBox.YesRole)
+            msg.exec_()
+
         # 因为用户每次可能会更改种子的相关设置，所以每次都需要重新生成一下dll
         os.chdir(root_loc + "/in/")
         os.system("gcc -shared -o mutate_instru.dll mutate_instru.c")
@@ -360,7 +393,7 @@ class Ui_MainWindow(object):
 
         self.fuzzDialog = QtWidgets.QDialog()
         self.uiFuzz = fuzzDialogPY.Ui_Dialog()
-        self.uiFuzz.setupUi(self.fuzzDialog)
+        self.uiFuzz.setupUi(self.fuzzDialog, self.AIFuzz.isChecked())
         self.fuzzDialog.show()
         self.uiFuzz.startFuzz(source_loc_list, ui, self.uiFuzz)
 
