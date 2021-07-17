@@ -171,7 +171,7 @@ class Ui_MainWindow(object):
         self.AICfgBtn.setGeometry(QtCore.QRect(230, 50, 93, 31))
         self.AICfgBtn.setObjectName("AICfgBtn")
         self.AICfgBtn.setEnabled(False)
-        self.AICfgDialog = None
+        self.AICfgDialog = aicfgDialogPY.Ui_Dialog(self.AICfgInfo)
         # self.label_6 = QtWidgets.QLabel(self.interfaceTab)
 
         # self.label_6.setGeometry(QtCore.QRect(120, 30, 141, 16))
@@ -297,7 +297,6 @@ class Ui_MainWindow(object):
         self.CFileLoc.setText(path)
 
     def popAICfgDialog(self):
-        self.AICfgDialog = aicfgDialogPY.Ui_Dialog(self.AICfgInfo)
         self.AICfgDialog.show()
 
     def chooseHFile(self, Filepath):
