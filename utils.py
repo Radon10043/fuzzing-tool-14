@@ -91,7 +91,7 @@ def getCoverage(testcase, program_loc, MAIdll):
 
     # print("old", testcase)
     # MAIdll.setInstrumentValueToZero(testcase)
-    MAIdll.setValueInRange(testcase)
+    # MAIdll.setValueInRange(testcase)
     # print("new", testcase)
     # 先启动线程2，用于监控
     thread2 = threading.Thread(target=threadMonitor, name="thread_monitor",)
@@ -145,14 +145,14 @@ def mutate(a, add=True, delete=True):
         elif prob <= 0.2 and add:
             res.append(number)
             i-=1
-        elif prob <= 0.6:
+        elif prob <= 0.8:
             res.append(a[i] ^ number)
         else:
             res.append(a[i])
-    return res
+    return bytes(res)
 
 
-def gen_training_data(PATH_PREFIX, seed_fn, num):
+def gen_training_data(PATH_PREFIX, seed_fn, num, MAIdll):
     # population = [bytearray([1, 2, 3, 4]), bytearray([0, 10, 100, 200])]
     population = [open(seed_fn, "rb").read()]
     i = 0
@@ -164,9 +164,12 @@ def gen_training_data(PATH_PREFIX, seed_fn, num):
                 break
         population += new_population
     # res = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0}
-    for tc in population:
-        input_fn = os.path.join(PATH_PREFIX, "seeds","input_" + str(i).zfill(10))
+    for i, tc in enumerate(population):
+        if i >= num:
+            break
+        input_fn = os.path.join(PATH_PREFIX, "seeds", "input_" + str(i).zfill(10))
         with open(input_fn, "wb") as f:
+            MAIdll.setValueInRange(tc)
             f.write(tc)
         i += 1
     return population

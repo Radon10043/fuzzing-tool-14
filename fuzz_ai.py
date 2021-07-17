@@ -165,7 +165,7 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
 
     # testcase[0] = [str(data) for data in testcase[0]]
     seeds_dir = os.path.join(utils.ROOT, "AIFuzz", "seeds")
-    p2 = os.path.join(utils.ROOT, "AIFuzz", "splice_seeds")
+    p2 = os.path.join(utils.ROOT, "AIFuzz", "crossovers")
     p3 = os.path.join(utils.ROOT, "AIFuzz", "mutations")
     p4 = os.path.join(utils.ROOT, "AIFuzz", "bitmaps")
     p5 = os.path.join(utils.ROOT, "AIFuzz", "crashes")
@@ -178,7 +178,7 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     if ui.AICfgDialog.randTS.isChecked():
         for f in [os.path.join(seeds_dir, path) for path in os.listdir(seeds_dir)]:
             os.remove(f)
-        utils.gen_training_data(os.path.join(utils.ROOT, "AIFuzz"), seed_loc, int(ui.AICfgDialog.randTSSize.text()))
+        utils.gen_training_data(os.path.join(utils.ROOT, "AIFuzz"), seed_loc, int(ui.AICfgDialog.randTSSize.text()), MAIdll)
         # uiFuzz.text_browser_nn.append("已生成初始训练数据...\n")
         fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经生成初始训练数据，训练集规模：" + ui.AICfgDialog.randTSSize.text() + "\n")
     else:
@@ -212,7 +212,7 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     condition += " or self.uiFuzz.stop"
     n = nn.NN(ui, uiFuzz, fuzzThread, len(testcase), allNode, int(ui.AICfgDialog.seedPerRound.text()), program_loc, MAIdll)
     e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, MAIdll, allNode, n, condition, ui.AICfgDialog.mutSize.currentText())
-
+    n.setExec(e)
     start = time.time()
     e.run()
     end = time.time()
@@ -269,6 +269,7 @@ class FuzzExec():
         self.start = time.time()
         self.stop = False
         self.mut_size = mut_size
+        self.cov_map = {}
 
     def genFuzzInfo(self):
         info = "轮次：\t\t\t" + str(self.round_cnt + 1) + "\n"
@@ -302,7 +303,10 @@ class FuzzExec():
             # crash, timeout = run_target([program_loc, fn])
             print(fn)
             tc = open(fn, "rb").read()
+            self.MAIdll.setValueInRange(tc)
             _, cur_cov, crash, _ = utils.getCoverage(tc, self.program_loc, self.MAIdll)
+            if stage == 2:
+                self.cov_map[fn] = cur_cov
             if crash:
                 crash_fn = os.path.join(self.dir, "crashes", str(self.round_cnt) + "_" + str(self.crash_cnt))
                 copyfile(fn, crash_fn)
@@ -326,7 +330,7 @@ class FuzzExec():
                 return
 
     def fuzz_loop(self):
-        self.run_testcases(os.path.join(self.dir, "splice_seeds"), 1)
+        self.run_testcases(os.path.join(self.dir, "crossovers"), 1)
         dest = os.path.join(self.dir, "gradient_info")
         src = os.path.join(self.dir, "gradient_info_p")
         copyfile(src, dest)
