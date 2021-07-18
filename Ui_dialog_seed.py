@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-15 16:37:51
+LastEditTime: 2021-07-18 18:02:36
 Description:
 '''
 # -*- coding: utf-8 -*-
@@ -491,10 +491,14 @@ class Ui_Dialog(object):
             struct = key
         public.genSeed(self.header_loc, struct, structDict)
         # 生成变异所需得dll文件和表示插桩变量的txt
-        self.genMutate()
-        self.genInstrument()
-        genSeedMsgBox = QtWidgets.QMessageBox(
-            QtWidgets.QMessageBox.Information, "消息", "种子文件生成成功!")
+        try:
+            self.genMutate()
+            self.genInstrument()
+            genSeedMsgBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Information, "消息", "种子文件生成成功!")
+        except:
+            genSeedMsgBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "种子文件生成失败!")
         genSeedMsgBox.exec_()
     # 结束
 
