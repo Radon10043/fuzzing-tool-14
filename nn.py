@@ -1,51 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
 import glob
 import math
-import time
-import keras
+import os
 import random
 import socket
-import subprocess
-import threading
-import utils
-import numpy as np
-from subprocess import *
-import tensorflow as tf
-import keras.backend as K
-from keras.models import load_model
+import sys
+import time
 from collections import Counter
-#from tensorflow import random
+from subprocess import *
+
+import keras
+import keras.backend as K
+import numpy as np
+import tensorflow as tf
+from keras.layers import Dense, Activation
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation
-from keras.callbacks import ModelCheckpoint
+from keras.models import load_model
+
+import utils
 
 HOST = '127.0.0.1'
 PORT = 12012
-
-#MAX_FILE_SIZE = 10000
-#MAX_BITMAP_SIZE = 2000
-
-
-#round_cnt = 0
-# Choose a seed for random initilzation
-# seed = int(time.time())
 seed = 12
 np.random.seed(seed)
 random.seed(seed)
 tf.random.set_seed(seed)
-#set_random_seed(seed)
-#seed_list = [os.path.abspath(i) for i in glob.glob('./seeds/*')]
-#new_seeds = [os.path.abspath(i) for i in glob.glob('./seeds/id*')]
-#SPLIT_RATIO = len(seed_list)
-# get binary argv
 argvv = sys.argv[1:]
 PROGRAM_LOC = "D:\\fuzzer_new\\example\\main.exe"
-#EDGE_MAP = {"main": 0, "CheckDate": 1, "CheckRadarInfo": 2, "CheckUiNo": 3, "TestA": 4, "TestB": 5, "TestC": 6, "TestD": 7, "CheckData": 8}
-#EDGE_MAP = {"main": 0, "func1": 1, "func2": 2, "func3": 3, "func4": 4, "func5": 5, "func6": 6, "func7": 7}
 
 
 def get_str_btw(s, f, b):
@@ -55,7 +38,7 @@ def get_str_btw(s, f, b):
 
 def get_coverage(cmd):
     coverNode = []
-    p=Popen(cmd,stdout=PIPE,stdin=PIPE,stderr=STDOUT)
+    p = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
     try:
         out = p.communicate(timeout=2)[0]
     except TimeoutExpired:
@@ -63,13 +46,11 @@ def get_coverage(cmd):
         out = b"timeout"
     p.kill()
     output = out.decode().split("\n")
-    for j in range(0,len(output)):
+    for j in range(0, len(output)):
         if "execute-" in output[j]:
-            coverNode.append(get_str_btw(output[j],"execute-","\r"))
+            coverNode.append(get_str_btw(output[j], "execute-", "\r"))
             coverNode = sorted(set(coverNode), key=coverNode.index)
     return coverNode
-
-
 
 
 # learning rate decay
@@ -112,11 +93,14 @@ class NN():
         self.SPLIT_RATIO = 0
         self.round_cnt = 0
         self.all_node = all_node
+
         for idx, node in enumerate(all_node):
             self.nodes_map[node] = idx
 
-    # splice two seeds to a new seed
-    def splice_seed(self, fl1, fl2, idxx):
+    def setExec(self, exec_module):
+        self.exec_module = exec_module
+
+    def crossover(self, fl1, fl2, idxx):
         tmp1 = open(fl1, 'rb').read()
         ret = 1
         randd = fl2
@@ -145,8 +129,10 @@ class NN():
                 head = list(head)
                 tail = list(tail)
                 tail[:splice_at] = head[:splice_at]
-                with open(os.path.join(self.dir, 'splice_seeds', 'tmp_' + str(idxx)), 'wb') as f:
-                    f.write(bytearray(tail))
+                tail = bytes(tail)
+                with open(os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx)), 'wb') as f:
+                    self.MAIdll.setValueInRange(tail)
+                    f.write(tail)
                 ret = 0
             print(f_diff, l_diff)
             randd = random.choice(self.seed_list)
@@ -155,14 +141,28 @@ class NN():
         # obtain raw bitmaps
         raw_bitmap = {}
         tmp_cnt = []
-        for f in self.seed_list:
+        cov = set()
+        crash_cnt = 0
+        for i, f in enumerate(self.seed_list):
             tmp_list = []
-            # out = get_coverage([PROGRAM_LOC, f])
-            _, out, _, _ = utils.getCoverage(open(f, "rb").read(), self.program_loc, self.MAIdll)
+            out = None
+            crash = None
+            if f in self.exec_module.cov_map.keys():
+                out, crash = self.exec_module.cov_map[f]
+            else:
+                _, out, crash, _ = utils.getCoverage(open(f, "rb").read(), self.program_loc, self.MAIdll)
+            cov = cov.union(set(out))
+            if crash:
+                crash_cnt += 1
             for edge in out:
                 tmp_cnt.append(edge)
                 tmp_list.append(edge)
             raw_bitmap[f] = tmp_list
+        info = "训练集信息：\n"
+        info += "训练集数量：\t\t" + str(len(self.seed_list) + 1) + "\n"
+        info += "覆盖节点数：\t\t" + str(len(cov)) + "\n"
+        info += "崩溃次数：\t\t" + str(crash_cnt) + "\n"
+        self.fuzzThread.nnInfoSgn.emit(info)
         counter = Counter(tmp_cnt).most_common()
 
         # save bitmaps to individual numpy label
@@ -249,15 +249,16 @@ class NN():
         for index in range(ll):
             x = self.vectorize_file(fl[index])
             loss_value, grads_value = iterate([x])
-            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)), 0)
+            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)),
+                          0)
             val = np.sign(grads_value[0][idx])
             adv_list.append((idx, val, fl[index]))
 
         # do not generate spliced seed for the first round
         if splice == 1 and self.round_cnt != 0:
             if self.round_cnt % 2 == 0:
-                splice_fn = os.path.join(self.dir, 'splice_seeds', 'tmp_' + str(idxx))
-                self.splice_seed(fl[0], fl[1], idxx)
+                splice_fn = os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx))
+                self.crossover(fl[0], fl[1], idxx)
                 x = self.vectorize_file(splice_fn)
                 loss_value, grads_value = iterate([x])
                 idx = np.flip(
@@ -265,8 +266,8 @@ class NN():
                 val = np.sign(grads_value[0][idx])
                 adv_list.append((idx, val, splice_fn))
             else:
-                self.splice_seed(fl[0], fl[1], idxx + self.grads_cnt)
-                splice_fn = os.path.join(self.dir, 'splice_seeds', 'tmp_' + str(idxx + self.grads_cnt))
+                self.crossover(fl[0], fl[1], idxx + self.grads_cnt)
+                splice_fn = os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx + self.grads_cnt))
                 x = self.vectorize_file(splice_fn)
                 loss_value, grads_value = iterate([x])
                 idx = np.flip(
@@ -289,18 +290,20 @@ class NN():
         for index in range(ll):
             x = self.vectorize_file(fl[index])
             loss_value, grads_value = iterate([x])
-            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)), 0)
+            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)),
+                          0)
             # val = np.sign(grads_value[0][idx])
             val = np.random.choice([1, -1], self.input_dim, replace=True)
             adv_list.append((idx, val, fl[index]))
 
         # do not generate spliced seed for the first round
         if splice == 1 and self.round_cnt != 0:
-            self.splice_seed(fl[0], fl[1], idxx)
-            splice_fn = os.path.join(self.dir, "splice_seeds", "tmp_" + str(idxx))
+            self.crossover(fl[0], fl[1], idxx)
+            splice_fn = os.path.join(self.dir, "crossovers", "tmp_" + str(idxx))
             x = self.vectorize_file(splice_fn)
             loss_value, grads_value = iterate([x])
-            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)), 0)
+            idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)),
+                          0)
             # val = np.sign(grads_value[0][idx])
             val = np.random.choice([1, -1], self.input_dim, replace=True)
             adv_list.append((idx, val, splice_fn))
@@ -345,7 +348,8 @@ class NN():
                     K.clear_session()
                     # model = build_model()
                     # model.load_weights('hard_label.h5')
-                    model = load_model(os.path.join(self.dir, 'hard_label.h5'),custom_objects={"accur_1": self.accur_1})
+                    model = load_model(os.path.join(self.dir, 'hard_label.h5'),
+                                       custom_objects={"accur_1": self.accur_1})
                     layer_list = [(layer.name, layer) for layer in model.layers]
 
                 print("number of feature " + str(idxx))
@@ -360,10 +364,10 @@ class NN():
                     f.write(",".join(ele0) + '|' + ",".join(ele1) + '|' + ele2 + "\n")
         end = time.time()
         info = "已生成梯度信息！\n"
-        info += "轮次：\t\t\t" + str(self.round_cnt+1) + "\n"
+        info += "轮次：\t\t\t" + str(self.round_cnt + 1) + "\n"
         info += "生成梯度信息的种子数：\t\t" + str(edge_num) + "\n"
         info += "梯度类型：\t\t\t" + ("有符号" if sign else "无符号(随机)") + "\n"
-        info += "时间：\t\t\t" + "{:.2f}".format(end-start) + "秒\n"
+        info += "时间：\t\t\t" + "{:.2f}".format(end - start) + "秒\n"
         info += "梯度文件保存路径：\n" + grad_fn + "\n"
         info += "可以开始测试...\n"
         self.uiFuzz.text_browser_nn.append(info)
@@ -381,12 +385,12 @@ class NN():
         save_loc = os.path.join(self.dir, "hard_label.h5")
         model.save(save_loc)
         info = "模型训练完成！\n"
-        info += "轮次：\t\t\t" + str(self.round_cnt+1) + "\n"
+        info += "轮次：\t\t\t" + str(self.round_cnt + 1) + "\n"
         info += "输入维数：\t\t\t" + str(self.input_dim) + "\n"
         info += "输出维数：\t\t\t" + str(self.output_dim) + "\n"
-        info += "训练时间：\t\t\t" + "{:.2f}".format(end-start) + "秒\n"
+        info += "训练时间：\t\t\t" + "{:.2f}".format(end - start) + "秒\n"
         info += "保存路径：\n" + save_loc + "\n"
-        self.fuzzThread.nnInfoSgn.emit(info)
+        self.uiFuzz.text_browser_nn.append(info)
 
     def build_model(self):
         batch_size = 32
@@ -404,8 +408,9 @@ class NN():
         return model
 
     def gen_grad(self, data):
-        self.seed_list = [os.path.abspath(i) for i in glob.glob(os.path.join(self.dir, "seeds", "*"))]
-        self.new_seeds = [os.path.abspath(i) for i in glob.glob(os.path.join(self.dir, "seeds", "id*"))]
+        seeds_dir = os.path.join(self.dir, "seeds")
+        self.seed_list = [os.path.join(seeds_dir, i) for i in glob.glob(os.path.join(seeds_dir, "*"))]
+        self.new_seeds = [os.path.join(seeds_dir, i) for i in glob.glob(os.path.join(seeds_dir, "id*"))]
         self.SPLIT_RATIO = len(self.seed_list)
         t0 = time.time()
         self.process_data()
@@ -433,11 +438,3 @@ class NN():
                 self.gen_grad(data)
                 conn.sendall(b"start")
         conn.close()
-
-
-
-
-if __name__ == '__main__':
-
-    setup_server()
-    #gen_grad(b"train")
