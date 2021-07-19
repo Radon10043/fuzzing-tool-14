@@ -141,7 +141,7 @@ class Ui_Dialog(object):
         self.checkResultBtn.setEnabled(True)
         self.stopBtn.setEnabled(False)
         self.ui.startFuzzBtn.setEnabled(True)
-        self.ui.popSeedDialogBtn.setEnabled(True)
+        self.ui.manualInputBtn.setEnabled(True)
 
     def errorFuzz(self):
         '''
@@ -153,7 +153,7 @@ class Ui_Dialog(object):
         self.stopBtn.setEnabled(False)
         self.closeBtn.setEnabled(True)
         self.ui.startFuzzBtn.setEnabled(True)
-        self.ui.popSeedDialogBtn.setEnabled(True)
+        self.ui.manualInputBtn.setEnabled(True)
         self.textBrowser.setText("\n\n" + self.errorInfo)
 
     def stopFuzz(self):
