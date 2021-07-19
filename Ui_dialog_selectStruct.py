@@ -91,22 +91,37 @@ class Ui_Dialog(object):
         # item.setText(_translate("Dialog", "struct3"))
         self.structTableWidget.setSortingEnabled(__sortingEnabled)
         self.yesBtn.setText(_translate("Dialog", "确定"))
-        # ===========================手写=================================
+        # ================================================================
         self.selectedStruct = ""
         # ================================================================
 
-    # ========================================手写===========================================
+
+    # =======================================================================================
     '''
     @description: 设置界面的初始值
     @param {*} self
     @param {*} header_loc 传进来的header_loc已经是一个列表了
     @return {*}
     '''
+    def setValues(self, header_loc_list, choice, uiSelectIOStruct):
+        """设置界面的初始值
 
-    def setValues(self, header_loc):
-        self.header_loc = header_loc
-        self.structList = staticAnalysis.getAllStruct(header_loc)
+        Parameters
+        ----------
+        header_loc_list : list
+            列表中存储了所有头文件的路径
+        choice : str
+            表示用户要选择输入结构体的格式还是输出结构体的格式
+
+        Notes
+        -----
+        [description]
+        """
+        self.header_loc_list = header_loc_list
+        self.structList = staticAnalysis.getAllStruct(header_loc_list)
         self.structTableWidget.setRowCount(len(self.structList))
+        self.choice = choice
+        self.uiSelectIOStruct = uiSelectIOStruct
 
         s_cbx = "{"
         s_lab = "{"
@@ -162,18 +177,29 @@ class Ui_Dialog(object):
         self.selectedStruct = ""
 
     def popSeedDialog(self):
-        '''
-        @description: 弹出输入种子输入的界面
-        @param {*} self
-        @return {*}
-        '''
+        """弹出种子输入界面
+
+        Raises
+        ------
+        ValueError
+            如果没有选择结构体就弹出提示信息
+
+        Notes
+        -----
+        [description]
+        """
         try:
             if self.selectedStruct == "":
                 raise ValueError("没有选择结构体")
+            # 设置选择输入输出界面结构体的label的值
+            if self.choice == "input":
+                self.uiSelectIOStruct.inputStructLabel.setText(self.selectedStruct)
+            else:
+                self.uiSelectIOStruct.outputStructLabel.setText(self.selectedStruct)
             self.seedDialog = QtWidgets.QDialog()
             self.uiSeed = seedDialogPY.Ui_Dialog()
             self.uiSeed.setupUi(self.seedDialog)
-            self.uiSeed.initStructDict(self.header_loc, False, self.selectedStruct, self.structList)
+            self.uiSeed.initStructDict(self.header_loc_list, False, self.selectedStruct, self.structList)
             self.seedDialog.show()
         except ValueError as e:
             print(repr(e))
