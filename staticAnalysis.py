@@ -172,7 +172,7 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                     # 加上变量所在的文件与行数
                     # 如果info内嵌结构体的返回信息，就不用再转换为元组了，因为已经是list(tuple(name, loc))
                     if isinstance(info, str):
-                        info = (info, data.coord.file + ":" + str(data.coord.line))
+                        info = (info, data.coord.file + "?" + str(data.coord.line))
 
                     if isinstance(info, tuple):
                         structInfo.append(info)
@@ -214,12 +214,12 @@ def analyzeInternalStruct(decls, struct):
             # 将data的所在文件与行数的信息也加入到列表中
             if data.bitsize:
                 internalInfoList.append(
-                    (" ".join(data.type.type.names) + " " + struct + "." + data.name + ":" + str(data.bitsize.value),
-                    data.coord.file + ":" + str(data.coord.line)))
+                    (" ".join(data.type.type.names) + " " + struct + "." + data.name + "?" + str(data.bitsize.value),
+                    data.coord.file + "?" + str(data.coord.line)))
             else:
                 internalInfoList.append(
                     (" ".join(data.type.type.names) + " " + struct + "." + data.name,
-                    data.coord.file + ":" + str(data.coord.line)))
+                    data.coord.file + "?" + str(data.coord.line)))
         except AttributeError:
             try:
                 # 这里作一下判断，因为内嵌结构体的时候有两种写法
@@ -274,7 +274,7 @@ def analyzeHeader(header_loc_list):
                         info = analyzeInternalStruct(data.type.type.decls, data.name)
                 # 如果指定了bitsize(:n),则获取bitsize
                 if data.bitsize:
-                    info += ":" + data.bitsize.value
+                    info += "?" + data.bitsize.value
                 if isinstance(info, str):
                     tempList.append(info)
                 else:
