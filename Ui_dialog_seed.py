@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-18 18:02:36
+LastEditTime: 2021-07-20 01:27:14
 Description:
 '''
 # -*- coding: utf-8 -*-
@@ -410,38 +410,40 @@ class Ui_Dialog(object):
             structDict = json.load(f)
             f.close()
         else:
-            # structInfo是一个List, 存储了可设置初始值的成员变量
+            # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
             structInfo = sa.getOneStruct(header_loc, struct, "", allStruct)
             print(structInfo)
             tempDict = {}
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
-                tempDict[structInfo[i]] = {"value": None, "lower": 0, "upper": 999, "instrument": False,
+                tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "instrument": False,
                                             "mutation": False, "bitsize": 8}
-                tempDict[structInfo[i]]["bitsize"] = self.getBitsize(structInfo[i])
+                tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
+                tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
-                if ":" in structInfo[i]:
-                    if "unsigned" in structInfo[i]:
-                        tempDict[structInfo[i]]["upper"] = 2 ** tempDict[structInfo[i]]["bitsize"] - 1
-                        tempDict[structInfo[i]]["lower"] = 0
+                if ":" in structInfo[i][0]:
+                    if "unsigned" in structInfo[i][0]:
+                        tempDict[structInfo[i][0]]["upper"] = 2 ** tempDict[structInfo[i][0]]["bitsize"] - 1
+                        tempDict[structInfo[i][0]]["lower"] = 0
                     else:
-                        tempDict[structInfo[i]]["upper"] = 2 ** (tempDict[structInfo[i]]["bitsize"] - 1) - 1
-                        tempDict[structInfo[i]]["lower"] = 0 - (2 ** tempDict[structInfo[i]]["bitsize"] - 1)
+                        tempDict[structInfo[i][0]]["upper"] = 2 ** (tempDict[structInfo[i][0]]["bitsize"] - 1) - 1
+                        tempDict[structInfo[i][0]]["lower"] = 0 - (2 ** tempDict[structInfo[i][0]]["bitsize"] - 1)
                 else:
                     # 如果用户没指定位大小，自动获取
                     # dataType: 表示数据类型，从list变为str
-                    dataType = structInfo[i].split(" ")
+                    dataType = structInfo[i][0].split(" ")
                     dataType.pop(-1)
                     dataType = " ".join(dataType)
                     try:
-                        tempDict[structInfo[i]]["upper"] = dataRangeDict[dataType]["upper"]
-                        tempDict[structInfo[i]]["lower"] = dataRangeDict[dataType]["lower"]
+                        tempDict[structInfo[i][0]]["upper"] = dataRangeDict[dataType]["upper"]
+                        tempDict[structInfo[i][0]]["lower"] = dataRangeDict[dataType]["lower"]
                     except BaseException as e:
                         print("分析" + dataType + "类型时出错:", e)
-                        tempDict[structInfo[i]]["upper"] = 999
-                        tempDict[structInfo[i]]["lower"] = -999
+                        tempDict[structInfo[i][0]]["upper"] = 999
+                        tempDict[structInfo[i][0]]["lower"] = -999
             structDict[struct] = tempDict
         # 设置Table
+        print(structDict)
         self.setTableContent(structDict)
 
     def genMutate(self):

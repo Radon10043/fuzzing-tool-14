@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-07-19 19:27:59
 LastEditors: Radon
-LastEditTime: 2021-07-19 21:49:27
+LastEditTime: 2021-07-19 23:44:10
 Description: 选择输入与输出格式的界面
 '''
 # -*- coding: utf-8 -*-
@@ -49,10 +49,12 @@ class Ui_Dialog(object):
 
         # =========================================================================
         self.inputBtn.clicked.connect(functools.partial(self.popStructDialog, "input", header_loc_list))
+        self.outputBtn.clicked.connect(functools.partial(self.popStructDialog, "output", header_loc_list))
         # =========================================================================
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
@@ -64,6 +66,7 @@ class Ui_Dialog(object):
         self.outputTipLabel.setText(_translate("Dialog", "输出格式:"))
         self.inputStructLabel.setText(_translate("Dialog", "暂无"))
         self.outputStructLabel.setText(_translate("Dialog", "暂无"))
+
 
     def popStructDialog(self, choice, header_loc_list):
         """弹出选择结构体的界面
@@ -88,14 +91,25 @@ class Ui_Dialog(object):
         if whetherReadJSONBox.clickedButton() == yes:
             readJSON = True
 
-        # 如果读取现有文件，就读取JSON
+        # 如果读取现有文件，就让用户选择JSON
         if readJSON:
             selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
             path = selectedFile[0]
             print("选完了json，该打开种子设置界面了")
+            # try JSON读取失败
+        # 如果不读取现有文件，就让用户选择输入/输出变量格式
         else:
-            if choice == "input":
-                self.selectStructDialog = QtWidgets.QDialog()
-                self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
-                self.uiSelectStruct.setupUi(self.selectStructDialog)
-                self.selectStructDialog.show()
+            self.selectStructDialog = QtWidgets.QDialog()
+            self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
+            self.uiSelectStruct.setupUi(self.selectStructDialog)
+            self.selectStructDialog.show()
+            self.uiSelectStruct.setValues(header_loc_list, choice, self)
+
+
+import sys
+from PyQt5 import QtWidgets
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()

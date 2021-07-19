@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-19 20:58:56
+LastEditTime: 2021-07-19 23:43:47
 Description: 模糊测试工具
 '''
 
@@ -27,7 +27,6 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import Ui_dialog_fuzz as fuzzDialogPY
-import Ui_dialog_seed as seedDialogPY
 import Ui_dialog_AICfg as aicfgDialogPY
 import Ui_dialog_selectStruct as structDialogPY
 import Ui_dialog_selectTarget as targetDialogPY
@@ -440,48 +439,6 @@ class Ui_MainWindow(object):
         self.uiTarget.setupUi(self.targetDialog)
         self.targetDialog.show()
         self.uiTarget.setValues(ui, source_loc_list, [])
-
-    def popStructDialog(self):
-        '''
-        @description: 弹出选择输入结构体的界面，通过选择结构体来得知初始输入的格式
-        @param {*} self 需要将header_loc发送给选择结构体的界面。header_loc是列表
-        @return {*}
-        '''
-        header_loc_list = self.HFileLoc.toPlainText()
-        header_loc_list = header_loc_list.split("\n")
-        # 查看是否已存在structDict.json
-        headerMsgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, '发现JSON文件', '发现structDict.json，是否读取？')
-        yes = headerMsgBox.addButton('确定', QtWidgets.QMessageBox.YesRole)
-        no = headerMsgBox.addButton('取消', QtWidgets.QMessageBox.NoRole)
-        readJSON = False
-
-        # 查看header路径是否正确
-        for header in header_loc_list:
-            if not os.path.exists(header):
-                self.HFileLoc.setText("头文件不存在!")
-                headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在！")
-                headerNotExistBox.exec_()
-                return
-        if os.path.exists(re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "in/structDict.json"):
-            headerMsgBox.exec_()
-            if headerMsgBox.clickedButton() == yes:
-                readJSON = True
-
-        # 如果读取现有的struct.json
-        if readJSON:
-            self.seedDialog = QtWidgets.QDialog()
-            self.uiSeed = seedDialogPY.Ui_Dialog()
-            self.uiSeed.setupUi(self.seedDialog)
-            self.seedDialog.show()
-            # param_struct和["param","allStruct"]只是用来占位置的，因为如果读取json的话并不需要这两个变量
-            self.uiSeed.initStructDict(header_loc_list, readJSON, "param_struct", ["param", "allStruct"])
-        # 如果不读取现有的struct.json, 或者没有struct.json的话
-        else:
-            self.structDialog = QtWidgets.QDialog()
-            self.uiStruct = structDialogPY.Ui_Dialog()
-            self.uiStruct.setupUi(self.structDialog)
-            self.structDialog.show()
-            self.uiStruct.setValues(header_loc_list)
 
 
     def popSelectIODialog(self):
