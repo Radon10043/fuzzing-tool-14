@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-20 01:27:14
+LastEditTime: 2021-07-20 02:02:29
 Description:
 '''
 # -*- coding: utf-8 -*-
@@ -443,7 +443,6 @@ class Ui_Dialog(object):
                         tempDict[structInfo[i][0]]["lower"] = -999
             structDict[struct] = tempDict
         # 设置Table
-        print(structDict)
         self.setTableContent(structDict)
 
     def genMutate(self):
