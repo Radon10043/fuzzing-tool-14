@@ -164,6 +164,24 @@ def getOneStruct(header_loc, struct, prefix, allStruct):
 
 
 def analyzeInternalStruct(decls, struct):
+    """[summary]
+
+    Parameters
+    ----------
+    decls : [type]
+        [description]
+    struct : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
+    """
     '''
     @description: 分析内嵌结构体的数据
     @param {*} decls pycparser解析来的数据，里面存储了各种变量名，类型等
