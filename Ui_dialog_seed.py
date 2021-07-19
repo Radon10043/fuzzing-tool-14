@@ -31,6 +31,8 @@ import public
 import staticAnalysis as sa
 
 # 传入数据结构-start
+from util.get_comment_from_struct import handle_struct
+
 structDict = {
     "结构体名1": {
         "变量名11": {
@@ -96,17 +98,19 @@ dataBitsizeDict = {
 
 # 数据类型上下限字典-start
 dataRangeDict = {
-    "_Bool" : {"lower" : 0, "upper" : 1},
-    "char" : {"lower" : -128, "upper" : 127},
-    "int" : {"lower" : 0 - 2 ** 31, "upper" : 2 ** 31 - 1},
-    "short" : {"lower" : 0 - 2 ** 15, "upper" : 2 ** 15 - 1},
-    "unsigned char" : {"lower" : 0, "upper" : 2 ** 8 - 1},
-    "unsigned short" : {"lower" : 0, "upper" : 2 ** 16 - 1},
-    "unsigned int" : {"lower" : 0, "upper" : 2 ** 32 - 1},
+    "_Bool": {"lower": 0, "upper": 1},
+    "char": {"lower": -128, "upper": 127},
+    "int": {"lower": 0 - 2 ** 31, "upper": 2 ** 31 - 1},
+    "short": {"lower": 0 - 2 ** 15, "upper": 2 ** 15 - 1},
+    "unsigned char": {"lower": 0, "upper": 2 ** 8 - 1},
+    "unsigned short": {"lower": 0, "upper": 2 ** 16 - 1},
+    "unsigned int": {"lower": 0, "upper": 2 ** 32 - 1},
     # TODO float和double的上下限太大了，看起来很长，所以暂时设置成了int的上下限
-    "float" : {"lower" : float(0 - 2 ** 31), "upper" : float(2 ** 31 - 1)},
-    "double" : {"lower" : float(0 - 2 ** 31), "upper" : float(2 ** 31 - 1)}
+    "float": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)},
+    "double": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)}
 }
+
+
 # 数据类型上下限字典-end
 
 class Ui_Dialog(object):
@@ -297,7 +301,7 @@ class Ui_Dialog(object):
         if text != "" and whatThing == 'value':
             # 数值范围验证
             if float(text) <= structDict[struct][memVal]["upper"] and float(text) >= structDict[struct][memVal][
-                    "lower"]:
+                "lower"]:
                 if "float" in dataType or "double" in dataType:
                     structDict[struct][memVal][whatThing] = float(text)
                 else:
@@ -339,6 +343,7 @@ class Ui_Dialog(object):
     @param {*} self
     @return {*}
     '''
+
     def saveData(self):
         global structDict
         if isinstance(self.header_loc, list):
@@ -417,7 +422,7 @@ class Ui_Dialog(object):
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
                 tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "instrument": False,
-                                            "mutation": False, "bitsize": 8}
+                                              "mutation": False, "bitsize": 8}
                 tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
                 tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
@@ -442,6 +447,7 @@ class Ui_Dialog(object):
                         tempDict[structInfo[i][0]]["upper"] = 999
                         tempDict[structInfo[i][0]]["lower"] = -999
             structDict[struct] = tempDict
+        structDict = handle_struct(struct_dict=structDict)
         # 设置Table
         self.setTableContent(structDict)
 
