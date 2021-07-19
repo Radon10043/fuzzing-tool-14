@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-07-19 19:27:59
 LastEditors: Radon
-LastEditTime: 2021-07-19 23:44:10
+LastEditTime: 2021-07-20 02:12:01
 Description: 选择输入与输出格式的界面
 '''
 # -*- coding: utf-8 -*-
@@ -19,6 +19,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import functools
 
 import Ui_dialog_selectStruct as selectStructDialogPY
+import Ui_dialog_seed as seedDialogPY
 
 
 class Ui_Dialog(object):
@@ -92,11 +93,19 @@ class Ui_Dialog(object):
             readJSON = True
 
         # 如果读取现有文件，就让用户选择JSON
+        # TODO 完善读取JSON与输入输出格式的界面
         if readJSON:
             selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
             path = selectedFile[0]
-            print("选完了json，该打开种子设置界面了")
-            # try JSON读取失败
+            try:
+                self.seedDialog = QtWidgets.QDialog()
+                self.uiSeed = seedDialogPY.Ui_Dialog()
+                self.uiSeed.setupUi(self.seedDialog)
+                self.seedDialog.show()
+                self.uiSeed.initStructDict(path, readJSON)
+            except BaseException as e:
+                loadJSONFailedBox = QtWidgets.QFileDialog.QMessage(QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败!")
+                loadJSONFailedBox.exec_()
         # 如果不读取现有文件，就让用户选择输入/输出变量格式
         else:
             self.selectStructDialog = QtWidgets.QDialog()
