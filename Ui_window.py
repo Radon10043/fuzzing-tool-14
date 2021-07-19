@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-15 11:54:29
+LastEditTime: 2021-07-19 20:58:56
 Description: 模糊测试工具
 '''
 
@@ -31,6 +31,7 @@ import Ui_dialog_seed as seedDialogPY
 import Ui_dialog_AICfg as aicfgDialogPY
 import Ui_dialog_selectStruct as structDialogPY
 import Ui_dialog_selectTarget as targetDialogPY
+import Ui_dialog_selectIOStruct as selectIODialogPY
 import staticAnalysis as sa
 import utils
 
@@ -76,9 +77,9 @@ class Ui_MainWindow(object):
         self.seedInputGroup = QtWidgets.QGroupBox(self.centralwidget)
         self.seedInputGroup.setGeometry(QtCore.QRect(440, 160, 271, 121))
         self.seedInputGroup.setObjectName("seedInputGroup")
-        self.popSeedDialogBtn = QtWidgets.QPushButton(self.seedInputGroup)
-        self.popSeedDialogBtn.setGeometry(QtCore.QRect(90, 35, 93, 31))
-        self.popSeedDialogBtn.setObjectName("popSeedDialogBtn")
+        self.manualInputBtn = QtWidgets.QPushButton(self.seedInputGroup)
+        self.manualInputBtn.setGeometry(QtCore.QRect(90, 35, 93, 31))
+        self.manualInputBtn.setObjectName("manualInputBtn")
         self.label_3 = QtWidgets.QLabel(self.seedInputGroup)
         self.label_3.setGeometry(QtCore.QRect(20, 80, 231, 16))
         self.label_3.setObjectName("label_3")
@@ -188,7 +189,7 @@ class Ui_MainWindow(object):
 
         # 以下为手写内容
         self.startFuzzBtn.clicked.connect(self.popFuzzDialog)
-        self.popSeedDialogBtn.clicked.connect(self.popStructDialog)
+        self.manualInputBtn.clicked.connect(self.popSelectIODialog)
         self.chooseCBtn.clicked.connect(self.chooseCFile)
         self.chooseHBtn.clicked.connect(self.chooseHFile)
         self.SAByCppcheckBtn.clicked.connect(self.SAByCppcheck)
@@ -236,7 +237,7 @@ class Ui_MainWindow(object):
         self.HFileLoc.setPlaceholderText(_translate("MainWindow", "头文件位置"))
         self.chooseHBtn.setText(_translate("MainWindow", "选择头文件"))
         self.seedInputGroup.setTitle(_translate("MainWindow", "种子输入"))
-        self.popSeedDialogBtn.setText(_translate("MainWindow", "输入"))
+        self.manualInputBtn.setText(_translate("MainWindow", "输入"))
         # self.label_3.setText(_translate("MainWindow", "如果不手动输入，系统会自动生成"))
         self.stopOptionGroup.setTitle(_translate("MainWindow", "终止条件"))
         self.stopByTime.setText(_translate("MainWindow", "按时间"))
@@ -388,7 +389,7 @@ class Ui_MainWindow(object):
 
         # 防止出现bug，将手动输入按钮和开始测试按钮设置为false
         self.startFuzzBtn.setDisabled(True)
-        self.popSeedDialogBtn.setDisabled(True)
+        self.manualInputBtn.setDisabled(True)
 
         self.fuzzDialog = QtWidgets.QDialog()
         self.uiFuzz = fuzzDialogPY.Ui_Dialog()
@@ -402,11 +403,11 @@ class Ui_MainWindow(object):
         @param {*} self
         @return {*}
         '''
-        header_loc = self.HFileLoc.toPlainText()
+        header_loc_str = self.HFileLoc.toPlainText()
         readJSON = False
-        header_loc = header_loc.split("\n")
-        for header in header_loc:
-            if not os.path.exists(header):
+        header_loc_list = header_loc_str.split("\n")
+        for header_loc in header_loc_list:
+            if not os.path.exists(header_loc):
                 self.HFileLoc.setText("头文件不存在!")
                 headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在！")
                 headerNotExistBox.exec_()
@@ -414,12 +415,12 @@ class Ui_MainWindow(object):
         headerMsgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, '发现JSON文件', '发现structDict.json，是否读取？')
         yes = headerMsgBox.addButton('是', QtWidgets.QMessageBox.YesRole)
         no = headerMsgBox.addButton('否', QtWidgets.QMessageBox.NoRole)
-        if os.path.exists(re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/structDict.json"):
+        if os.path.exists(re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "/structDict.json"):
             headerMsgBox.exec_()
             if headerMsgBox.clickedButton() == yes:
                 readJSON = True
         self.seedDialog.show()
-        self.uiSeed.initStructDict(header_loc, readJSON)
+        self.uiSeed.initStructDict(header_loc_list, readJSON)
 
     def popTargetDialog(self):
         '''
@@ -446,24 +447,26 @@ class Ui_MainWindow(object):
         @param {*} self 需要将header_loc发送给选择结构体的界面。header_loc是列表
         @return {*}
         '''
-        header_loc = self.HFileLoc.toPlainText()
-        header_loc = header_loc.split("\n")
+        header_loc_list = self.HFileLoc.toPlainText()
+        header_loc_list = header_loc_list.split("\n")
         # 查看是否已存在structDict.json
         headerMsgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, '发现JSON文件', '发现structDict.json，是否读取？')
         yes = headerMsgBox.addButton('确定', QtWidgets.QMessageBox.YesRole)
         no = headerMsgBox.addButton('取消', QtWidgets.QMessageBox.NoRole)
         readJSON = False
+
         # 查看header路径是否正确
-        for header in header_loc:
+        for header in header_loc_list:
             if not os.path.exists(header):
                 self.HFileLoc.setText("头文件不存在!")
                 headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在！")
                 headerNotExistBox.exec_()
                 return
-        if os.path.exists(re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "in/structDict.json"):
+        if os.path.exists(re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "in/structDict.json"):
             headerMsgBox.exec_()
             if headerMsgBox.clickedButton() == yes:
                 readJSON = True
+
         # 如果读取现有的struct.json
         if readJSON:
             self.seedDialog = QtWidgets.QDialog()
@@ -471,14 +474,37 @@ class Ui_MainWindow(object):
             self.uiSeed.setupUi(self.seedDialog)
             self.seedDialog.show()
             # param_struct和["param","allStruct"]只是用来占位置的，因为如果读取json的话并不需要这两个变量
-            self.uiSeed.initStructDict(header_loc, readJSON, "param_struct", ["param", "allStruct"])
+            self.uiSeed.initStructDict(header_loc_list, readJSON, "param_struct", ["param", "allStruct"])
         # 如果不读取现有的struct.json, 或者没有struct.json的话
         else:
             self.structDialog = QtWidgets.QDialog()
             self.uiStruct = structDialogPY.Ui_Dialog()
             self.uiStruct.setupUi(self.structDialog)
             self.structDialog.show()
-            self.uiStruct.setValues(header_loc)
+            self.uiStruct.setValues(header_loc_list)
+
+
+    def popSelectIODialog(self):
+        """弹出选择输入与输出格式的对话框
+
+        Notes
+        -----
+        需要头文件，如果没有选择头文件的话无法弹窗
+        """
+        # 查看头文件是否存在
+        header_loc_list = self.HFileLoc.toPlainText().split("\n")
+        for header_loc in header_loc_list:
+            if not os.path.exists(header_loc):
+                headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在!")
+                headerNotExistBox.exec_()
+                return
+
+        # 弹出对话框
+        self.selectIODialog = QtWidgets.QDialog()
+        self.uiSelectIO = selectIODialogPY.Ui_Dialog()
+        self.uiSelectIO.setupUi(self.selectIODialog, self.HFileLoc.toPlainText().split("\n"))
+        self.selectIODialog.show()
+
 
     def SAByCppcheck(self):
         '''
