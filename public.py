@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-14 14:19:37
+LastEditTime: 2021-07-18 21:59:47
 Description: Some pulic function
 '''
 
@@ -175,7 +175,8 @@ def genMutate(header_loc, struct, structDict):
     code += "\ttemp->" + dataName + " = 0;\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
-        code += "\ttemp->" + dataName + " %= " + str(value["upper"]) + ";\n"
+        code += "\ttemp->" + dataName + " = (temp->" + dataName + " % ((" + str(
+            value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(value["lower"]) + ");\n"
     code += "}"
 
     mutateFile = open(root + "mutate_instru.c", mode="w")

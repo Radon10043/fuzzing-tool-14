@@ -76,15 +76,15 @@ def analyze(source_loc_str):
     return suspFunction
 
 
-def getAllStruct(header_loc):
+def getAllStruct(header_loc_list):
     '''
-    @description: 获取头文件中所有结构体的名称，header_loc是一个列表
-    @param {*} header_loc 一个列表，里面存储了所有要解析的头文件的位置
+    @description: 获取头文件中所有结构体的名称，header_loc_list是一个列表
+    @param {*} header_loc_list 一个列表，里面存储了所有要解析的头文件的位置
     @return {*} 返回一个列表，列表里存储了所有结构体的名称
     '''
     allStruct = []
     # 获取所有头文件中结构体的名称
-    for header in header_loc:
+    for header in header_loc_list:
         ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         for decl in ast:
             # 如果当前decl是函数声明，不是结构体，则跳过
@@ -96,17 +96,31 @@ def getAllStruct(header_loc):
     return result
 
 
-def getOneStruct(header_loc, struct, prefix, allStruct):
-    '''
-    @description: 获取一个结构体的数据内容
-    @param {*} header_loc 列表，其中存储了所有头文件的位置
-    @param {*} struct 要检查的结构体名称
-    @param {*} prefix 前缀，当成员变量是结构体的时候会用到
-    @param {*} allStruct 列表，其中存储了头文件中所有结构体名称
-    @return {*} 返回一个列表，里面存储了要检查的结构体的所有信息
-    '''
+def getOneStruct(header_loc_list, struct, prefix, allStruct):
+    """获取一个结构体的数据内容
+
+    Parameters
+    ----------
+    header_loc_list : list
+        存储了所有头文件的位置
+    struct : str
+        要检查的结构体名称
+    prefix : str
+        前缀，当成员变量是结构体的时候会用到
+    allStruct : list
+        存储了头文件中所有结构体名称
+
+    Returns
+    -------
+    list
+        存储了要检查的结构体的所有信息
+
+    Notes
+    -----
+    [description]
+    """
     structInfo = []
-    for header in header_loc:
+    for header in header_loc_list:
         ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         for decl in ast:
             # 如果是函数声明，则跳过
@@ -118,8 +132,11 @@ def getOneStruct(header_loc, struct, prefix, allStruct):
                     info = ""
                     dataType = ""
                     try:
-                        # 如果是普通的变量
                         dataType = " ".join(data.type.type.names)
+                        # 如果是没有名字的变量
+                        if data.name is None:
+                            data.name = "noName"
+                        # 如果是普通的变量
                         info = dataType + " " + prefix + data.name
                     except AttributeError:
                         # 如果是二维数组
@@ -143,15 +160,21 @@ def getOneStruct(header_loc, struct, prefix, allStruct):
                             print("Analyzing one-dimensional array...")
                             info = []
                             for i in range(int(data.type.dim.value)):
-                                info.extend(getOneStruct(header_loc, dataType, prefix + data.name + "[" + str(i) + "].",
+                                info.extend(getOneStruct(header_loc_list, dataType, prefix + data.name + "[" + str(i) + "].",
                                                         allStruct))
                         # 如果结构体成员不是数组
                         else:
-                            info = getOneStruct(header_loc, dataType, prefix + data.name + ".", allStruct)
+                            info = getOneStruct(header_loc_list, dataType, prefix + data.name + ".", allStruct)
                     # 如果指定了bitsize(:n),则获取bitsize
                     if data.bitsize:
                         info += ":" + data.bitsize.value
+
+                    # 加上变量所在的文件与行数
+                    # 如果info内嵌结构体的返回信息，就不用再转换为元组了，因为已经是list(tuple(name, loc))
                     if isinstance(info, str):
+                        info = (info, data.coord.file + "?" + str(data.coord.line))
+
+                    if isinstance(info, tuple):
                         structInfo.append(info)
                     else:
                         structInfo.extend(info)
@@ -164,21 +187,39 @@ def getOneStruct(header_loc, struct, prefix, allStruct):
 
 
 def analyzeInternalStruct(decls, struct):
-    '''
-    @description: 分析内嵌结构体的数据
-    @param {*} decls pycparser解析来的数据，里面存储了各种变量名，类型等
-    @param {*} struct 内嵌结构体外一层的结构体的名称，类型是str
-    @return {*} 返回内嵌结构体的成员变量列表
-    '''
+    """分析内嵌结构体的数据
+
+    Parameters
+    ----------
+    decls : [type]
+        pycparser解析来的数据，里面存储了各种变量名，类型等
+    struct : str
+        内嵌结构体外一层的结构体的名称
+
+    Returns
+    -------
+    list
+        返回内嵌结构体的成员变量列表
+
+    Notes
+    -----
+    [description]
+    """
     internalInfoList = []
     for data in decls:
         try:
             # 查看是否指定了bitsize
+            if data.name is None:
+                data.name = "noName"
+            # 将data的所在文件与行数的信息也加入到列表中
             if data.bitsize:
                 internalInfoList.append(
-                    " ".join(data.type.type.names) + " " + struct + "." + data.name + ":" + str(data.bitsize.value))
+                    (" ".join(data.type.type.names) + " " + struct + "." + data.name + ":" + str(data.bitsize.value),
+                    data.coord.file + "?" + str(data.coord.line)))
             else:
-                internalInfoList.append(" ".join(data.type.type.names) + " " + struct + "." + data.name)
+                internalInfoList.append(
+                    (" ".join(data.type.type.names) + " " + struct + "." + data.name,
+                    data.coord.file + "?" + str(data.coord.line)))
         except AttributeError:
             try:
                 # 这里作一下判断，因为内嵌结构体的时候有两种写法
@@ -193,15 +234,15 @@ def analyzeInternalStruct(decls, struct):
     return internalInfoList
 
 
-def analyzeHeader(header_loc):
+def analyzeHeader(header_loc_list):
     '''
     @description: 通过pycparser获取AST分析头文件。
                 注意：pycparser只能分析头文件，分析c文件时会出错; 定义结构体时最好把结构体名写在大括号后面。
-    @param {*} header_loc 头文件位置列表，可以是一个也可以是多个
+    @param {*} header_loc_list 头文件位置列表，可以是一个也可以是多个
     @return {*} 返回类型是列表内嵌元组，每个元组是一个结构体。元组第一个元素是结构体名称
     '''
     infoList = []
-    for header in header_loc:
+    for header in header_loc_list:
         ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         # ast.show()
         info = ""
