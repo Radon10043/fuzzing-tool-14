@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-20 21:15:44
+LastEditTime: 2021-07-20 22:58:01
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -135,7 +135,7 @@ class Ui_Dialog(object):
         # 表格-start
         self.structTable = QtWidgets.QTableWidget(Dialog)
         self.structTable.setGeometry(QtCore.QRect(10, 10, 880, 480))
-        self.structTable.setColumnCount(9)
+        self.structTable.setColumnCount(8)
         # 表格-end
 
         # 保存按钮-start
@@ -176,7 +176,7 @@ class Ui_Dialog(object):
         self.structTable.setRowCount(amountRows)
         self.structTable.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         self.structTable.setHorizontalHeaderLabels(
-            ['结构体', '成员变量', '当前值', '范围下限', "范围上限", "位", "注释", "是否为插装变量", "是否变异"])
+            ['结构体', '成员变量', '当前值', '范围下限', "范围上限", "位", "注释", "是否变异"])
 
         i = 0  # 行
         j = 0  # 列
@@ -425,7 +425,7 @@ class Ui_Dialog(object):
                     return value
             return -1
 
-    def initStructDict(self, header_loc_list, JSONPath, readJSON, struct, allStruct):
+    def initStructDict(self, header_loc_list, JSONPath, readJSON, uiSelectIOStruct, struct, allStruct):
         """根据传入的路径分析头文件，或直接读取现有的json文件
         Parameters
         ----------
@@ -435,6 +435,8 @@ class Ui_Dialog(object):
             JSON文件的存储路径
         readJSON : Bool
             是否读取已有的json
+        uiSelectIOStruct : Ui_Dialog
+            选择输入输出结构体的ui
         struct : str
             选择的结构体名称
         allStruct : list
@@ -449,7 +451,6 @@ class Ui_Dialog(object):
         [description]
         """
         self.header_loc_list = header_loc_list
-        self.struct = struct
         global structDict
         structDict.clear()
         if readJSON:
@@ -459,10 +460,12 @@ class Ui_Dialog(object):
             f = open(JSONPath, "r")
             structDict = json.load(f)
             f.close()
+            self.struct = list(structDict.keys())[0]
+            uiSelectIOStruct.inputStructLabel.setText(self.struct)
         else:
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
             structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
-            print(structInfo)
+            # print(structInfo)
             tempDict = {}
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
@@ -493,8 +496,8 @@ class Ui_Dialog(object):
                         tempDict[structInfo[i][0]]["lower"] = -999
             structDict[struct] = tempDict
         structDict = handle_struct(struct_dict=structDict)
+
         # 设置Table
-        print(structDict)
         self.setTableContent(structDict)
 
     def genMutate(self):
@@ -507,32 +510,12 @@ class Ui_Dialog(object):
             struct = key
         try:
             public.genMutate(self.header_loc_list, struct, structDict)
-            print("mutate_instru.c生成成功!")
+            print("mutate.c生成成功!")
         except BaseException as e:
-            print("mutate_instru.c生成失败: ", e)
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
 
-    def genInstrument(self):
-        '''
-        @description: 将插桩的变量写入instrument.txt
-        @param {*} self
-        @return {*}
-        '''
-        for key in structDict:
-            struct = key
-        # 查看哪个变量是插桩变量
-        try:
-            for key, value in structDict[struct].items():
-                if value["instrument"]:
-                    instrumentFile = open(
-                        re.sub(self.header_loc_list[0].split(
-                            "/")[-1], "", self.header_loc_list[0]) + "in/instrument.txt",
-                        mode="w")
-                    instrumentFile.write(key)
-                    instrumentFile.close()
-                    break
-            print("instrument.txt保存成功!")
-        except:
-            print("instrument.txt保存失败!")
 
     def gen_check_code(self, structDict, struct):
         check_code_value = []
@@ -563,13 +546,19 @@ class Ui_Dialog(object):
         # 生成变异所需得dll文件和表示插桩变量的txt
         try:
             self.genMutate()
-            self.genInstrument()
+            root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0]) + "/in/"
+            jsonFile = open(root_loc + "input.json", "w")
+            self.delCheckBox()
+            json.dump(structDict, jsonFile)
+            jsonFile.close()
+            self.setTableContent(structDict)
             genSeedMsgBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Information, "消息", "种子文件生成成功!")
+            genSeedMsgBox.exec_()
         except:
             genSeedMsgBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Warning, "警告", "种子文件生成失败!")
-        genSeedMsgBox.exec_()
+            genSeedMsgBox.exec_()
     # 结束
 
 

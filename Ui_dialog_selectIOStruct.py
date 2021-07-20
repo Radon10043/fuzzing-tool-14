@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-07-19 19:27:59
 LastEditors: Radon
-LastEditTime: 2021-07-20 16:09:16
+LastEditTime: 2021-07-20 21:37:21
 Description: 选择输入与输出格式的界面
 '''
 # -*- coding: utf-8 -*-
@@ -121,13 +121,13 @@ class Ui_Dialog(object):
                     self.uiSeed.setupUi(self.seedDialog)
                     self.seedDialog.show()
                     # 如果读取JSON的话，后两个参数其实是用不上的
-                    self.uiSeed.initStructDict(self.header_loc_list, JSONPath, readJSON, struct="struct", allStruct=["all","struct"])
+                    self.uiSeed.initStructDict(self.header_loc_list, JSONPath, readJSON, self, struct="struct", allStruct=["all","struct"])
                 elif choice == "output":
                     self.outputDialog = QtWidgets.QDialog()
                     self.uiOutput = outputDialogPY.Ui_Dialog()
                     self.uiOutput.setupUi(self.outputDialog)
                     self.outputDialog.show()
-                    self.uiOutput.initStructDict(self.header_loc_list, JSONPath, readJSON, struct="struct", allStruct=["all","Struct"])
+                    self.uiOutput.initStructDict(self.header_loc_list, JSONPath, readJSON, self, struct="struct", allStruct=["all","Struct"])
             except BaseException as e:
                 traceback.print_exc()
                 loadJSONFailedBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败!")
