@@ -31,7 +31,7 @@ import public
 import staticAnalysis as sa
 
 # 传入数据结构-start
-from util.check_code import get_support_methods
+from util.check_code import get_support_methods, calculate_check_code_from_dec
 from util.get_comment_from_struct import handle_struct
 
 structDict = {
@@ -537,6 +537,21 @@ class Ui_Dialog(object):
         except:
             print("instrument.txt保存失败!")
 
+    def gen_check_code(self, structDict, struct):
+        check_code_value = []
+        check_code_holder_name = 0
+        for key, value in structDict[struct].items():
+            if value["checkCode"] == "should":
+                check_code_value.append(value["value"])
+            elif value["checkCode"] == "holder":
+                check_code_holder_name = key
+        check_code_method = self.checkCodeComboBox.currentText()
+        check_code = calculate_check_code_from_dec(dec_data_list=check_code_value,
+                                                   method=check_code_method.split(":")[0],
+                                                   algorithm=check_code_method.split(":")[1])
+        structDict[struct][check_code_holder_name]["value"] = check_code
+        return structDict
+
     def genSeed(self):
         '''
         @description: 根据输入的内容，生成种子测试用例seed.txt
@@ -545,6 +560,8 @@ class Ui_Dialog(object):
         '''
         for key in structDict:
             struct = key
+        # TODO 使用校验码
+        # structDict = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里
         public.genSeed(self.header_loc_list, struct, structDict)
         # 生成变异所需得dll文件和表示插桩变量的txt
         try:
