@@ -31,6 +31,7 @@ import public
 import staticAnalysis as sa
 
 # 传入数据结构-start
+from util.check_code import get_support_methods, calculate_check_code_from_dec
 from util.get_comment_from_struct import handle_struct
 
 structDict = {
@@ -42,7 +43,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
         "变量名12": {
             "value": None,
@@ -51,7 +52,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         }
     },
     "结构体名2": {
@@ -62,7 +63,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
         "变量名22": {
             "value": "var4",
@@ -71,7 +72,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
         "变量名23": {
             "value": "var5",
@@ -80,7 +81,7 @@ structDict = {
             "instrument": False,
             "mutation": True,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
     }
 }
@@ -114,6 +115,8 @@ dataRangeDict = {
     "float": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)},
     "double": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)}
 }
+
+
 # 数据类型上下限字典-end
 
 # TODO 改为报文输入的结构
@@ -151,14 +154,14 @@ class Ui_Dialog(object):
         # 生成按钮-end
 
         # 下拉菜单选择校验算法-start
-        self.checkcodeComboBox = QtWidgets.QComboBox(Dialog)
-        self.checkcodeComboBox.setGeometry(QtCore.QRect(1000, 10, 91, 31))
-        self.checkcodeComboBox.setObjectName("checkcodeComboBox")
+        self.checkCodeComboBox = QtWidgets.QComboBox(Dialog)
+        self.checkCodeComboBox.setGeometry(QtCore.QRect(1000, 10, 91, 31))
+        self.checkCodeComboBox.setObjectName("checkCodeComboBox")
         # 添加项目
-        self.checkcodeComboBox.addItem("")
-        self.checkcodeComboBox.addItem("")
-        self.checkcodeComboBox.setItemText(0, "第一")
-        self.checkcodeComboBox.setItemText(1, "第二")
+        check_code_methods = get_support_methods()
+        for index in range(len(check_code_methods)):
+            self.checkCodeComboBox.addItem("")
+            self.checkCodeComboBox.setItemText(index, check_code_methods[index])
         # 下拉菜单选择校验算法-end
 
         self.setTableContent(structDict)
@@ -204,6 +207,7 @@ class Ui_Dialog(object):
                 self.structTable.setCellWidget(
                     i, 8, self.varCheckBoxItem(val['mutation'], structKey, key))  # 变异
                 i += 1
+
     # 结束
 
     def enableeditItem(self, text):  # 生成不可修改item
@@ -228,8 +232,8 @@ class Ui_Dialog(object):
         #     for key, val in val.items():
         #         val['instrument'] = checkBool
         structDict[struct][memVal]['mutation'] = checkBool
-    # 表格变异-CheckBox-end
 
+    # 表格变异-CheckBox-end
 
     # 表格插装变量-CheckBox-start
     def insCheckBoxItem(self, checkBool, struct, memVal):
@@ -241,7 +245,6 @@ class Ui_Dialog(object):
         self.insCheckBoxItemDict[struct][memVal]['checkBox'] = checkBox
         return checkBox
 
-
     def insCheckChange(self, checkBool, struct, memVal):  # CheckBox修改函数
         global structDict
         for key, val in self.insCheckBoxItemDict.items():
@@ -250,8 +253,8 @@ class Ui_Dialog(object):
                     val['checkBox'].setChecked(False)
         structDict[struct][memVal]['instrument'] = checkBool
         # print(structDict)
-    # 表格插装变量-CheckBox-end
 
+    # 表格插装变量-CheckBox-end
 
     # 表格-LineEdit-start
     def lineEditItem(self, isNumber, placeholderText, whatThing, struct, memVal):
@@ -288,7 +291,6 @@ class Ui_Dialog(object):
         lineEdit.editingFinished.connect(
             lambda: self.editFinish(lineEdit.text(), whatThing, struct, memVal, lineEdit))  # 编辑-活动
         return lineEdit
-
 
     def editFinish(self, text, whatThing, struct, memVal, lineEdit):
         global structDict
@@ -357,12 +359,12 @@ class Ui_Dialog(object):
                 else:
                     structDict[struct][memVal][whatThing] = int(text)
 
-
     '''
     @description: 将strctDict保存为JSON文件
     @param {*} self
     @return {*}
     '''
+
     def saveData(self):
         """将structDict保存为JSON文件
         Notes
@@ -370,7 +372,8 @@ class Ui_Dialog(object):
         [description]
         """
         global structDict
-        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", "C:/Users/Radon/Desktop", "json file(*.json)")
+        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", "C:/Users/Radon/Desktop",
+                                                         "json file(*.json)")
         # 如果savePath[0]是空字符串的话，表示用户按了右上角的X
         if savePath[0] == "":
             return
@@ -467,7 +470,7 @@ class Ui_Dialog(object):
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
                 tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "instrument": False,
-                                            "mutation": False, "bitsize": 8}
+                                              "mutation": False, "bitsize": 8}
                 tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
                 tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
@@ -514,6 +517,21 @@ class Ui_Dialog(object):
             print("\033[0m")
 
 
+    def gen_check_code(self, structDict, struct):
+        check_code_value = []
+        check_code_holder_name = 0
+        for key, value in structDict[struct].items():
+            if value["checkCode"] == "should":
+                check_code_value.append(value["value"])
+            elif value["checkCode"] == "holder":
+                check_code_holder_name = key
+        check_code_method = self.checkCodeComboBox.currentText()
+        check_code = calculate_check_code_from_dec(dec_data_list=check_code_value,
+                                                   method=check_code_method.split(":")[0],
+                                                   algorithm=check_code_method.split(":")[1])
+        structDict[struct][check_code_holder_name]["value"] = check_code
+        return structDict
+
     def genSeed(self):
         '''
         @description: 根据输入的内容，生成种子测试用例seed.txt
@@ -522,6 +540,8 @@ class Ui_Dialog(object):
         '''
         for key in structDict:
             struct = key
+        # TODO 使用校验码
+        # structDict = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里
         public.genSeed(self.header_loc_list, struct, structDict)
         # 生成变异所需得dll文件和表示插桩变量的txt
         try:
