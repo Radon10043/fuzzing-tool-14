@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-07-19 19:27:59
 LastEditors: Radon
-LastEditTime: 2021-07-20 10:44:05
+LastEditTime: 2021-07-20 16:09:16
 Description: 选择输入与输出格式的界面
 '''
 # -*- coding: utf-8 -*-
@@ -20,6 +20,7 @@ import functools, traceback
 
 import Ui_dialog_selectStruct as selectStructDialogPY
 import Ui_dialog_seed as seedDialogPY
+import Ui_dialog_output as outputDialogPY
 
 
 class Ui_Dialog(object):
@@ -111,12 +112,22 @@ class Ui_Dialog(object):
             selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
             JSONPath = selectedFile[0]
             try:
-                self.seedDialog = QtWidgets.QDialog()
-                self.uiSeed = seedDialogPY.Ui_Dialog()
-                self.uiSeed.setupUi(self.seedDialog)
-                self.seedDialog.show()
-                # 如果读取JSON的话，后两个参数其实是用不上的
-                self.uiSeed.initStructDict(self.header_loc_list, JSONPath, readJSON, struct="struct", allStruct=["all","struct"])
+                # 如果JSONPath是空字符串，表示用户点击了右上角的X
+                if JSONPath == "":
+                    return
+                if choice == "input":
+                    self.seedDialog = QtWidgets.QDialog()
+                    self.uiSeed = seedDialogPY.Ui_Dialog()
+                    self.uiSeed.setupUi(self.seedDialog)
+                    self.seedDialog.show()
+                    # 如果读取JSON的话，后两个参数其实是用不上的
+                    self.uiSeed.initStructDict(self.header_loc_list, JSONPath, readJSON, struct="struct", allStruct=["all","struct"])
+                elif choice == "output":
+                    self.outputDialog = QtWidgets.QDialog()
+                    self.uiOutput = outputDialogPY.Ui_Dialog()
+                    self.uiOutput.setupUi(self.outputDialog)
+                    self.outputDialog.show()
+                    self.uiOutput.initStructDict(self.header_loc_list, JSONPath, readJSON, struct="struct", allStruct=["all","Struct"])
             except BaseException as e:
                 traceback.print_exc()
                 loadJSONFailedBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败!")
