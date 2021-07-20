@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-07-19 19:27:59
 LastEditors: Radon
-LastEditTime: 2021-07-20 02:12:01
+LastEditTime: 2021-07-20 10:44:05
 Description: 选择输入与输出格式的界面
 '''
 # -*- coding: utf-8 -*-
@@ -16,14 +16,14 @@ Description: 选择输入与输出格式的界面
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import functools
+import functools, traceback
 
 import Ui_dialog_selectStruct as selectStructDialogPY
 import Ui_dialog_seed as seedDialogPY
 
 
 class Ui_Dialog(object):
-    def setupUi(self, Dialog, header_loc_list):
+    def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(400, 227)
         self.inputBtn = QtWidgets.QPushButton(Dialog)
@@ -49,8 +49,8 @@ class Ui_Dialog(object):
         self.outputStructLabel.setObjectName("outputStructLabel")
 
         # =========================================================================
-        self.inputBtn.clicked.connect(functools.partial(self.popStructDialog, "input", header_loc_list))
-        self.outputBtn.clicked.connect(functools.partial(self.popStructDialog, "output", header_loc_list))
+        self.inputBtn.clicked.connect(functools.partial(self.popStructDialog, "input"))
+        self.outputBtn.clicked.connect(functools.partial(self.popStructDialog, "output"))
         # =========================================================================
 
         self.retranslateUi(Dialog)
@@ -69,15 +69,28 @@ class Ui_Dialog(object):
         self.outputStructLabel.setText(_translate("Dialog", "暂无"))
 
 
-    def popStructDialog(self, choice, header_loc_list):
+    def setValues(self, header_loc_list):
+        """设置一些初始值
+
+        Parameters
+        ----------
+        header_loc_list : list
+            头文件位置列表
+
+        Notes
+        -----
+        [description]
+        """
+        self.header_loc_list = header_loc_list
+
+
+    def popStructDialog(self, choice):
         """弹出选择结构体的界面
 
         Parameters
         ----------
         choice : str
             表示按下了哪个按钮，如果按下了输入按钮choice的值就是input，输出是output
-        header_loc_list : list
-            列表内存储了所有头文件的路径信息
 
         Notes
         -----
@@ -96,15 +109,17 @@ class Ui_Dialog(object):
         # TODO 完善读取JSON与输入输出格式的界面
         if readJSON:
             selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
-            path = selectedFile[0]
+            JSONPath = selectedFile[0]
             try:
                 self.seedDialog = QtWidgets.QDialog()
                 self.uiSeed = seedDialogPY.Ui_Dialog()
                 self.uiSeed.setupUi(self.seedDialog)
                 self.seedDialog.show()
-                self.uiSeed.initStructDict(path, readJSON)
+                # 如果读取JSON的话，后两个参数其实是用不上的
+                self.uiSeed.initStructDict(self.header_loc_list, JSONPath, readJSON, struct="struct", allStruct=["all","struct"])
             except BaseException as e:
-                loadJSONFailedBox = QtWidgets.QFileDialog.QMessage(QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败!")
+                traceback.print_exc()
+                loadJSONFailedBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败!")
                 loadJSONFailedBox.exec_()
         # 如果不读取现有文件，就让用户选择输入/输出变量格式
         else:
@@ -112,7 +127,7 @@ class Ui_Dialog(object):
             self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
             self.uiSelectStruct.setupUi(self.selectStructDialog)
             self.selectStructDialog.show()
-            self.uiSelectStruct.setValues(header_loc_list, choice, self)
+            self.uiSelectStruct.setValues(self.header_loc_list, choice, self)
 
 
 import sys

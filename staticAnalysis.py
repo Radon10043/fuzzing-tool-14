@@ -214,7 +214,7 @@ def analyzeInternalStruct(decls, struct):
             # 将data的所在文件与行数的信息也加入到列表中
             if data.bitsize:
                 internalInfoList.append(
-                    (" ".join(data.type.type.names) + " " + struct + "." + data.name + "?" + str(data.bitsize.value),
+                    (" ".join(data.type.type.names) + " " + struct + "." + data.name + ":" + str(data.bitsize.value),
                     data.coord.file + "?" + str(data.coord.line)))
             else:
                 internalInfoList.append(
@@ -274,7 +274,7 @@ def analyzeHeader(header_loc_list):
                         info = analyzeInternalStruct(data.type.type.decls, data.name)
                 # 如果指定了bitsize(:n),则获取bitsize
                 if data.bitsize:
-                    info += "?" + data.bitsize.value
+                    info += ":" + data.bitsize.value
                 if isinstance(info, str):
                     tempList.append(info)
                 else:

@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-19 23:43:47
+LastEditTime: 2021-07-20 10:47:24
 Description: 模糊测试工具
 '''
 
@@ -207,6 +207,10 @@ class Ui_MainWindow(object):
         self.isMutateInRangeCheckbox.setText("变异体在范围内")
         self.isMutateInRangeCheckbox.setObjectName("isMutateInRangeCheckbox")
         self.isMutateInRangeCheckbox.setChecked(True)
+
+        self.selectIODialog = QtWidgets.QDialog()
+        self.uiSelectIO = selectIODialogPY.Ui_Dialog()
+        self.uiSelectIO.setupUi(self.selectIODialog)
         # 手写内容结束
 
         self.retranslateUi(MainWindow)
@@ -457,10 +461,8 @@ class Ui_MainWindow(object):
                 return
 
         # 弹出对话框
-        self.selectIODialog = QtWidgets.QDialog()
-        self.uiSelectIO = selectIODialogPY.Ui_Dialog()
-        self.uiSelectIO.setupUi(self.selectIODialog, self.HFileLoc.toPlainText().split("\n"))
         self.selectIODialog.show()
+        self.uiSelectIO.setValues(self.HFileLoc.toPlainText().split("\n"))
 
 
     def SAByCppcheck(self):
