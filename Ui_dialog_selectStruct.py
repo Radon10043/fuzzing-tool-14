@@ -14,6 +14,7 @@ from PyQt5 import QtCore
 import traceback
 
 import Ui_dialog_seed as seedDialogPY
+import Ui_dialog_output as outputDialogPY
 import staticAnalysis
 
 
@@ -151,7 +152,6 @@ class Ui_Dialog(object):
         for i in range(len(self.structList)):
             self.structTableWidget.setRowHeight(i, 50)
 
-
     def selectStruct(self, checkbox, label):
         '''
         @description: 选择了某个结构体，将其对应的checkbox打勾
@@ -164,7 +164,6 @@ class Ui_Dialog(object):
         checkbox.setChecked(True)
         self.selectedStruct = label
 
-
     def unselectAll(self):
         '''
         @description: 因为结构体是单选，所以写一个取消全部选择的函数，在选择某个结构体前先取消全部选择
@@ -174,7 +173,6 @@ class Ui_Dialog(object):
         for i in range(len(self.structList)):
             self.checkboxs[i].setChecked(False)
         self.selectedStruct = ""
-
 
     def popSeedDialog(self):
         """弹出种子输入界面
@@ -192,18 +190,26 @@ class Ui_Dialog(object):
             if self.selectedStruct == "":
                 raise ValueError("没有选择结构体")
             # 设置选择输入输出界面结构体的label的值
+            print(self.choice)
             if self.choice == "input":
                 self.uiSelectIOStruct.inputStructLabel.setText(
                     self.selectedStruct)
-            else:
+                self.seedDialog = QtWidgets.QDialog()
+                self.uiSeed = seedDialogPY.Ui_Dialog()
+                self.uiSeed.setupUi(self.seedDialog)
+                # 如果读取JSON的话，JSONPath和readJSON就用不上了，占个位置
+                self.uiSeed.initStructDict(
+                    self.header_loc_list, "JSONPath", False, self.selectedStruct, self.structList)
+                self.seedDialog.show()
+            elif self.choice == "output":
                 self.uiSelectIOStruct.outputStructLabel.setText(
                     self.selectedStruct)
-            self.seedDialog = QtWidgets.QDialog()
-            self.uiSeed = seedDialogPY.Ui_Dialog()
-            self.uiSeed.setupUi(self.seedDialog)
-            # 如果读取JSON的话，JSONPath和readJSON就用不上了，占个位置
-            self.uiSeed.initStructDict(self.header_loc_list, "JSONPath", False, self.selectedStruct, self.structList)
-            self.seedDialog.show()
+                self.outputDialog = QtWidgets.QDialog()
+                self.uiOutput = outputDialogPY.Ui_Dialog()
+                self.uiOutput.setupUi(self.outputDialog)
+                self.uiOutput.initStructDict(
+                    self.header_loc_list, "JSONPath", False, self.selectedStruct, self.structList)
+                self.outputDialog.show()
         except ValueError as e:
             exceptionBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Warning, "警告", "还没有选择结构体")

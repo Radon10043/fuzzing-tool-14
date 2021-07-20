@@ -1,8 +1,8 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-20 12:00:35
-Description: 种子测试用例输入界面，网络通信中主要管理输入
+LastEditTime: 2021-07-20 21:15:44
+Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
 
@@ -365,7 +365,6 @@ class Ui_Dialog(object):
     '''
     def saveData(self):
         """将structDict保存为JSON文件
-
         Notes
         -----
         [description]
@@ -425,7 +424,6 @@ class Ui_Dialog(object):
 
     def initStructDict(self, header_loc_list, JSONPath, readJSON, struct, allStruct):
         """根据传入的路径分析头文件，或直接读取现有的json文件
-
         Parameters
         ----------
         header_loc_list : list
@@ -443,7 +441,6 @@ class Ui_Dialog(object):
         -------
         [type]
             [description]
-
         Notes
         -----
         [description]
@@ -556,8 +553,16 @@ class Ui_Dialog(object):
     # 结束
 
 
+# if __name__ == "__main__":
+#     app = QtWidgets.QApplication(sys.argv)
+#     headerNotExistBox = QtWidgets.QMessageBox(
+#         QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+#     headerNotExistBox.exec_()
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(
-        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
-    headerNotExistBox.exec_()
+    dialog = QtWidgets.QDialog()
+    ui = Ui_Dialog()
+    ui.setupUi(dialog)
+    dialog.show()
+    sys.exit(app.exec_())
