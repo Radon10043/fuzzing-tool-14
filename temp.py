@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-07-12 10:28:52
 LastEditors: Radon
-LastEditTime: 2021-07-12 12:03:13
+LastEditTime: 2021-07-20 17:59:18
 Description: temp file
 '''
 import ctypes
@@ -11,3 +11,4 @@ data = bytes([251, 17, 111, 96, 45, 48, 0, 0, 22, 10, 16, 15, 13, 13, 101, 0, 21
 dll = ctypes.cdll.LoadLibrary("C:\\Users\\Radon\\Desktop\\fuzztest\\4th\\example_21.7.5\\in\\mutate_instru.dll")
 dll.setValueInRange(data)
 print(dll.getInstrumentValue(data))
+
