@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-20 17:26:59
+LastEditTime: 2021-07-20 22:53:07
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -274,7 +274,7 @@ class Ui_Dialog(object):
                     return value
             return -1
 
-    def initStructDict(self, header_loc_list, JSONPath, readJSON, struct, allStruct):
+    def initStructDict(self, header_loc_list, JSONPath, readJSON, uiSelectIOStruct, struct, allStruct):
         """根据传入的路径分析头文件，或直接读取现有的json文件
 
         Parameters
@@ -285,6 +285,8 @@ class Ui_Dialog(object):
             JSON文件的存储路径
         readJSON : Bool
             是否读取已有的json
+        uiSelectIOStruct : Ui_Dialog
+            选择输入输出结构体的界面
         struct : str
             选择的结构体名称
         allStruct : list
@@ -307,6 +309,7 @@ class Ui_Dialog(object):
             f = open(JSONPath, "r")
             structDict = json.load(f)
             self.struct = list(structDict.keys())[0]
+            uiSelectIOStruct.outputStructLabel.setText(self.struct)
             f.close()
         else:
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
@@ -351,7 +354,9 @@ class Ui_Dialog(object):
 
         Notes
         -----
-        [description]
+        生成的必要文件分别有：
+        instrument.txt：记录了插装的变量
+
         """
         # 1.生成instrument.txt
         root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0]) + "in/"
@@ -389,6 +394,21 @@ class Ui_Dialog(object):
         except BaseException as e:
             genErrorBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Error, "错误", "生成失败!\n" + repr(e))
             genErrorBox.exec_()
+
+        try:
+            # 将输出结构体的JSON保存在in目录下，名字是output.json
+            jsonFile = open(root_loc + "output.json", "w")
+            self.delCheckBox()
+            json.dump(structDict, jsonFile)
+            jsonFile.close()
+            self.setTableContent(structDict)
+        except BaseException as e:
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
+
+        genSuccessBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "生成成功!\n")
+        genSuccessBox.exec_()
     # 结束
 
 
