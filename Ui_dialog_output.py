@@ -1,9 +1,8 @@
 '''
-Author: Radon
-Date: 2021-07-20 11:11:49
-LastEditors: Radon
-LastEditTime: 2021-07-20 12:00:49
-Description: 网络通信中主要管理输出，可以设置插装变量
+Author: 金昊宸
+Date: 2021-04-22 14:26:43
+LastEditTime: 2021-07-20 17:26:59
+Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
 
@@ -21,6 +20,7 @@ import json
 import random
 import re
 import traceback
+import os
 
 from PyQt5 import QtCore
 # from PyQt5.QtWidgets import *
@@ -33,6 +33,7 @@ import staticAnalysis as sa
 
 # 传入数据结构-start
 from util.get_comment_from_struct import handle_struct
+
 structDict = {
     "结构体名1": {
         "变量名11": {
@@ -40,7 +41,6 @@ structDict = {
             "lower": 10,
             "upper": 200,
             "instrument": False,
-            "mutation": False,
             "bitsize": 8,
             "comment" : "占位"
         },
@@ -116,14 +116,14 @@ dataRangeDict = {
 }
 # 数据类型上下限字典-end
 
-# TODO 改为报文输出的结构
+# TODO 改为报文输入的结构
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         global structDict
         Dialog.setObjectName("Dialog")
         Dialog.setWindowTitle("自定义结构体成员变量值")
-        Dialog.resize(900, 550)
+        Dialog.resize(1500, 550)
         self.setTable(Dialog)
 
     def setTable(self, Dialog):  # 界面函数
@@ -132,7 +132,7 @@ class Ui_Dialog(object):
         # 表格-start
         self.structTable = QtWidgets.QTableWidget(Dialog)
         self.structTable.setGeometry(QtCore.QRect(10, 10, 880, 480))
-        self.structTable.setColumnCount(9)
+        self.structTable.setColumnCount(5)
         # 表格-end
 
         # 保存按钮-start
@@ -146,11 +146,12 @@ class Ui_Dialog(object):
         self.generateBtn = QtWidgets.QPushButton(Dialog)
         self.generateBtn.setGeometry(QtCore.QRect(455, 500, 435, 40))
         self.generateBtn.setText("生成种子文件")
-        self.generateBtn.clicked.connect(self.genSeed)
+        self.generateBtn.clicked.connect(self.genNecessaryFile)
         # self.generateBtn.clicked.connect(Dialog.accept)
         # 生成按钮-end
 
         self.setTableContent(structDict)
+
 
     # 发送一个新的dict，设置表格内容
     def setTableContent(self, newDict):
@@ -162,7 +163,7 @@ class Ui_Dialog(object):
         self.structTable.setRowCount(amountRows)
         self.structTable.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         self.structTable.setHorizontalHeaderLabels(
-            ['结构体', '成员变量', '当前值', '范围下限', "范围上限", "位", "注释", "是否为插装变量", "是否变异"])
+            ['结构体', '成员变量', "位", "注释", "是否插装变量"])
 
         i = 0  # 行
         j = 0  # 列
@@ -175,23 +176,12 @@ class Ui_Dialog(object):
                     i, 0, self.enableeditItem(structKey))  # 结构体名
                 self.structTable.setItem(
                     i, 1, self.enableeditItem(key))  # 成员变量名
-                # if val['value']==None:
-                #     structDict[structKey][key]['value'] = self.getRanNum(
-                #         val['lower'], val['upper'])
-                self.structTable.setCellWidget(
-                    i, 2, self.lineEditItem(True, val['value'], 'value', structKey, key))  # 当前值
-                self.structTable.setCellWidget(
-                    i, 3, self.lineEditItem(True, val['lower'], 'lower', structKey, key))  # 下限
-                self.structTable.setCellWidget(
-                    i, 4, self.lineEditItem(True, val['upper'], 'upper', structKey, key))  # 上限
                 self.structTable.setItem(
-                    i, 5, self.enableeditItem(str(val["bitsize"])))  # 位
+                    i, 2, self.enableeditItem(str(val["bitsize"])))  # 位
                 self.structTable.setItem(
-                    i, 6, self.enableeditItem(str(val["comment"])))  # 注释
+                    i, 3, self.enableeditItem(str(val["comment"])))  # 注释
                 self.structTable.setCellWidget(
-                    i, 7, self.insCheckBoxItem(val['instrument'], structKey, key))  # 插装
-                self.structTable.setCellWidget(
-                    i, 8, self.varCheckBoxItem(val['mutation'], structKey, key))  # 变异
+                    i, 4, self.insCheckBoxItem(val['instrument'], structKey, key))  # 插装
                 i += 1
     # 结束
 
@@ -201,26 +191,8 @@ class Ui_Dialog(object):
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
         return enableeditItem
 
-    # 表格变异-CheckBox-start
-    def varCheckBoxItem(self, checkBool, struct, memVal):
-        global structDict
-        checkBox = QtWidgets.QCheckBox()
-        checkBox.setChecked(checkBool)
-        checkBox.stateChanged.connect(
-            lambda: self.varCheckChange(checkBox.isChecked(), struct, memVal))
-        # self.insCheckBoxItemDict[struct][memVal]['checkBox'] = checkBox
-        return checkBox
 
-    def varCheckChange(self, checkBool, struct, memVal):  # CheckBox修改函数
-        global structDict
-        # for key, val in structDict.items():
-        #     for key, val in val.items():
-        #         val['instrument'] = checkBool
-        structDict[struct][memVal]['mutation'] = checkBool
-    # 表格变异-CheckBox-end
-
-
-    # 表格插装变量-CheckBox-start
+    # 表格插装-start
     def insCheckBoxItem(self, checkBool, struct, memVal):
         global structDict
         checkBox = QtWidgets.QCheckBox()
@@ -239,119 +211,9 @@ class Ui_Dialog(object):
                     val['checkBox'].setChecked(False)
         structDict[struct][memVal]['instrument'] = checkBool
         # print(structDict)
-    # 表格插装变量-CheckBox-end
+    # 表格插装-end
 
 
-    # 表格-LineEdit-start
-    def lineEditItem(self, isNumber, placeholderText, whatThing, struct, memVal):
-        global structDict
-        lineEdit = QtWidgets.QLineEdit()
-        # print(isNumber, placeholderText, whatThing, struct, memVal)
-        if isNumber:
-            # 输入框文本验证-start
-            reg = QRegExp('^(\-|\+)?\d+(\.\d+)?$')  # 正数、负数、小数-正则
-            pValidator = QRegExpValidator()
-            pValidator.setRegExp(reg)
-            # 输入框文本验证-end
-            lineEdit.setValidator(pValidator)  # 加入正则文本文本验证
-
-        if whatThing == "value" and placeholderText == None:
-            # 获取数据类型，并根据类型设置是浮点类型的值还是整数
-            dataType = memVal.split(" ")
-            dataType.pop(-1)
-            dataType = " ".join(dataType)
-            if "float" in dataType or "double" in dataType:
-                structDict[struct][memVal]['value'] = self.getRanFloatNum(
-                    structDict[struct][memVal]['lower'], structDict[struct][memVal]['upper'])
-                lineEdit.setPlaceholderText(
-                    "随机值(%.2f)" % structDict[struct][memVal]['value'])  # 浮点型默认文字
-            else:
-                structDict[struct][memVal]['value'] = self.getRanIntNum(
-                    structDict[struct][memVal]['lower'], structDict[struct][memVal]['upper'])
-                lineEdit.setPlaceholderText(
-                    "随机值(%d)" % structDict[struct][memVal]['value'])  # 整型默认文字
-        else:
-            lineEdit.setPlaceholderText(str(placeholderText))
-
-        # print(lineEdit.hasFocus())
-        lineEdit.editingFinished.connect(
-            lambda: self.editFinish(lineEdit.text(), whatThing, struct, memVal, lineEdit))  # 编辑-活动
-        return lineEdit
-
-
-    def editFinish(self, text, whatThing, struct, memVal, lineEdit):
-        global structDict
-        # lineEdit.hasFocus()
-        # 获取变量上下限可以改的范围，防止用户修改上下限后导致溢出
-        try:
-            if ":" in memVal:
-                if "unsigned" in memVal:
-                    maxUpper = 2 ** structDict[struct][memVal]["bitsize"] - 1
-                    minLower = 0
-                else:
-                    maxUpper = 2 ** (structDict[struct][memVal]["bitsize"] - 1) - 1
-                    minLower = 0 - 2 ** (structDict[struct][memVal]["bitsize"] - 1)
-            else:
-                dataType = memVal.split(" ")
-                dataType.pop(-1)
-                dataType = " ".join(dataType)
-                maxUpper = dataRangeDict[dataType]["upper"]
-                minLower = dataRangeDict[dataType]["lower"]
-        except BaseException as e:
-            print("获取上下限时出错:", e, "将默认为int的上下限\033[1;31m")
-            traceback.print_exec()
-            print("\033[0m")
-
-        dataType = memVal.split(" ")
-        dataType.pop(-1)
-        dataType = " ".join(dataType)
-        # 如果编辑的是值的内容
-        if text != "" and whatThing == 'value':
-            # 数值范围验证
-            if float(text) <= structDict[struct][memVal]["upper"] and float(text) >= structDict[struct][memVal][
-                "lower"]:
-                if "float" in dataType or "double" in dataType:
-                    structDict[struct][memVal][whatThing] = float(text)
-                else:
-                    structDict[struct][memVal][whatThing] = int(float(text))
-            else:
-                # 超范围错误提醒-start
-                msg_box = QMessageBox(
-                    QMessageBox.Warning, '错误',
-                    '请输入%s-%s内的值' % (structDict[struct][memVal]["lower"], structDict[struct][memVal]["upper"]))
-                msg_box.exec_()
-                lineEdit.clear()
-                # 超范围错误提醒-end
-
-        outOfRangeBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "设置的值超出范围，有溢出风险!")
-        # 如果编辑的是下限的内容
-        if whatThing == 'lower':
-            if float(text) < minLower or float(text) > maxUpper:
-                outOfRangeBox.exec_()
-                lineEdit.clear()
-            else:
-                if "float" in dataType or "double" in dataType:
-                    structDict[struct][memVal][whatThing] = float(text)
-                else:
-                    structDict[struct][memVal][whatThing] = int(text)
-
-        # 如果编辑的是上限的内容
-        if whatThing == 'upper':
-            if float(text) < minLower or float(text) > maxUpper:
-                lineEdit.clear()
-                outOfRangeBox.exec_()
-            else:
-                if "float" in dataType or "double" in dataType:
-                    structDict[struct][memVal][whatThing] = float(text)
-                else:
-                    structDict[struct][memVal][whatThing] = int(text)
-
-
-    '''
-    @description: 将strctDict保存为JSON文件
-    @param {*} self
-    @return {*}
-    '''
     def saveData(self):
         """将structDict保存为JSON文件
 
@@ -442,11 +304,9 @@ class Ui_Dialog(object):
         global structDict
         structDict.clear()
         if readJSON:
-            # 如果JSONPath是空字符串，表示用户没有选择JSON就按了右上角的X
-            if JSONPath == "":
-                return
             f = open(JSONPath, "r")
             structDict = json.load(f)
+            self.struct = list(structDict.keys())[0]
             f.close()
         else:
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
@@ -486,68 +346,62 @@ class Ui_Dialog(object):
         print(structDict)
         self.setTableContent(structDict)
 
-    def genMutate(self):
-        '''
-        @description: 生成一个c文件，里面有变异的方法、获取插装值的方法和将值设置在指定范围内的方法
-        @param {*} self
-        @return {*}
-        '''
-        for key in structDict:
-            struct = key
+    def genNecessaryFile(self):
+        """生成输出结构体所需的一些必要文件
+
+        Notes
+        -----
+        [description]
+        """
+        # 1.生成instrument.txt
+        root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0]) + "in/"
+        f = open(root_loc + "instrument.txt", mode="w")
+        instrumentFlag = False
+        for key,value in structDict[self.struct].items():
+            if value["instrument"]:
+                # dataType: 数据类型，list -> str
+                dataType = key.split(" ")
+                dataType.pop(-1)
+                dataType = " ".join(dataType)
+                # dataName: 数据名称，str
+                dataName = key.split(" ")[-1].split(":")[0]
+                with open(root_loc + "instrument.txt", mode="w") as f:
+                    f.write(dataName)
+                instrumentFlag = True
+                break
+        # 如果没选择插装变量则跳出警告
+        if not instrumentFlag:
+            noInstrumentValueBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "没有选择插装变量!")
+            noInstrumentValueBox.exec_()
+            return
+
         try:
-            public.genMutate(self.header_loc_list, struct, structDict)
-            print("mutate_instru.c生成成功!")
+            # 2.C代码，获取插装值
+            code = "#include <stdio.h>\n#include <stdbool.h>\n"
+            for header in self.header_loc_list:
+                code += "#include \"" + header + "\"\n"
+            code += "\n" + dataType + " getInstrumentValue(" + self.struct + "data){\n"
+            code += "\treturn data." + dataName + ";\n"
+            code += "}\n"
+            # 写入instrument.c
+            with open(root_loc + "instrument.c", mode="w") as f:
+                f.write(code)
         except BaseException as e:
-            print("mutate_instru.c生成失败: ", e)
-
-    def genInstrument(self):
-        '''
-        @description: 将插桩的变量写入instrument.txt
-        @param {*} self
-        @return {*}
-        '''
-        for key in structDict:
-            struct = key
-        # 查看哪个变量是插桩变量
-        try:
-            for key, value in structDict[struct].items():
-                if value["instrument"]:
-                    instrumentFile = open(
-                        re.sub(self.header_loc_list[0].split(
-                            "/")[-1], "", self.header_loc_list[0]) + "in/instrument.txt",
-                        mode="w")
-                    instrumentFile.write(key)
-                    instrumentFile.close()
-                    break
-            print("instrument.txt保存成功!")
-        except:
-            print("instrument.txt保存失败!")
-
-    def genSeed(self):
-        '''
-        @description: 根据输入的内容，生成种子测试用例seed.txt
-        @param {*} self
-        @return {*}
-        '''
-        for key in structDict:
-            struct = key
-        public.genSeed(self.header_loc_list, struct, structDict)
-        # 生成变异所需得dll文件和表示插桩变量的txt
-        try:
-            self.genMutate()
-            self.genInstrument()
-            genSeedMsgBox = QtWidgets.QMessageBox(
-                QtWidgets.QMessageBox.Information, "消息", "种子文件生成成功!")
-        except:
-            genSeedMsgBox = QtWidgets.QMessageBox(
-                QtWidgets.QMessageBox.Warning, "警告", "种子文件生成失败!")
-        genSeedMsgBox.exec_()
+            genErrorBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Error, "错误", "生成失败!\n" + repr(e))
+            genErrorBox.exec_()
     # 结束
 
 
+# if __name__ == "__main__":
+#     app = QtWidgets.QApplication(sys.argv)
+#     headerNotExistBox = QtWidgets.QMessageBox(
+#         QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+#     headerNotExistBox.exec_()
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(
-        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
-    headerNotExistBox.exec_()
-
+    dialog = QtWidgets.QDialog()
+    ui = Ui_Dialog()
+    ui.setupUi(dialog)
+    dialog.show()
+    sys.exit(app.exec_())
