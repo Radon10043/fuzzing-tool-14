@@ -1,8 +1,9 @@
 '''
-Author: 金昊宸
-Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-20 12:00:35
-Description: 种子测试用例输入界面，网络通信中主要管理输入
+Author: Radon
+Date: 2021-07-20 11:11:49
+LastEditors: Radon
+LastEditTime: 2021-07-20 12:00:49
+Description: 网络通信中主要管理输出，可以设置插装变量
 '''
 # -*- coding: utf-8 -*-
 
@@ -32,7 +33,6 @@ import staticAnalysis as sa
 
 # 传入数据结构-start
 from util.get_comment_from_struct import handle_struct
-
 structDict = {
     "结构体名1": {
         "变量名11": {
@@ -116,14 +116,14 @@ dataRangeDict = {
 }
 # 数据类型上下限字典-end
 
-# TODO 改为报文输入的结构
+# TODO 改为报文输出的结构
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         global structDict
         Dialog.setObjectName("Dialog")
         Dialog.setWindowTitle("自定义结构体成员变量值")
-        Dialog.resize(1500, 550)
+        Dialog.resize(900, 550)
         self.setTable(Dialog)
 
     def setTable(self, Dialog):  # 界面函数
@@ -149,17 +149,6 @@ class Ui_Dialog(object):
         self.generateBtn.clicked.connect(self.genSeed)
         # self.generateBtn.clicked.connect(Dialog.accept)
         # 生成按钮-end
-
-        # 下拉菜单选择校验算法-start
-        self.checkcodeComboBox = QtWidgets.QComboBox(Dialog)
-        self.checkcodeComboBox.setGeometry(QtCore.QRect(1000, 10, 91, 31))
-        self.checkcodeComboBox.setObjectName("checkcodeComboBox")
-        # 添加项目
-        self.checkcodeComboBox.addItem("")
-        self.checkcodeComboBox.addItem("")
-        self.checkcodeComboBox.setItemText(0, "第一")
-        self.checkcodeComboBox.setItemText(1, "第二")
-        # 下拉菜单选择校验算法-end
 
         self.setTableContent(structDict)
 
@@ -561,3 +550,4 @@ if __name__ == "__main__":
     headerNotExistBox = QtWidgets.QMessageBox(
         QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
     headerNotExistBox.exec_()
+

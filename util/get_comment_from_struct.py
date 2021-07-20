@@ -1,3 +1,10 @@
+'''
+Author: Radon
+Date: 2021-07-20 02:46:39
+LastEditors: Radon
+LastEditTime: 2021-07-20 10:11:56
+Description: Hi, say something
+'''
 import re
 
 singe_comment_patten = '//.*'  # 标准匹配单行注释
@@ -9,6 +16,22 @@ multi_comment_re = re.compile(multi_comment_patten)  # 编译正则表达式
 
 
 def handle_struct(struct_dict: dict):
+    """向结构体的字典中添加注释
+
+    Parameters
+    ----------
+    struct_dict : dict
+        结构体字典
+
+    Returns
+    -------
+    dict
+        返回的dict中新增了comment的key
+
+    Notes
+    -----
+    [description]
+    """
     for struct_name in struct_dict.keys():
         for var_type_name in struct_dict[struct_name].keys():
             var_path_name = var_type_name.split(" ")[-1]
