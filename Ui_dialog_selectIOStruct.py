@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-07-19 19:27:59
 LastEditors: Radon
-LastEditTime: 2021-07-20 21:37:21
+LastEditTime: 2021-07-21 13:34:55
 Description: 选择输入与输出格式的界面
 '''
 # -*- coding: utf-8 -*-
@@ -107,7 +107,7 @@ class Ui_Dialog(object):
             readJSON = True
 
         # 如果读取现有文件，就让用户选择JSON
-        # TODO 完善读取JSON与输入输出格式的界面
+        # TODO 用户生成文件后再设置相应label的值
         if readJSON:
             selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
             JSONPath = selectedFile[0]

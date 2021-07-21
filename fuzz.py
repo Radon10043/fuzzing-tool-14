@@ -1,4 +1,4 @@
-import ctypes
+import ctypes, _ctypes
 import json
 import os
 import random
@@ -141,6 +141,7 @@ def threadReceiver(program_loc):
     prog = program_loc
     out = getstatusoutput(prog)
     isCrash = out[0]
+    print(out[1])
 
 
 def threadMonitor():
@@ -162,7 +163,7 @@ def threadMonitor():
     returnUDPInfo = out[1]
 
 
-def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll, isMutateInRange):
+def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, dllDict, isMutateInRange):
     """根据南京大学徐安孜同学的例子重新写了一下获取适应度的函数
 
     Parameters
@@ -177,8 +178,8 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll, 
         函数调用图，需要借此来计算测试用例和目标集之间的举例，从而计算适应度
     maxTimeout : int
         超时时间
-    MAIdll : CDLL
-        预先编译好的dll文件
+    dllDict : dict
+        编译好的dll文件存储在该dict中，key是str，value是CDLL
     isMutateInRange : bool
         变异体的值是否要在用户指定的范围内
 
@@ -203,13 +204,11 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll, 
     thread1 = threading.Thread(target=threadReceiver, name="thread_receiver", args=(program_loc,))
     thread1.start()
 
-    # 形参的测试用例bytes
+    # 测试用例是bytes
     data = testcase
-    # 发送前，将测试用例的插装变量设置为0
-    MAIdll.setInstrumentValueToZero(data)
     # 如果需要将变异体设置在用户指定的范围内的话，就调用相应的函数
     if isMutateInRange:
-        MAIdll.setValueInRange(data)
+        dllDict["mutate"].setValueInRange(data)
 
     # 发送测试用例
     s = socket.socket()
@@ -231,7 +230,7 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll, 
         returnUDPInfo = [int(data) for data in returnUDPInfo]
         print("returnData", returnUDPInfo)
         # 获得覆盖的结点
-        instrValue = MAIdll.getInstrumentValue(bytes(returnUDPInfo))
+        instrValue = dllDict["instrument"].getInstrumentValue(bytes(returnUDPInfo))
         print("instrValue:", instrValue)
         coverNode = getCoverNode(instrValue)
         print("coverNode:", coverNode)
@@ -252,7 +251,7 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, MAIdll, 
     return (testcase, distance, fitness, coverNode, crashResult, timeout)
 
 
-def mutate(testcase, mutateSavePath, MAIdll):
+def mutate(testcase, mutateSavePath, dllDict):
     """根据南京大学徐安孜同学写的例子对变异进行了改写，
     使用预先编译好的dll文件对测试用例进行变异
 
@@ -262,8 +261,8 @@ def mutate(testcase, mutateSavePath, MAIdll):
         测试用例
     mutateSavePath : str
         变异测试用例的保存路径, dll会将变异后的测试用例保存到指定位置
-    MAIdll : CDLL
-        预先编译好的dll文件，里面有变异操作
+    dllDict : dict
+        编译好的dll文件存储在该dict中，key是str，value是CDLL
 
     Notes
     -----
@@ -275,7 +274,7 @@ def mutate(testcase, mutateSavePath, MAIdll):
     # 将对测试用例进行变异并保存
     mutateSavePath = bytes(mutateSavePath, encoding="utf8")
     r = random.randint(0, 255)
-    MAIdll.mutate(testcase, mutateSavePath, r)
+    dllDict["mutate"].mutate(testcase, mutateSavePath, r)
 
     # mutateFile = open(mutateSavePath, "rb")
     # struct_bytes_size = 0
@@ -352,7 +351,6 @@ def generateReport(source_loc_list, fuzzInfoDict):
     reportContent += "整体覆盖率:" + fuzzInfoDict["整体覆盖率"] + "%\n"
     reportContent += "================================================================\n\n"
 
-    # TODO 考虑一下下面的东西怎么改
     # testcases = getDirContent(basic_loc+"out/testcases")
     # savedCrashes = getDirContent(basic_loc+"out/crash")
     # for i in range(len(testcases)):
@@ -434,9 +432,10 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
     # 创建函数调用图
     cg.createCallGraph(source_loc_list, graph_loc)
 
-    # 加载所需的DLL文件
-    # MAI是Mutate And Instrument的缩写
-    MAIdll = ctypes.cdll.LoadLibrary(now_loc + "in/mutate_instru.dll")
+    # 加载所需的DLL文件，并将CDLL存入一个字典，以便调用
+    mutateDll = ctypes.cdll.LoadLibrary(now_loc + "in/mutate.dll")
+    instrumentDll = ctypes.cdll.LoadLibrary(now_loc + "in/instrument.dll")
+    dllDict = {"mutate": mutateDll, "instrument": instrumentDll}
 
     # 如果已经有out了, 就删掉它
     if os.path.exists(now_loc + "/out"):
@@ -510,7 +509,7 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
 
         for i in range(0, len(testcase)):
             uiFuzz.textBrowser.append("正在执行第" + str(i) + "个测试用例")
-            returnData = getFitness(testcase[i], targetSet, program_loc, callGraph, maxTimeout, MAIdll, isMutateInRange)
+            returnData = getFitness(testcase[i], targetSet, program_loc, callGraph, maxTimeout, dllDict, isMutateInRange)
             distance = returnData[1]
             fitness = returnData[2]
             coverNode = returnData[3]
@@ -558,7 +557,7 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
             for data in testcaseData:
                 if random.randint(0, 100) < pm:  # 小于阈值就进行下列变异操作
                     mutateSavePath = now_loc + "/out/mutate/cycle" + str(cycle) + "/mutate" + str(mutateNum).zfill(6)
-                    mutate(data[0], mutateSavePath, MAIdll)
+                    mutate(data[0], mutateSavePath, dllDict)
                     mutateNum += 1
                 pTargetMutate -= (98.0 / maxMutateTC)
                 if mutateNum - checkpoint >= maxMutateTC:
@@ -608,6 +607,9 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
 
     print("\n", allCoveredNode)
     print("\nfuzz over! cycle = %d, coverage = %.2f, time = %.2fs" % (cycle, coverage[1], end - start))
+    # 释放dll资源
+    _ctypes.FreeLibrary(mutateDll._handle)
+    _ctypes.FreeLibrary(instrumentDll._handle)
 
 
 def initGloablVariable():
