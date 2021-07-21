@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-18 21:59:47
+LastEditTime: 2021-07-20 22:56:56
 Description: Some pulic function
 '''
 
@@ -117,7 +117,7 @@ def genSeed(header_loc, struct, structDict):
 
 def genMutate(header_loc, struct, structDict):
     '''
-    @description: 写一个mutate_instru.c, 并生成相应得.dll, 以便测试时进行变异操作和读取插桩变量的值
+    @description: 写一个mutate.c, 以便测试时进行变异操作和读取插桩变量的值
     @param {*} header_loc 列表, 里面存储了所有头文件得位置
     @param {*} struct 用户所选择得结构体名称
     @param {*} structDict 结构体字典
@@ -127,7 +127,7 @@ def genMutate(header_loc, struct, structDict):
     root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
     if not os.path.exists(root):
         os.mkdir(root)
-    genMutatePath = root + "mutate_instru.c"
+    genMutatePath = root + "mutate.c"
 
     # 开始写代码，先include相关内容
     code = "#include <stdio.h>\n#include <stdbool.h>\n"
@@ -150,29 +150,9 @@ def genMutate(header_loc, struct, structDict):
     code += "\n\tfclose(f);\n"
     code += "}\n\n"
 
-    # 写一个获取插装变量的值的函数
-    for key, value in structDict[struct].items():
-        if not value["instrument"]:
-            continue
-        dataType = key.split(" ")
-        dataType.pop(-1)
-        dataType = " ".join(dataType)
-        dataName = key.split(" ")[-1].split(":")[0]
-        code += dataType + " getInstrumentValue(" + struct + " data){\n"
-        code += "\treturn data." + dataName + ";\n"
-    code += "}\n\n"
-
-    # 写一个将插装值设置为0的方法
-    code += "void setInstrumentValueToZero(" + struct + " data){\n"
-    code += "\t" + struct + "* temp = &data;\n"
-    code += "\ttemp->" + dataName + " = 0;\n"
-    code += "}\n\n"
-
     # 写一个将结构体的值设定在用户指定范围内的方法
     code += "void setValueInRange(" + struct + " data){\n"
     code += "\t" + struct + "* temp = &data;\n"
-    # 先将插装变量置为0
-    code += "\ttemp->" + dataName + " = 0;\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
         code += "\ttemp->" + dataName + " = (temp->" + dataName + " % ((" + str(
@@ -202,7 +182,7 @@ def genMutate(header_loc, struct, structDict):
             "fclose(fp);\n" \
             "free(buf);\n}" \
 
-    mutateFile = open(root + "mutate_instru.c", mode="w")
+    mutateFile = open(genMutatePath, mode="w")
     mutateFile.write(code)
 
     # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window.py生成

@@ -1,8 +1,8 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-20 12:00:35
-Description: 种子测试用例输入界面，网络通信中主要管理输入
+LastEditTime: 2021-07-20 22:58:01
+Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
 
@@ -31,6 +31,7 @@ import public
 import staticAnalysis as sa
 
 # 传入数据结构-start
+from util.check_code import get_support_methods, calculate_check_code_from_dec
 from util.get_comment_from_struct import handle_struct
 
 structDict = {
@@ -42,7 +43,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
         "变量名12": {
             "value": None,
@@ -51,7 +52,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         }
     },
     "结构体名2": {
@@ -62,7 +63,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
         "变量名22": {
             "value": "var4",
@@ -71,7 +72,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
         "变量名23": {
             "value": "var5",
@@ -80,7 +81,7 @@ structDict = {
             "instrument": False,
             "mutation": True,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
     }
 }
@@ -114,6 +115,8 @@ dataRangeDict = {
     "float": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)},
     "double": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)}
 }
+
+
 # 数据类型上下限字典-end
 
 # TODO 改为报文输入的结构
@@ -132,7 +135,7 @@ class Ui_Dialog(object):
         # 表格-start
         self.structTable = QtWidgets.QTableWidget(Dialog)
         self.structTable.setGeometry(QtCore.QRect(10, 10, 880, 480))
-        self.structTable.setColumnCount(9)
+        self.structTable.setColumnCount(8)
         # 表格-end
 
         # 保存按钮-start
@@ -151,14 +154,14 @@ class Ui_Dialog(object):
         # 生成按钮-end
 
         # 下拉菜单选择校验算法-start
-        self.checkcodeComboBox = QtWidgets.QComboBox(Dialog)
-        self.checkcodeComboBox.setGeometry(QtCore.QRect(1000, 10, 91, 31))
-        self.checkcodeComboBox.setObjectName("checkcodeComboBox")
+        self.checkCodeComboBox = QtWidgets.QComboBox(Dialog)
+        self.checkCodeComboBox.setGeometry(QtCore.QRect(1000, 10, 91, 31))
+        self.checkCodeComboBox.setObjectName("checkCodeComboBox")
         # 添加项目
-        self.checkcodeComboBox.addItem("")
-        self.checkcodeComboBox.addItem("")
-        self.checkcodeComboBox.setItemText(0, "第一")
-        self.checkcodeComboBox.setItemText(1, "第二")
+        check_code_methods = get_support_methods()
+        for index in range(len(check_code_methods)):
+            self.checkCodeComboBox.addItem("")
+            self.checkCodeComboBox.setItemText(index, check_code_methods[index])
         # 下拉菜单选择校验算法-end
 
         self.setTableContent(structDict)
@@ -173,7 +176,7 @@ class Ui_Dialog(object):
         self.structTable.setRowCount(amountRows)
         self.structTable.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         self.structTable.setHorizontalHeaderLabels(
-            ['结构体', '成员变量', '当前值', '范围下限', "范围上限", "位", "注释", "是否为插装变量", "是否变异"])
+            ['结构体', '成员变量', '当前值', '范围下限', "范围上限", "位", "注释", "是否变异"])
 
         i = 0  # 行
         j = 0  # 列
@@ -204,6 +207,7 @@ class Ui_Dialog(object):
                 self.structTable.setCellWidget(
                     i, 8, self.varCheckBoxItem(val['mutation'], structKey, key))  # 变异
                 i += 1
+
     # 结束
 
     def enableeditItem(self, text):  # 生成不可修改item
@@ -228,8 +232,8 @@ class Ui_Dialog(object):
         #     for key, val in val.items():
         #         val['instrument'] = checkBool
         structDict[struct][memVal]['mutation'] = checkBool
-    # 表格变异-CheckBox-end
 
+    # 表格变异-CheckBox-end
 
     # 表格插装变量-CheckBox-start
     def insCheckBoxItem(self, checkBool, struct, memVal):
@@ -241,7 +245,6 @@ class Ui_Dialog(object):
         self.insCheckBoxItemDict[struct][memVal]['checkBox'] = checkBox
         return checkBox
 
-
     def insCheckChange(self, checkBool, struct, memVal):  # CheckBox修改函数
         global structDict
         for key, val in self.insCheckBoxItemDict.items():
@@ -250,8 +253,8 @@ class Ui_Dialog(object):
                     val['checkBox'].setChecked(False)
         structDict[struct][memVal]['instrument'] = checkBool
         # print(structDict)
-    # 表格插装变量-CheckBox-end
 
+    # 表格插装变量-CheckBox-end
 
     # 表格-LineEdit-start
     def lineEditItem(self, isNumber, placeholderText, whatThing, struct, memVal):
@@ -288,7 +291,6 @@ class Ui_Dialog(object):
         lineEdit.editingFinished.connect(
             lambda: self.editFinish(lineEdit.text(), whatThing, struct, memVal, lineEdit))  # 编辑-活动
         return lineEdit
-
 
     def editFinish(self, text, whatThing, struct, memVal, lineEdit):
         global structDict
@@ -357,21 +359,21 @@ class Ui_Dialog(object):
                 else:
                     structDict[struct][memVal][whatThing] = int(text)
 
-
     '''
     @description: 将strctDict保存为JSON文件
     @param {*} self
     @return {*}
     '''
+
     def saveData(self):
         """将structDict保存为JSON文件
-
         Notes
         -----
         [description]
         """
         global structDict
-        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", "C:/Users/Radon/Desktop", "json file(*.json)")
+        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", "C:/Users/Radon/Desktop",
+                                                         "json file(*.json)")
         # 如果savePath[0]是空字符串的话，表示用户按了右上角的X
         if savePath[0] == "":
             return
@@ -423,9 +425,8 @@ class Ui_Dialog(object):
                     return value
             return -1
 
-    def initStructDict(self, header_loc_list, JSONPath, readJSON, struct, allStruct):
+    def initStructDict(self, header_loc_list, JSONPath, readJSON, uiSelectIOStruct, struct, allStruct):
         """根据传入的路径分析头文件，或直接读取现有的json文件
-
         Parameters
         ----------
         header_loc_list : list
@@ -434,6 +435,8 @@ class Ui_Dialog(object):
             JSON文件的存储路径
         readJSON : Bool
             是否读取已有的json
+        uiSelectIOStruct : Ui_Dialog
+            选择输入输出结构体的ui
         struct : str
             选择的结构体名称
         allStruct : list
@@ -443,13 +446,11 @@ class Ui_Dialog(object):
         -------
         [type]
             [description]
-
         Notes
         -----
         [description]
         """
         self.header_loc_list = header_loc_list
-        self.struct = struct
         global structDict
         structDict.clear()
         if readJSON:
@@ -459,15 +460,17 @@ class Ui_Dialog(object):
             f = open(JSONPath, "r")
             structDict = json.load(f)
             f.close()
+            self.struct = list(structDict.keys())[0]
+            uiSelectIOStruct.inputStructLabel.setText(self.struct)
         else:
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
             structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
-            print(structInfo)
+            # print(structInfo)
             tempDict = {}
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
                 tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "instrument": False,
-                                            "mutation": False, "bitsize": 8}
+                                              "mutation": False, "bitsize": 8}
                 tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
                 tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
@@ -493,8 +496,8 @@ class Ui_Dialog(object):
                         tempDict[structInfo[i][0]]["lower"] = -999
             structDict[struct] = tempDict
         structDict = handle_struct(struct_dict=structDict)
+
         # 设置Table
-        print(structDict)
         self.setTableContent(structDict)
 
     def genMutate(self):
@@ -507,32 +510,27 @@ class Ui_Dialog(object):
             struct = key
         try:
             public.genMutate(self.header_loc_list, struct, structDict)
-            print("mutate_instru.c生成成功!")
+            print("mutate.c生成成功!")
         except BaseException as e:
-            print("mutate_instru.c生成失败: ", e)
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
 
-    def genInstrument(self):
-        '''
-        @description: 将插桩的变量写入instrument.txt
-        @param {*} self
-        @return {*}
-        '''
-        for key in structDict:
-            struct = key
-        # 查看哪个变量是插桩变量
-        try:
-            for key, value in structDict[struct].items():
-                if value["instrument"]:
-                    instrumentFile = open(
-                        re.sub(self.header_loc_list[0].split(
-                            "/")[-1], "", self.header_loc_list[0]) + "in/instrument.txt",
-                        mode="w")
-                    instrumentFile.write(key)
-                    instrumentFile.close()
-                    break
-            print("instrument.txt保存成功!")
-        except:
-            print("instrument.txt保存失败!")
+
+    def gen_check_code(self, structDict, struct):
+        check_code_value = []
+        check_code_holder_name = 0
+        for key, value in structDict[struct].items():
+            if value["checkCode"] == "should":
+                check_code_value.append(value["value"])
+            elif value["checkCode"] == "holder":
+                check_code_holder_name = key
+        check_code_method = self.checkCodeComboBox.currentText()
+        check_code = calculate_check_code_from_dec(dec_data_list=check_code_value,
+                                                   method=check_code_method.split(":")[0],
+                                                   algorithm=check_code_method.split(":")[1])
+        structDict[struct][check_code_holder_name]["value"] = check_code
+        return structDict
 
     def genSeed(self):
         '''
@@ -542,22 +540,38 @@ class Ui_Dialog(object):
         '''
         for key in structDict:
             struct = key
+        # TODO 使用校验码
+        # structDict = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里
         public.genSeed(self.header_loc_list, struct, structDict)
         # 生成变异所需得dll文件和表示插桩变量的txt
         try:
             self.genMutate()
-            self.genInstrument()
+            root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0]) + "/in/"
+            jsonFile = open(root_loc + "input.json", "w")
+            self.delCheckBox()
+            json.dump(structDict, jsonFile)
+            jsonFile.close()
+            self.setTableContent(structDict)
             genSeedMsgBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Information, "消息", "种子文件生成成功!")
+            genSeedMsgBox.exec_()
         except:
             genSeedMsgBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Warning, "警告", "种子文件生成失败!")
-        genSeedMsgBox.exec_()
+            genSeedMsgBox.exec_()
     # 结束
 
 
+# if __name__ == "__main__":
+#     app = QtWidgets.QApplication(sys.argv)
+#     headerNotExistBox = QtWidgets.QMessageBox(
+#         QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+#     headerNotExistBox.exec_()
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(
-        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
-    headerNotExistBox.exec_()
+    dialog = QtWidgets.QDialog()
+    ui = Ui_Dialog()
+    ui.setupUi(dialog)
+    dialog.show()
+    sys.exit(app.exec_())

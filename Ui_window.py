@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-20 10:47:24
+LastEditTime: 2021-07-20 22:55:35
 Description: 模糊测试工具
 '''
 
@@ -351,6 +351,7 @@ class Ui_MainWindow(object):
         root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
 
         # 检测一系列的必要文件是否存在
+        # TODO 更新必要文件列表
         fileList = ["instrument.txt", "mutate_instru.c", "seed"]
         for f in fileList:
             if not os.path.exists(root_loc + "in/" + f):
@@ -387,6 +388,7 @@ class Ui_MainWindow(object):
             msg.exec_()
 
         # 因为用户每次可能会更改种子的相关设置，所以每次都需要重新生成一下dll
+        # TODO C文件内容与名字已改变，需要改写代码
         os.chdir(root_loc + "/in/")
         os.system("gcc -shared -o mutate_instru.dll mutate_instru.c")
 

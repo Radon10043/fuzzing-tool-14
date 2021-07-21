@@ -1,4 +1,5 @@
 import ctypes
+import json
 import os
 import random
 import re
@@ -155,7 +156,7 @@ def threadMonitor():
         out = getstatusoutput(prog)
     except BaseException as e:
         print("监视程序出错:", e)
-        out = [[],[]]
+        out = [[], []]
     # print("getudp.py: ", out)
     global returnUDPInfo
     returnUDPInfo = out[1]
@@ -268,10 +269,21 @@ def mutate(testcase, mutateSavePath, MAIdll):
     -----
     [description]
     """
+    # TODO 根据结构体字节大小，反解析生成的测试用例，定位校验字段和校验码位置
+    # structJson = open(mutateSavePath.split("out")[0] + "in/structDict.json", mode="r")
+    # structJson = json.load(structJson)
     # 将对测试用例进行变异并保存
     mutateSavePath = bytes(mutateSavePath, encoding="utf8")
     r = random.randint(0, 255)
     MAIdll.mutate(testcase, mutateSavePath, r)
+
+    # mutateFile = open(mutateSavePath, "rb")
+    # struct_bytes_size = 0
+    # for structName in structJson:
+    #     for structUnitName in structJson[structName]:
+    #         structUnit = structJson[structName][structUnitName]
+    #         struct_bytes_size += int(structUnit["bitsize"])
+    # print()
 
 
 def crossover(population):
