@@ -199,16 +199,14 @@ class Ui_Dialog(object):
                 self.uiSeed.setupUi(self.seedDialog)
                 # 如果读取JSON的话，JSONPath和readJSON就用不上了，占个位置
                 self.uiSeed.initStructDict(
-                    self.header_loc_list, "JSONPath", False, "uiSelectIOStruct", self.selectedStruct, self.structList)
+                    self.header_loc_list, "JSONPath", False, self.uiSelectIOStruct, self.selectedStruct, self.structList)
                 self.seedDialog.show()
             elif self.choice == "output":
-                self.uiSelectIOStruct.outputStructLabel.setText(
-                    self.selectedStruct)
                 self.outputDialog = QtWidgets.QDialog()
                 self.uiOutput = outputDialogPY.Ui_Dialog()
                 self.uiOutput.setupUi(self.outputDialog)
                 self.uiOutput.initStructDict(
-                    self.header_loc_list, "JSONPath", False, self.selectedStruct, self.structList)
+                    self.header_loc_list, "JSONPath", False, self.uiSelectIOStruct, self.selectedStruct, self.structList)
                 self.outputDialog.show()
         except ValueError as e:
             exceptionBox = QtWidgets.QMessageBox(

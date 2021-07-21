@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-20 22:53:07
+LastEditTime: 2021-07-21 17:03:36
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -303,18 +303,17 @@ class Ui_Dialog(object):
         """
         self.header_loc_list = header_loc_list
         self.struct = struct
+        self.uiSelectIOStruct = uiSelectIOStruct
         global structDict
         structDict.clear()
         if readJSON:
             f = open(JSONPath, "r")
             structDict = json.load(f)
             self.struct = list(structDict.keys())[0]
-            uiSelectIOStruct.outputStructLabel.setText(self.struct)
             f.close()
         else:
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
             structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
-            print(structInfo)
             tempDict = {}
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
@@ -346,7 +345,6 @@ class Ui_Dialog(object):
             structDict[struct] = tempDict
         structDict = handle_struct(struct_dict=structDict)
         # 设置Table
-        print(structDict)
         self.setTableContent(structDict)
 
     def genNecessaryFile(self):
@@ -385,7 +383,7 @@ class Ui_Dialog(object):
             code = "#include <stdio.h>\n#include <stdbool.h>\n"
             for header in self.header_loc_list:
                 code += "#include \"" + header + "\"\n"
-            code += "\n" + dataType + " getInstrumentValue(" + self.struct + "data){\n"
+            code += "\n" + dataType + " getInstrumentValue(" + self.struct + " data){\n"
             code += "\treturn data." + dataName + ";\n"
             code += "}\n"
             # 写入instrument.c
@@ -394,6 +392,7 @@ class Ui_Dialog(object):
         except BaseException as e:
             genErrorBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Error, "错误", "生成失败!\n" + repr(e))
             genErrorBox.exec_()
+            return
 
         try:
             # 将输出结构体的JSON保存在in目录下，名字是output.json
@@ -401,6 +400,7 @@ class Ui_Dialog(object):
             self.delCheckBox()
             json.dump(structDict, jsonFile)
             jsonFile.close()
+            self.uiSelectIOStruct.outputStructLabel.setText(self.struct)
             self.setTableContent(structDict)
         except BaseException as e:
             print("\033[1;31m")

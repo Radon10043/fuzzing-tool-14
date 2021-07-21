@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-20 22:58:01
+LastEditTime: 2021-07-21 16:02:48
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -203,9 +203,7 @@ class Ui_Dialog(object):
                 self.structTable.setItem(
                     i, 6, self.enableeditItem(str(val["comment"])))  # 注释
                 self.structTable.setCellWidget(
-                    i, 7, self.insCheckBoxItem(val['instrument'], structKey, key))  # 插装
-                self.structTable.setCellWidget(
-                    i, 8, self.varCheckBoxItem(val['mutation'], structKey, key))  # 变异
+                    i, 7, self.varCheckBoxItem(val['mutation'], structKey, key))  # 变异
                 i += 1
 
     # 结束
@@ -451,6 +449,7 @@ class Ui_Dialog(object):
         [description]
         """
         self.header_loc_list = header_loc_list
+        self.uiSelectIOStruct = uiSelectIOStruct
         global structDict
         structDict.clear()
         if readJSON:
@@ -461,7 +460,6 @@ class Ui_Dialog(object):
             structDict = json.load(f)
             f.close()
             self.struct = list(structDict.keys())[0]
-            uiSelectIOStruct.inputStructLabel.setText(self.struct)
         else:
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
             structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
@@ -543,14 +541,18 @@ class Ui_Dialog(object):
         # TODO 使用校验码
         # structDict = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里
         public.genSeed(self.header_loc_list, struct, structDict)
-        # 生成变异所需得dll文件和表示插桩变量的txt
+        # 生成变异所需的C文件，将uiSelectIOStruct下的Label设置为用户选择的结构体的Lalbel
         try:
+            # 生成变异所需C文件
             self.genMutate()
+            # 将用户所选的结构体的分析结果保存为input.json
             root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0]) + "/in/"
             jsonFile = open(root_loc + "input.json", "w")
             self.delCheckBox()
             json.dump(structDict, jsonFile)
             jsonFile.close()
+            # 更改uiSelectIOStruct中Label的值
+            self.uiSelectIOStruct.inputStructLabel.setText(self.struct)
             self.setTableContent(structDict)
             genSeedMsgBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Information, "消息", "种子文件生成成功!")

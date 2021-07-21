@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-07-12 10:41:40
+LastEditTime: 2021-07-21 17:03:56
 Description: Hi, say something
 '''
 import os
@@ -60,7 +60,7 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
                     if allNode[k] == funcName:
                         break
                 # 把变量的某一位置为1，用或操作
-                instrCode = "\tdtg->" + instrument_var + " |= " + str(2 ** k) + ";\n"
+                instrCode = "\tdtg->" + instrument_var + " |= 1<<" + str(k) + ";\n"
                 instr = True
             if "{" in lines[j]:
                 brace += 1

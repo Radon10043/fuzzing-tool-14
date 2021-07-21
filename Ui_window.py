@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-20 22:55:35
+LastEditTime: 2021-07-21 16:32:58
 Description: 模糊测试工具
 '''
 
@@ -23,6 +23,7 @@ Description: 模糊测试工具
 import os
 import re
 import sys
+import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -351,14 +352,27 @@ class Ui_MainWindow(object):
         root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
 
         # 检测一系列的必要文件是否存在
-        # TODO 更新必要文件列表
-        fileList = ["instrument.txt", "mutate_instru.c", "seed"]
+        fileList = ["instrument.txt", "mutate.c", "instrument.c", "input.json", "output.json", "seed", ]
         for f in fileList:
             if not os.path.exists(root_loc + "in/" + f):
                 necessaryFileNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告",
-                                                                str(f) + "不存在，请重新生成种子文件")
+                                                                str(f) + "不存在，请重新生成文件")
                 necessaryFileNotExistBox.exec_()
                 return
+
+        # 提示用户确认输入输出格式
+        tempStructDict = json.load(open(root_loc + "/in/input.json", "r"))
+        inputStruct = list(tempStructDict.keys())[0]
+        tempStructDict = json.load(open(root_loc + "/in/output.json", "r"))
+        outputStruct = list(tempStructDict.keys())[0]
+        confirmIOStructBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "输入结构体为" + inputStruct + ",输出结构体为" + outputStruct + ", 是否确认?")
+        yes = confirmIOStructBox.addButton("确定", QtWidgets.QMessageBox.YesRole)
+        no = confirmIOStructBox.addButton("取消", QtWidgets.QMessageBox.NoRole)
+        confirmIOStructBox.exec_()
+        if confirmIOStructBox.clickedButton() == no:
+            modifyStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "您可以点击输入按钮以更改输入输出结构")
+            modifyStructTipBox.exec_()
+            return
 
         # 提示用户确认种子已是最新状态
         seedLatestBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "模糊测试即将开始, 请确认种子文件为最新状态")
@@ -388,9 +402,9 @@ class Ui_MainWindow(object):
             msg.exec_()
 
         # 因为用户每次可能会更改种子的相关设置，所以每次都需要重新生成一下dll
-        # TODO C文件内容与名字已改变，需要改写代码
         os.chdir(root_loc + "/in/")
-        os.system("gcc -shared -o mutate_instru.dll mutate_instru.c")
+        os.system("gcc -shared -o mutate.dll mutate.c")
+        os.system("gcc -shared -o instrument.dll instrument.c")
 
         # 防止出现bug，将手动输入按钮和开始测试按钮设置为false
         self.startFuzzBtn.setDisabled(True)
@@ -402,30 +416,6 @@ class Ui_MainWindow(object):
         self.fuzzDialog.show()
         self.uiFuzz.startFuzz(source_loc_list, ui, self.uiFuzz)
 
-    def popSeedDialog(self):
-        '''
-        @description: 弹出输入种子测试用例的界面
-        @param {*} self
-        @return {*}
-        '''
-        header_loc_str = self.HFileLoc.toPlainText()
-        readJSON = False
-        header_loc_list = header_loc_str.split("\n")
-        for header_loc in header_loc_list:
-            if not os.path.exists(header_loc):
-                self.HFileLoc.setText("头文件不存在!")
-                headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在！")
-                headerNotExistBox.exec_()
-                return
-        headerMsgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, '发现JSON文件', '发现structDict.json，是否读取？')
-        yes = headerMsgBox.addButton('是', QtWidgets.QMessageBox.YesRole)
-        no = headerMsgBox.addButton('否', QtWidgets.QMessageBox.NoRole)
-        if os.path.exists(re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "/structDict.json"):
-            headerMsgBox.exec_()
-            if headerMsgBox.clickedButton() == yes:
-                readJSON = True
-        self.seedDialog.show()
-        self.uiSeed.initStructDict(header_loc_list, readJSON)
 
     def popTargetDialog(self):
         '''
