@@ -5,12 +5,23 @@ import shutil
 import socket
 import threading
 import time
+import json
+import ctypes
 from subprocess import *
 
 isCrash = 0
 ROOT = "D:\\fuzzing-tool-14"
 returnUDPInfo = []
 allNode = []
+
+
+def struct2TC(struct):
+    TC = {}
+    for key, value in struct["Datagram"].items():
+        dataName = key.split(" ")[-1].split(":")[0]
+        dataValue = value["value"]
+        TC[dataName] =dataValue
+    return TC
 
 
 def parse_array(text):
@@ -173,3 +184,14 @@ def gen_training_data(PATH_PREFIX, seed_fn, num, MAIdll):
             MAIdll.setValueInRange(tc)
             f.write(tc)
     return population
+
+
+if __name__ == "__main__":
+    """
+    fn = "D:\\fuzzing-tool-14\\example\\in\\structDict.json"
+    res = json.load(open(fn, "r"))
+    json.dump(struct2TC(res), open("D:\\fuzzing-tool-14\\tmp.json", "w"))
+    """
+    MAIdll = ctypes.cdll.LoadLibrary("D:\\fuzzing-tool-14\\example\\in\\mutate_instru.dll")
+
+    MAIdll.serialize()

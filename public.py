@@ -177,7 +177,30 @@ def genMutate(header_loc, struct, structDict):
         dataName = key.split(" ")[-1].split(":")[0]
         code += "\ttemp->" + dataName + " = (temp->" + dataName + " % ((" + str(
             value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(value["lower"]) + ");\n"
-    code += "}"
+    code += "}\n\n"
+
+    #写一个读取json文件并按照它生成测试用例字节序列的方法
+    code += "void serialize(" + struct + " data, char* path){\n" \
+            "\tFILE * fp;\n" \
+            "\tfp = fopen(path, \"r\");\n" \
+            "\tfseek(fp, 0, SEEK_END);\n" \
+            "\tint len = ftell(fp);\n" \
+            "\tfseek(fp, 0, SEEK_SET);\n" \
+            "\tchar * buf = malloc(len + 1);\n" \
+            "\tfread(buf, sizeof(char), len, fp);\n" \
+            "\tcJSON * root;\n" \
+            "\troot = cJSON_Parse(buf);\n" \
+            "\troot = cJSON_GetArrayItem(root, 0);\n" \
+            "\tint size = cJSON_GetArraySize(root);\n" \
+            "\tfor (int i = 0; i < size; i++){ \n" \
+            "\t\tcJSON * item = cJSON_GetArrayItem(root, i);\n"
+    for key, value in structDict[struct].items():
+        dataName = key.split(" ")[-1].split(":")[0]
+        code += "\t\tdata." + dataName + "cJSON_GetObjectItem(item, \"value\")->valuedouble);\n" \
+
+    code += "cJSON_Delete(root);\n" \
+            "fclose(fp);\n" \
+            "free(buf);\n}" \
 
     mutateFile = open(root + "mutate_instru.c", mode="w")
     mutateFile.write(code)
