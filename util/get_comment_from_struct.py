@@ -2,10 +2,12 @@
 Author: Radon
 Date: 2021-07-20 02:46:39
 LastEditors: Radon
-LastEditTime: 2021-07-20 10:11:56
+LastEditTime: 2021-07-22 17:28:40
 Description: Hi, say something
 '''
 import re
+import traceback
+import staticAnalysis as sa
 
 singe_comment_patten = '//.*'  # 标准匹配单行注释
 multi_comment_patten = '\/\*(?:[^\*]|\*+[^\/\*])*\*+\/'  # 标准匹配多行注释  可匹配跨行注释
@@ -36,12 +38,29 @@ def handle_struct(struct_dict: dict):
         for var_type_name in struct_dict[struct_name].keys():
             var_path_name = var_type_name.split(" ")[-1]
             var_name = var_path_name.split(".")[-1].split(":")[0]  # 该成员变变量的名字
-            code_file_path = struct_dict[struct_name][var_type_name]["loc"].split("?")[0]
-            code_line_number = struct_dict[struct_name][var_type_name]["loc"].split("?")[1]
+            try:
+                if struct_dict[struct_name][var_type_name]["loc"] is None:
+                    raise sa.VariableNoNameError
+                code_file_path = struct_dict[struct_name][var_type_name]["loc"].split("?")[0]
+                code_line_number = struct_dict[struct_name][var_type_name]["loc"].split("?")[1]
+            except sa.VariableNoNameError:
+                struct_dict[struct_name][var_type_name]["comment"] = "该成员变量没有名字"
+                continue
+            except BaseException as e:
+                print("\033[1;31m")
+                traceback.print_exc()
+                print("\033[0m")
+
+            # 获取注释
             try:
                 code_file_str = open(code_file_path, encoding="utf", mode="r").readlines()[int(code_line_number) - 1]
-            except:
+            except UnicodeDecodeError:
                 code_file_str = open(code_file_path, encoding="gbk", mode="r").readlines()[int(code_line_number) - 1]
+            except BaseException as e:
+                print("\033[1;31m")
+                traceback.print_exc()
+                print("\033[0m")
+
             match_result = singe_comment_re.findall(code_file_str)
             if len(match_result) == 0:
                 match_result = multi_comment_re.findall(code_file_str)

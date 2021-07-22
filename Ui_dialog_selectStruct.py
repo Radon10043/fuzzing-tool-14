@@ -192,8 +192,6 @@ class Ui_Dialog(object):
             # 设置选择输入输出界面结构体的label的值
             print(self.choice)
             if self.choice == "input":
-                self.uiSelectIOStruct.inputStructLabel.setText(
-                    self.selectedStruct)
                 self.seedDialog = QtWidgets.QDialog()
                 self.uiSeed = seedDialogPY.Ui_Dialog()
                 self.uiSeed.setupUi(self.seedDialog)

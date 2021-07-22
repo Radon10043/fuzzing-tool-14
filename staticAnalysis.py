@@ -3,6 +3,9 @@ import re
 
 import pycparser
 
+# 变量无名异常
+class VariableNoNameError(BaseException):
+    pass
 
 def findFunction(lineNum, source):
     '''
@@ -171,8 +174,13 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
 
                     # 加上变量所在的文件与行数
                     # 如果info内嵌结构体的返回信息，就不用再转换为元组了，因为已经是list(tuple(name, loc))
-                    if isinstance(info, str):
-                        info = (info, data.coord.file + "?" + str(data.coord.line))
+                    try:
+                        if data.coord is None:
+                            raise VariableNoNameError
+                        if isinstance(info, str):
+                            info = (info, data.coord.file + "?" + str(data.coord.line))
+                    except VariableNoNameError:
+                        info = (info, None)
 
                     if isinstance(info, tuple):
                         structInfo.append(info)
