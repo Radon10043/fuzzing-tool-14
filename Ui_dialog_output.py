@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-21 17:03:36
+LastEditTime: 2021-07-23 17:55:03
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -249,11 +249,6 @@ class Ui_Dialog(object):
                 if 'checkBox' in val.keys():
                     del val['checkBox']
 
-    def getRanFloatNum(self, lower, upper):
-        return round(random.uniform(lower, upper), 2)
-
-    def getRanIntNum(self, lower, upper):
-        return int(random.uniform(lower, upper))
 
     def getBitsize(self, variable):
         '''
@@ -412,16 +407,16 @@ class Ui_Dialog(object):
     # 结束
 
 
-# if __name__ == "__main__":
-#     app = QtWidgets.QApplication(sys.argv)
-#     headerNotExistBox = QtWidgets.QMessageBox(
-#         QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
-#     headerNotExistBox.exec_()
-
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(dialog)
-    dialog.show()
-    sys.exit(app.exec_())
+    headerNotExistBox = QtWidgets.QMessageBox(
+        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()
+
+# if __name__ == "__main__":
+#     app = QtWidgets.QApplication(sys.argv)
+#     dialog = QtWidgets.QDialog()
+#     ui = Ui_Dialog()
+#     ui.setupUi(dialog)
+#     dialog.show()
+#     sys.exit(app.exec_())
