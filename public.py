@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-20 22:56:56
+LastEditTime: 2021-07-23 11:53:46
 Description: Some pulic function
 '''
 
@@ -95,6 +95,8 @@ def genSeed(header_loc, struct, structDict):
     code += "\t" + struct + " data;\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
+        if dataName == "noName":
+            continue
         code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
     # 赋值结束后，向seed文件中写入内容
     code += "\n\tofstream f(\"seed\");"
@@ -117,7 +119,7 @@ def genSeed(header_loc, struct, structDict):
 
 def genMutate(header_loc, struct, structDict):
     '''
-    @description: 写一个mutate.c, 以便测试时进行变异操作和读取插桩变量的值
+    @description: 写一个mutate.c, 以便测试时进行变异操作
     @param {*} header_loc 列表, 里面存储了所有头文件得位置
     @param {*} struct 用户所选择得结构体名称
     @param {*} structDict 结构体字典
@@ -155,16 +157,28 @@ def genMutate(header_loc, struct, structDict):
     code += "\t" + struct + "* temp = &data;\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
+        if dataName == "noName":
+            continue
         code += "\ttemp->" + dataName + " = (temp->" + dataName + " % ((" + str(
             value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(value["lower"]) + ");\n"
-    code += "}"
+    code += "}\n\n"
+
+    # 写一个将结构体可视化的方法，savePath需要以.txt结尾
+    code += "void testcaseVisualization(" + struct + " data, char* savePath){\n"
+    code += "\tFILE* f = fopen(savePath, \"w\");\n"
+    for key,value in structDict[struct].items():
+        dataName = key.split(" ")[-1].split(":")[0]
+        if dataName == "noName":
+            continue
+        code += "\tfprintf(f, \"" + dataName + ": %u\\n\", data." + dataName + ");\n"
+    code += "\tfclose(f);\n"
+    code += "}\n"
 
     mutateFile = open(genMutatePath, mode="w")
     mutateFile.write(code)
 
     # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window.py生成
     # gcc -shared -o mutate_instru.dll mutate_instru.c
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
