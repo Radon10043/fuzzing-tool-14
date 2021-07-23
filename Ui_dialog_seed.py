@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-21 16:02:48
+LastEditTime: 2021-07-23 11:49:39
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -530,6 +530,7 @@ class Ui_Dialog(object):
         structDict[struct][check_code_holder_name]["value"] = check_code
         return structDict
 
+
     def genSeed(self):
         '''
         @description: 根据输入的内容，生成种子测试用例seed.txt
@@ -561,19 +562,12 @@ class Ui_Dialog(object):
             genSeedMsgBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Warning, "警告", "种子文件生成失败!")
             genSeedMsgBox.exec_()
+            traceback.print_exc()
     # 结束
 
 
-# if __name__ == "__main__":
-#     app = QtWidgets.QApplication(sys.argv)
-#     headerNotExistBox = QtWidgets.QMessageBox(
-#         QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
-#     headerNotExistBox.exec_()
-
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(dialog)
-    dialog.show()
-    sys.exit(app.exec_())
+    headerNotExistBox = QtWidgets.QMessageBox(
+        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()

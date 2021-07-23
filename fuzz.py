@@ -271,10 +271,13 @@ def mutate(testcase, mutateSavePath, dllDict):
     # TODO 根据结构体字节大小，反解析生成的测试用例，定位校验字段和校验码位置
     # structJson = open(mutateSavePath.split("out")[0] + "in/structDict.json", mode="r")
     # structJson = json.load(structJson)
-    # 将对测试用例进行变异并保存
+
+    # 将对测试用例进行变异并保存为二进制文件和txt文件
+    txtSavePath = bytes(mutateSavePath + ".txt", encoding="utf8")
     mutateSavePath = bytes(mutateSavePath, encoding="utf8")
     r = random.randint(0, 255)
     dllDict["mutate"].mutate(testcase, mutateSavePath, r)
+    dllDict["mutate"].testcaseVisualization(testcase, txtSavePath)
 
     # mutateFile = open(mutateSavePath, "rb")
     # struct_bytes_size = 0
@@ -568,6 +571,9 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
         mutateSavePath = now_loc + "/out/mutate/cycle" + str(cycle) + "/"
         files = os.listdir(mutateSavePath)
         for file in files:
+            # 跳过后缀名为txt的可视化文件
+            if file.endswith("txt"):
+                continue
             f = open(mutateSavePath + file, mode="rb")
             testcase.append(f.read())
         cycle += 1
