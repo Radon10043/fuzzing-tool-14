@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-23 20:58:06
+LastEditTime: 2021-07-23 21:36:52
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -424,6 +424,7 @@ class Ui_Dialog(object):
             for key, val in val.items():
                 if "checkCodeCheckBox" in val.keys():
                     del val["checkCodeCheckBox"]
+                    del val["checkFieldCheckBox"]
 
 
     def getRanFloatNum(self, lower, upper):
@@ -508,7 +509,7 @@ class Ui_Dialog(object):
                         tempDict[structInfo[i][0]]["lower"] = 0
                     else:
                         tempDict[structInfo[i][0]]["upper"] = 2 ** (tempDict[structInfo[i][0]]["bitsize"] - 1) - 1
-                        tempDict[structInfo[i][0]]["lower"] = 0 - (2 ** tempDict[structInfo[i][0]]["bitsize"] - 1)
+                        tempDict[structInfo[i][0]]["lower"] = 0 - 2 ** (tempDict[structInfo[i][0]]["bitsize"] - 1)
                 else:
                     # 如果用户没指定位大小，自动获取
                     # dataType: 表示数据类型，从list变为str
