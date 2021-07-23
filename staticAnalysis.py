@@ -3,9 +3,11 @@ import re
 
 import pycparser
 
+
 # 变量无名异常
 class VariableNoNameError(BaseException):
     pass
+
 
 def findFunction(lineNum, source):
     '''
@@ -180,7 +182,7 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                         if isinstance(info, str):
                             info = (info, data.coord.file + "?" + str(data.coord.line))
                     except VariableNoNameError:
-                        info = (info, None)
+                        info = (info, decl.coord.file + "*" + str(decl.coord.line))
 
                     if isinstance(info, tuple):
                         structInfo.append(info)
