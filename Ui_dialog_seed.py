@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-23 21:36:52
+LastEditTime: 2021-07-23 23:36:45
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -524,8 +524,10 @@ class Ui_Dialog(object):
                         tempDict[structInfo[i][0]]["upper"] = 999
                         tempDict[structInfo[i][0]]["lower"] = -999
             structDict[struct] = tempDict
+        for k,v in structDict[struct].items():
+            print(k)
+            print(v)
         structDict = handle_struct(struct_dict=structDict)
-
         # 设置Table
         self.setTableContent(structDict)
 
