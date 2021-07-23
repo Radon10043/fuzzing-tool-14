@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-23 17:55:10
+LastEditTime: 2021-07-23 20:58:06
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -498,7 +498,7 @@ class Ui_Dialog(object):
             tempDict = {}
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
-                tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "mutation": False, "bitsize": 8}
+                tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "mutation": False, "bitsize": 8, "checkCode": False, "checkField": False}
                 tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
                 tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
