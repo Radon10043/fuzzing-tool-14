@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-23 11:53:46
+LastEditTime: 2021-07-24 00:18:16
 Description: Some pulic function
 '''
 
@@ -178,7 +178,7 @@ def genMutate(header_loc, struct, structDict):
     mutateFile.write(code)
 
     # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window.py生成
-    # gcc -shared -o mutate_instru.dll mutate_instru.c
+    # command: gcc -shared -o mutate_instru.dll mutate_instru.c
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
