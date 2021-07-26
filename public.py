@@ -2,8 +2,8 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-24 00:18:16
-Description: Some pulic function
+LastEditTime: 2021-07-25 13:42:41
+Description: Some public function
 '''
 
 from PyQt5 import QtWidgets
@@ -16,8 +16,6 @@ import re
 @param {*} source 代码列表，source = f.readlines()
 @return {*}
 '''
-
-
 def deleteNote(source):
     skip = False
     for i in range(len(source)):
