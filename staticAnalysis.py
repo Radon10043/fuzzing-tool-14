@@ -1,5 +1,6 @@
 import os
 import re
+import uuid
 
 import pycparser
 
@@ -140,7 +141,7 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                         dataType = " ".join(data.type.type.names)
                         # 如果是没有名字的变量
                         if data.name is None:
-                            data.name = "noName"
+                            data.name = "noName?" + str(uuid.uuid4()) + "?"
                         # 如果是普通的变量
                         info = dataType + " " + prefix + data.name
                     except AttributeError:
@@ -165,8 +166,9 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                             print("Analyzing one-dimensional array...")
                             info = []
                             for i in range(int(data.type.dim.value)):
-                                info.extend(getOneStruct(header_loc_list, dataType, prefix + data.name + "[" + str(i) + "].",
-                                                        allStruct))
+                                info.extend(
+                                    getOneStruct(header_loc_list, dataType, prefix + data.name + "[" + str(i) + "].",
+                                                 allStruct))
                         # 如果结构体成员不是数组
                         else:
                             info = getOneStruct(header_loc_list, dataType, prefix + data.name + ".", allStruct)
@@ -217,19 +219,21 @@ def analyzeInternalStruct(decls, struct):
         try:
             # 假如内嵌了无名变量
             if data.name is None:
-                internalInfoList.append((" ".join(data.type.type.names) + " " + struct + ".noName:" + str(data.bitsize.value),
-                data.bitsize.coord.file + "?" + str(data.bitsize.coord.line)))
+                internalInfoList.append(
+                    (" ".join(data.type.type.names) + " " + struct + ".noName?" + str(uuid.uuid4()) + "?:" + str(
+                        data.bitsize.value),
+                     data.bitsize.coord.file + "?" + str(data.bitsize.coord.line)))
                 continue
             # 查看是否指定了bitsize
             # 将data的所在文件与行数的信息也加入到列表中
             if data.bitsize:
                 internalInfoList.append(
                     (" ".join(data.type.type.names) + " " + struct + "." + data.name + ":" + str(data.bitsize.value),
-                    data.coord.file + "?" + str(data.coord.line)))
+                     data.coord.file + "?" + str(data.coord.line)))
             else:
                 internalInfoList.append(
                     (" ".join(data.type.type.names) + " " + struct + "." + data.name,
-                    data.coord.file + "?" + str(data.coord.line)))
+                     data.coord.file + "?" + str(data.coord.line)))
         except AttributeError:
             try:
                 # 这里作一下判断，因为内嵌结构体的时候有两种写法

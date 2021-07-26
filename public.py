@@ -16,6 +16,8 @@ import re
 @param {*} source 代码列表，source = f.readlines()
 @return {*}
 '''
+
+
 def deleteNote(source):
     skip = False
     for i in range(len(source)):
@@ -93,7 +95,7 @@ def genSeed(header_loc, struct, structDict):
     code += "\t" + struct + " data;\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
-        if dataName == "noName":
+        if "noName" in dataName:
             continue
         code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
     # 赋值结束后，向seed文件中写入内容
@@ -164,7 +166,7 @@ def genMutate(header_loc, struct, structDict):
     # 写一个将结构体可视化的方法，savePath需要以.txt结尾
     code += "void testcaseVisualization(" + struct + " data, char* savePath){\n"
     code += "\tFILE* f = fopen(savePath, \"w\");\n"
-    for key,value in structDict[struct].items():
+    for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
         if dataName == "noName":
             continue
@@ -177,6 +179,7 @@ def genMutate(header_loc, struct, structDict):
 
     # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window.py生成
     # command: gcc -shared -o mutate_instru.dll mutate_instru.c
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
