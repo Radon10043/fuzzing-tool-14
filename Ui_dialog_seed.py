@@ -43,8 +43,8 @@ structDict = {
             "mutation": False,
             "bitsize": 8,
             "comment": "占位",
-            "checkCode" : False,
-            "checkField" : False
+            "checkCode": False,
+            "checkField": False
         },
         "变量名12": {
             "value": None,
@@ -53,8 +53,8 @@ structDict = {
             "mutation": False,
             "bitsize": 8,
             "comment": "占位",
-            "checkCode" : False,
-            "checkField" : False
+            "checkCode": False,
+            "checkField": False
         }
     },
     "结构体名2": {
@@ -65,8 +65,8 @@ structDict = {
             "mutation": False,
             "bitsize": 8,
             "comment": "占位",
-            "checkCode" : False,
-            "checkField" : False
+            "checkCode": False,
+            "checkField": False
         },
         "变量名22": {
             "value": "var4",
@@ -75,8 +75,8 @@ structDict = {
             "mutation": False,
             "bitsize": 8,
             "comment": "占位",
-            "checkCode" : False,
-            "checkField" : False
+            "checkCode": False,
+            "checkField": False
         },
         "变量名23": {
             "value": "var5",
@@ -85,8 +85,8 @@ structDict = {
             "mutation": True,
             "bitsize": 8,
             "comment": "占位",
-            "checkCode" : False,
-            "checkField" : False
+            "checkCode": False,
+            "checkField": False
         },
     }
 }
@@ -120,6 +120,8 @@ dataRangeDict = {
     "float": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)},
     "double": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)}
 }
+
+
 # 数据类型上下限字典-end
 
 
@@ -130,7 +132,6 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle("自定义结构体成员变量值")
         Dialog.resize(1500, 550)
         self.setTable(Dialog)
-
 
     def setTable(self, Dialog):  # 界面函数
         global structDict
@@ -168,7 +169,6 @@ class Ui_Dialog(object):
         # 下拉菜单选择校验算法-end
 
         self.setTableContent(structDict)
-
 
     # 发送一个新的dict，设置表格内容
     def setTableContent(self, newDict):
@@ -213,15 +213,14 @@ class Ui_Dialog(object):
                 self.structTable.setCellWidget(
                     i, 9, self.checkFieldCheckBoxItem(val["checkField"], structKey, key))  # 校验字段
                 i += 1
-    # 结束
 
+    # 结束
 
     def enableeditItem(self, text):  # 生成不可修改item
         enableeditItem = QtWidgets.QTableWidgetItem(text)
         enableeditItem.setFlags(
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
         return enableeditItem
-
 
     # 表格变异-CheckBox-start
     def varCheckBoxItem(self, checkBool, struct, memVal):
@@ -232,12 +231,11 @@ class Ui_Dialog(object):
             lambda: self.varCheckChange(checkBox.isChecked(), struct, memVal))
         return checkBox
 
-
     def varCheckChange(self, checkBool, struct, memVal):  # CheckBox修改函数
         global structDict
         structDict[struct][memVal]["mutation"] = checkBool
-    # 表格变异-CheckBox-end
 
+    # 表格变异-CheckBox-end
 
     # 表格校验码变量-CheckBox-start
     def checkCodeCheckBoxItem(self, checkBool, struct, memVal):
@@ -248,7 +246,6 @@ class Ui_Dialog(object):
             lambda: self.checkCodeCheckChange(checkBox.isChecked(), struct, memVal))
         self.checkCodeCheckBoxItemDict[struct][memVal]["checkCodeCheckBox"] = checkBox
         return checkBox
-
 
     def checkCodeCheckChange(self, checkBool, struct, memVal):  # CheckBox修改函数
         global structDict
@@ -261,8 +258,8 @@ class Ui_Dialog(object):
         if structDict[struct][memVal]["checkField"] and checkBool:
             structDict[struct][memVal]["checkFieldCheckBox"].setChecked(False)
             structDict[struct][memVal]["checkField"] = False
-    # 表格插装变量-CheckBox-end
 
+    # 表格插装变量-CheckBox-end
 
     # 表格校验字段-CheckBox-start
     def checkFieldCheckBoxItem(self, checkBool, struct, memVal):
@@ -274,7 +271,6 @@ class Ui_Dialog(object):
             lambda: self.checkFieldCheckChange(checkBox.isChecked(), struct, memVal))
         return checkBox
 
-
     def checkFieldCheckChange(self, checkBool, struct, memVal):  # CheckBox修改函数
         global structDict
         structDict[struct][memVal]["checkField"] = checkBool
@@ -282,8 +278,8 @@ class Ui_Dialog(object):
         if structDict[struct][memVal]["checkCode"] and checkBool:
             structDict[struct][memVal]["checkCodeCheckBox"].setChecked(False)
             structDict[struct][memVal]["checkCode"] = False
-    # 表格校验字段-CheckBox-end
 
+    # 表格校验字段-CheckBox-end
 
     # 表格-LineEdit-start
     def lineEditItem(self, isNumber, placeholderText, whatThing, struct, memVal):
@@ -388,7 +384,6 @@ class Ui_Dialog(object):
                 else:
                     structDict[struct][memVal][whatThing] = int(text)
 
-
     def saveData(self):
         """将structDict保存为JSON文件
         Notes
@@ -417,7 +412,6 @@ class Ui_Dialog(object):
                 QtWidgets.QMessageBox.Warning, "警告", "保存失败!\n" + repr(e))
             saveMsgBox.exec_()
 
-
     def delCheckBox(self):  # 清空字典中checkbox
         global structDict
         for key, val in structDict.items():
@@ -426,14 +420,11 @@ class Ui_Dialog(object):
                     del val["checkCodeCheckBox"]
                     del val["checkFieldCheckBox"]
 
-
     def getRanFloatNum(self, lower, upper):
         return round(random.uniform(lower, upper), 2)
 
-
     def getRanIntNum(self, lower, upper):
         return int(random.uniform(lower, upper))
-
 
     def getBitsize(self, variable):
         '''
@@ -453,7 +444,6 @@ class Ui_Dialog(object):
                 if key == dataType:
                     return value
             return -1
-
 
     def initStructDict(self, header_loc_list, JSONPath, readJSON, uiSelectIOStruct, struct, allStruct):
         """根据传入的路径分析头文件，或直接读取现有的json文件
@@ -493,13 +483,15 @@ class Ui_Dialog(object):
             f.close()
             self.struct = list(structDict.keys())[0]
         else:
+            self.struct = struct
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
             structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
             # print(structInfo)
             tempDict = {}
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
-                tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "mutation": False, "bitsize": 8, "checkCode": False, "checkField": False}
+                tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "mutation": False, "bitsize": 8,
+                                              "checkCode": False, "checkField": False}
                 tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
                 tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
@@ -524,13 +516,12 @@ class Ui_Dialog(object):
                         tempDict[structInfo[i][0]]["upper"] = 999
                         tempDict[structInfo[i][0]]["lower"] = -999
             structDict[struct] = tempDict
-        for k,v in structDict[struct].items():
+        for k, v in structDict[struct].items():
             print(k)
             print(v)
         structDict = handle_struct(struct_dict=structDict)
         # 设置Table
         self.setTableContent(structDict)
-
 
     def genMutate(self):
         '''
@@ -548,7 +539,6 @@ class Ui_Dialog(object):
             traceback.print_exc()
             print("\033[0m")
 
-
     def gen_check_code(self, structDict, struct):
         check_code_value = []
         check_code_holder_name = 0
@@ -563,7 +553,6 @@ class Ui_Dialog(object):
                                                    algorithm=check_code_method.split(":")[1])
         structDict[struct][check_code_holder_name]["value"] = check_code
         return structDict
-
 
     def genSeed(self):
         '''
@@ -605,7 +594,6 @@ if __name__ == "__main__":
     headerNotExistBox = QtWidgets.QMessageBox(
         QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
     headerNotExistBox.exec_()
-
 
 # if __name__ == "__main__":
 #     app = QtWidgets.QApplication(sys.argv)
