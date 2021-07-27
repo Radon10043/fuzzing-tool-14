@@ -15,6 +15,7 @@ import networkx as nx
 import callgraph as cg
 import instrument as instr
 import public
+from util.check_code import calculate_check_code_from_dec
 
 
 def mkdir(path):
@@ -268,24 +269,44 @@ def mutate(testcase, mutateSavePath, dllDict):
     -----
     [description]
     """
-    # TODO 根据结构体字节大小，反解析生成的测试用例，定位校验字段和校验码位置
-    # structJson = open(mutateSavePath.split("out")[0] + "in/structDict.json", mode="r")
-    # structJson = json.load(structJson)
 
     # 将对测试用例进行变异并保存为二进制文件和txt文件
-    txtSavePath = bytes(mutateSavePath + ".txt", encoding="utf8")
+    test_case_visualization_file_path = mutateSavePath + ".txt"
+    mutateSavePath_backup = mutateSavePath
+    txtSavePath = bytes(test_case_visualization_file_path, encoding="utf8")
     mutateSavePath = bytes(mutateSavePath, encoding="utf8")
     r = random.randint(0, 255)
     dllDict["mutate"].mutate(testcase, mutateSavePath, r)
     dllDict["mutate"].testcaseVisualization(testcase, txtSavePath)
 
-    # mutateFile = open(mutateSavePath, "rb")
-    # struct_bytes_size = 0
-    # for structName in structJson:
-    #     for structUnitName in structJson[structName]:
-    #         structUnit = structJson[structName][structUnitName]
-    #         struct_bytes_size += int(structUnit["bitsize"])
-    # print()
+    testcase_file_str_list = open(test_case_visualization_file_path, mode="r").readlines()
+    structDict = json.load(open(test_case_visualization_file_path.split("out")[0] + "\\in\\structDict.json"))
+    check_code_name, check_code_field = None, list()
+    structName = None
+    for struct_name in structDict.keys():
+        structName = struct_name
+        for var_type_name in structDict[struct_name].keys():
+            if structDict[struct_name][var_type_name]["checkCode"]:
+                check_code_name = var_type_name
+            elif structDict[struct_name][var_type_name]["checkField"]:
+                check_code_field.append(var_type_name)
+    check_code_field_value_list = list()
+    for one_line in testcase_file_str_list:
+        var_name = one_line.split(":")[0]
+        var_value = one_line.split(":")[1].strip()
+        for one_check_code_field in check_code_field:
+            if var_name in one_check_code_field:
+                check_code_field_value_list.append(int(var_value))
+    check_code_method = open(test_case_visualization_file_path.split("out")[0] + "\\in\\checkCodeMethod.txt",
+                             encoding="utf", mode="r").readline()
+    check_code = calculate_check_code_from_dec(dec_data_list=check_code_field_value_list,
+                                               method=check_code_method.split("_")[0],
+                                               algorithm=check_code_method.split("_")[1])
+    structDict[structName][check_code_name]["value"] = check_code
+    header_loc = open(test_case_visualization_file_path.split("out")[0] + "\\in\\header_loc.txt", mode="r",
+                      encoding="utf").readlines()
+    public.gen_test_case_from_structDict(header_loc, structName, structDict=structDict, path=mutateSavePath_backup)
+    print(check_code)
 
 
 def crossover(population):
@@ -512,7 +533,8 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
 
         for i in range(0, len(testcase)):
             uiFuzz.textBrowser.append("正在执行第" + str(i) + "个测试用例")
-            returnData = getFitness(testcase[i], targetSet, program_loc, callGraph, maxTimeout, dllDict, isMutateInRange)
+            returnData = getFitness(testcase[i], targetSet, program_loc, callGraph, maxTimeout, dllDict,
+                                    isMutateInRange)
             distance = returnData[1]
             fitness = returnData[2]
             coverNode = returnData[3]

@@ -584,6 +584,10 @@ class Ui_Dialog(object):
             # 更改uiSelectIOStruct中Label的值
             self.uiSelectIOStruct.inputStructLabel.setText(self.struct)
             self.setTableContent(structDict)
+            check_code_method_save_file_path = root_loc + "checkCodeMethod.txt"
+            check_code_method_save_file = open(check_code_method_save_file_path, mode="w", encoding="utf")
+            check_code_method_save_file.write(self.checkCodeComboBox.currentText())
+            check_code_method_save_file.close()
             genSeedMsgBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Information, "消息", "种子文件生成成功!")
             genSeedMsgBox.exec_()
