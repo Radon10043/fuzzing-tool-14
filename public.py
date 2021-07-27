@@ -16,6 +16,8 @@ import re
 @param {*} source 代码列表，source = f.readlines()
 @return {*}
 '''
+
+
 def deleteNote(source):
     skip = False
     for i in range(len(source)):
@@ -93,7 +95,7 @@ def genSeed(header_loc, struct, structDict):
     code += "\t" + struct + " data;\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
-        if dataName == "noName":
+        if "noName" in dataName:
             continue
         code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
     # 赋值结束后，向seed文件中写入内容
@@ -111,6 +113,54 @@ def genSeed(header_loc, struct, structDict):
     cmds.append("genSeed.exe")
     # 切换目录并执行命令
     os.chdir(root)
+    for cmd in cmds:
+        os.system(cmd)
+    header_loc_save_file_path = root + "header_loc.txt"
+    header_loc_save_file_file = open(header_loc_save_file_path, mode="w", encoding="utf")
+    for one_header in header_loc:
+        header_loc_save_file_file.write(one_header)
+        header_loc_save_file_file.write("\n")
+    header_loc_save_file_file.close()
+
+
+def gen_test_case_from_structDict(header_loc, struct, structDict, path):
+    """
+    @description: 根据structDict中的value，生成指定测试用例
+    @param {*} header_loc 列表，里面存储了所有头文件的路径
+    @param {*} struct 用户所选择的结构体名称
+    @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
+    @return {*}
+    """
+    # 先设置好相关的位置信息
+    cycle_path = path.split("mutate")[0] + "mutate" + path.split("mutate")[1]
+    mutate_file_name = "mutate" + path.split("mutate")[2]
+    # 开始写代码，先include相关内容
+    code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
+    # 把用户选择的头文件位置也include
+    for header in header_loc:
+        code += "#include \"" + header.strip() + "\"\n"
+    code += "using namespace std;\n\n"
+    code += "int main(){\n"
+    # 新建结构体变量，并向它的成员变量赋值
+    code += "\t" + struct + " data;\n"
+    for key, value in structDict[struct].items():
+        dataName = key.split(" ")[-1].split(":")[0]
+        if "noName" in dataName:
+            continue
+        code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
+    code += "\n\tofstream f(\"" + mutate_file_name + "\");"
+    code += "\n\tf.write((char*)&data, sizeof(data));"
+    code += "\n\tf.close();"
+    code += "\n\treturn 0;\n}"
+    f = open(path + "_gen.cpp", mode="w")
+    f.write(code)
+    f.close()
+    # 编辑命令集合
+    cmds = []
+    cmds.append("g++ -o gen.exe " + path + "_gen.cpp")
+    cmds.append("gen.exe")
+    # 切换目录并执行命令
+    os.chdir(cycle_path)
     for cmd in cmds:
         os.system(cmd)
 
@@ -164,7 +214,7 @@ def genMutate(header_loc, struct, structDict):
     # 写一个将结构体可视化的方法，savePath需要以.txt结尾
     code += "void testcaseVisualization(" + struct + " data, char* savePath){\n"
     code += "\tFILE* f = fopen(savePath, \"w\");\n"
-    for key,value in structDict[struct].items():
+    for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
         if dataName == "noName":
             continue
@@ -177,6 +227,7 @@ def genMutate(header_loc, struct, structDict):
 
     # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window.py生成
     # command: gcc -shared -o mutate_instru.dll mutate_instru.c
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
