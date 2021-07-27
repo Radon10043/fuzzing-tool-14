@@ -566,6 +566,7 @@ class Ui_Dialog(object):
         @param {*} self
         @return {*}
         '''
+        global structDict
         for key in structDict:
             struct = key
         structDict = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里，用于初始化种子
