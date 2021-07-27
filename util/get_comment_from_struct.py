@@ -45,7 +45,7 @@ def handle_struct(struct_dict: dict):
         struct_dict_with_comment[struct_name] = dict()
         for var_type_name in struct_dict[struct_name].keys():
             loc_str = struct_dict[struct_name][var_type_name]["loc"]
-            if loc_str in loc_set:
+            if ("noName" in var_type_name) and (loc_str in loc_set):
                 print(loc_str)
                 continue
             loc_set.add(loc_str)
