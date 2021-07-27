@@ -516,7 +516,7 @@ class Ui_Dialog(object):
                         tempDict[structInfo[i][0]]["upper"] = 999
                         tempDict[structInfo[i][0]]["lower"] = -999
             structDict[struct] = tempDict
-        for k, v in structDict[struct].items():
+        for k, v in structDict[self.struct].items():
             print(k)
             print(v)
         structDict = handle_struct(struct_dict=structDict)
@@ -540,17 +540,23 @@ class Ui_Dialog(object):
             print("\033[0m")
 
     def gen_check_code(self, structDict, struct):
+        """
+        根据字典中的字段，判断校验字段和校验值存放位置，计算校验值
+        @param structDict:
+        @param struct:
+        @return:
+        """
         check_code_value = []
         check_code_holder_name = 0
         for key, value in structDict[struct].items():
-            if value["checkCode"] == "should":
+            if value["checkField"]:
                 check_code_value.append(value["value"])
-            elif value["checkCode"] == "holder":
+            elif value["checkCode"]:
                 check_code_holder_name = key
         check_code_method = self.checkCodeComboBox.currentText()
         check_code = calculate_check_code_from_dec(dec_data_list=check_code_value,
-                                                   method=check_code_method.split(":")[0],
-                                                   algorithm=check_code_method.split(":")[1])
+                                                   method=check_code_method.split("_")[0],
+                                                   algorithm=check_code_method.split("_")[1])
         structDict[struct][check_code_holder_name]["value"] = check_code
         return structDict
 
@@ -562,8 +568,7 @@ class Ui_Dialog(object):
         '''
         for key in structDict:
             struct = key
-        # TODO 使用校验码
-        # structDict = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里
+        structDict = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里，用于初始化种子
         public.genSeed(self.header_loc_list, struct, structDict)
         # 生成变异所需的C文件，将uiSelectIOStruct下的Label设置为用户选择的结构体的Lalbel
         try:
