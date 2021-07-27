@@ -115,6 +115,54 @@ def genSeed(header_loc, struct, structDict):
     os.chdir(root)
     for cmd in cmds:
         os.system(cmd)
+    header_loc_save_file_path = root + "header_loc.txt"
+    header_loc_save_file_file = open(header_loc_save_file_path, mode="w", encoding="utf")
+    for one_header in header_loc:
+        header_loc_save_file_file.write(one_header)
+        header_loc_save_file_file.write("\n")
+    header_loc_save_file_file.close()
+
+
+def gen_test_case_from_structDict(header_loc, struct, structDict, path):
+    """
+    @description: 根据structDict中的value，生成指定测试用例
+    @param {*} header_loc 列表，里面存储了所有头文件的路径
+    @param {*} struct 用户所选择的结构体名称
+    @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
+    @return {*}
+    """
+    # 先设置好相关的位置信息
+    cycle_path = path.split("mutate")[0] + "mutate" + path.split("mutate")[1]
+    mutate_file_name = "mutate" + path.split("mutate")[2]
+    # 开始写代码，先include相关内容
+    code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
+    # 把用户选择的头文件位置也include
+    for header in header_loc:
+        code += "#include \"" + header.strip() + "\"\n"
+    code += "using namespace std;\n\n"
+    code += "int main(){\n"
+    # 新建结构体变量，并向它的成员变量赋值
+    code += "\t" + struct + " data;\n"
+    for key, value in structDict[struct].items():
+        dataName = key.split(" ")[-1].split(":")[0]
+        if "noName" in dataName:
+            continue
+        code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
+    code += "\n\tofstream f(\"" + mutate_file_name + "\");"
+    code += "\n\tf.write((char*)&data, sizeof(data));"
+    code += "\n\tf.close();"
+    code += "\n\treturn 0;\n}"
+    f = open(path + "_gen.cpp", mode="w")
+    f.write(code)
+    f.close()
+    # 编辑命令集合
+    cmds = []
+    cmds.append("g++ -o gen.exe " + path + "_gen.cpp")
+    cmds.append("gen.exe")
+    # 切换目录并执行命令
+    os.chdir(cycle_path)
+    for cmd in cmds:
+        os.system(cmd)
 
 
 def genMutate(header_loc, struct, structDict):
