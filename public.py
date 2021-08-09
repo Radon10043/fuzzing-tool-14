@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-07-25 13:42:41
+LastEditTime: 2021-08-09 12:18:14
 Description: Some public function
 '''
 
@@ -205,7 +205,7 @@ def genMutate(header_loc, struct, structDict):
     code += "\t" + struct + "* temp = &data;\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
-        if dataName == "noName":
+        if "noName" in dataName:
             continue
         code += "\ttemp->" + dataName + " = (temp->" + dataName + " % ((" + str(
             value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(value["lower"]) + ");\n"
@@ -216,7 +216,7 @@ def genMutate(header_loc, struct, structDict):
     code += "\tFILE* f = fopen(savePath, \"w\");\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
-        if dataName == "noName":
+        if "noName" in dataName:
             continue
         code += "\tfprintf(f, \"" + dataName + ": %u\\n\", data." + dataName + ");\n"
     code += "\tfclose(f);\n"
