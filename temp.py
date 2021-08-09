@@ -2,10 +2,10 @@
 Author: Radon
 Date: 2021-07-12 10:28:52
 LastEditors: Radon
-LastEditTime: 2021-07-22 17:25:03
+LastEditTime: 2021-08-09 12:31:32
 Description: temp file
 '''
-import ctypes
+import ctypes, os
 
 from util.check_code import calculate_check_code_from_hex, calculate_check_code_from_dec, get_support_methods
 

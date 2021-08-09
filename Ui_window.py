@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-29 13:23:34
 LastEditors: Radon
-LastEditTime: 2021-07-21 16:32:58
+LastEditTime: 2021-08-09 12:42:41
 Description: 模糊测试工具
 '''
 
@@ -395,6 +395,17 @@ class Ui_MainWindow(object):
                                                             "您可以选择手动将out文件夹移动到其他地方")
                 outFolderBackupBox.exec_()
                 return
+
+        # 提示用户插装变量初始值需要为0
+        instrValueSetZeroBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "插装变量初始值需要为0，请确认无误")
+        yes = instrValueSetZeroBox.addButton("确定", QtWidgets.QMessageBox.YesRole)
+        no = instrValueSetZeroBox.addButton("取消", QtWidgets.QMessageBox.NoRole)
+        instrValueSetZeroBox.exec_()
+        if instrValueSetZeroBox.clickedButton() == no:
+            instrValueTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息",
+                                                        "请将插装变量初始值设置为0")
+            instrValueTipBox.exec_()
+            return
 
         if self.AICfgDialog.existTS.isChecked() and self.AICfgDialog.tsLoc.toPlainText() == "":
             msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请确保已将初始训练集拷贝到" + os.path.join(utils.ROOT, "AIFuzz", "seeds") + "目录下！")

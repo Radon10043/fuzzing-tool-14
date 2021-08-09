@@ -280,7 +280,7 @@ def mutate(testcase, mutateSavePath, dllDict):
     dllDict["mutate"].testcaseVisualization(testcase, txtSavePath)
 
     testcase_file_str_list = open(test_case_visualization_file_path, mode="r").readlines()
-    structDict = json.load(open(test_case_visualization_file_path.split("out")[0] + "\\in\\structDict.json"))
+    structDict = json.load(open(test_case_visualization_file_path.split("out")[0] + "\\in\\input.json"))
     check_code_name, check_code_field = None, list()
     structName = None
     for struct_name in structDict.keys():
@@ -594,7 +594,7 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
         files = os.listdir(mutateSavePath)
         for file in files:
             # 跳过后缀名为txt的可视化文件
-            if file.endswith("txt"):
+            if "." in file:
                 continue
             f = open(mutateSavePath + file, mode="rb")
             testcase.append(f.read())
