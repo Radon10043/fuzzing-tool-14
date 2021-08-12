@@ -152,7 +152,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "模糊测试工具 - 客户端"))
         self.label.setText(_translate("MainWindow", "模糊测试工具 - 客户端"))
         self.fileSelectGroupBox.setTitle(_translate("MainWindow", "文件选择"))
         self.HFileLoc.setPlaceholderText(_translate("MainWindow", "头文件位置"))
