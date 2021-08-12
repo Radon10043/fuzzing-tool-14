@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>770</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>模糊测试工具 - 服务端</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="title">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>30</y>
+      <width>161</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>模糊测试工具 - 服务端</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="fileSelectGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>50</y>
+      <width>651</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>文件选择</string>
+    </property>
+    <widget class="QPushButton" name="chooseCBtn">
+     <property name="geometry">
+      <rect>
+       <x>510</x>
+       <y>90</y>
+       <width>131</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>选择C文件</string>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="CFileLoc">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>631</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="placeholderText">
+      <string>C文件位置</string>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="HFileLoc">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>130</y>
+       <width>631</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="placeholderText">
+      <string>头文件位置</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="chooseHBtn">
+     <property name="geometry">
+      <rect>
+       <x>510</x>
+       <y>200</y>
+       <width>131</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>选择头文件</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>300</y>
+      <width>321</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:rgb(235, 235, 235)</string>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="codeStructTab">
+     <attribute name="title">
+      <string>基于代码结构</string>
+     </attribute>
+     <widget class="QPushButton" name="SAByCppcheckBtn">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>15</y>
+        <width>93</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>cppcheck</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="SAByManBtn">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>60</y>
+        <width>93</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>手动选择</string>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="targetSetInfo">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>12</y>
+        <width>191</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(255, 255, 255)</string>
+      </property>
+      <property name="placeholderText">
+       <string>目标集信息</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="SAResultGenBtn">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>105</y>
+        <width>93</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>结果生成</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="interfaceTab">
+     <attribute name="title">
+      <string>基于交互接口故规约</string>
+     </attribute>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="selectInsVarGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>310</y>
+      <width>291</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>选择插装变量</string>
+    </property>
+    <widget class="QLineEdit" name="structParameterName">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>80</y>
+       <width>113</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>IBeamCursor</cursorShape>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>dtg</string>
+     </property>
+     <property name="cursorPosition">
+      <number>3</number>
+     </property>
+     <property name="placeholderText">
+      <string>结构体实参名</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="pointerStyleRadioBtn">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>70</y>
+       <width>115</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>方式1</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="pointStyleRadioBtn">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>100</y>
+       <width>115</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>方式2</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="selectInsVarBtn">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>30</y>
+       <width>141</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>选择插装变量</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="autoGenInsCodeConfirmBtn">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>80</y>
+       <width>51</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>确定</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="startServerBtn">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>610</y>
+      <width>321</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>启动服务端程序</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="callGraphGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>500</y>
+      <width>321</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>调用图</string>
+    </property>
+    <widget class="QPushButton" name="genCallGraphBtn">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>30</y>
+       <width>151</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>生成函数调用图</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="manualInputInsCodeGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>460</y>
+      <width>291</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>手动输入插装语句</string>
+    </property>
+    <widget class="QLineEdit" name="manualInputInsVarType">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>201</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>IBeamCursor</cursorShape>
+     </property>
+     <property name="toolTip">
+      <string>手动输入插装变量类型</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="cursorPosition">
+      <number>0</number>
+     </property>
+     <property name="placeholderText">
+      <string>手动输入插装变量类型</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="manualInputInsCodeConfirmBtn">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>70</y>
+       <width>51</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>确定</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="manualInputInsCode">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>70</y>
+       <width>201</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>IBeamCursor</cursorShape>
+     </property>
+     <property name="toolTip">
+      <string>手动输入插装语句，输入等号前的内容即可</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="cursorPosition">
+      <number>0</number>
+     </property>
+     <property name="placeholderText">
+      <string>手动输入插装语句</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="insCodePreviewGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>600</y>
+      <width>291</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>插装语句预览</string>
+    </property>
+    <widget class="QLabel" name="instrumentCodeLabel">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>271</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>dtg-&gt;variable = 1 &lt;&lt; x;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::AutoText</enum>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="indent">
+      <number>-1</number>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="instrumentBtn">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>80</y>
+       <width>141</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>插装</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="insVarTypeLabelTip">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>45</y>
+       <width>101</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>插装变量类型:</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::AutoText</enum>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="indent">
+      <number>-1</number>
+     </property>
+    </widget>
+    <widget class="QLabel" name="insVarTypeLabel">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>45</y>
+       <width>151</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>暂无</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::AutoText</enum>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="indent">
+      <number>-1</number>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
