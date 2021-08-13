@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-07-21 17:03:56
+LastEditTime: 2021-08-11 19:51:25
 Description: Hi, say something
 '''
 import os
@@ -20,7 +20,7 @@ def printInfo(msg):
     print("\n\033[0;32mInfo:\033[0m" + msg)
 
 
-def instrument(source_loc, instrument_loc, output_loc, instrument_var):
+def instrument(source_loc, instrument_loc, instrument_var):
     '''
     @description: 多文件插装的方法
     @param {*} source_loc 列表，存储了所有源文件位置
@@ -60,7 +60,7 @@ def instrument(source_loc, instrument_loc, output_loc, instrument_var):
                     if allNode[k] == funcName:
                         break
                 # 把变量的某一位置为1，用或操作
-                instrCode = "\tdtg->" + instrument_var + " |= 1<<" + str(k) + ";\n"
+                instrCode = "\t" + instrument_var + " |= 1<<" + str(k) + ";\n"
                 instr = True
             if "{" in lines[j]:
                 brace += 1

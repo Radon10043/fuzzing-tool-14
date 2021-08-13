@@ -12,8 +12,6 @@ from subprocess import *
 
 import networkx as nx
 
-import callgraph as cg
-import instrument as instr
 import public
 from util.check_code import calculate_check_code_from_dec
 
@@ -131,40 +129,27 @@ def getDirContent(position):
     return content
 
 
-def threadReceiver(program_loc):
-    '''
-    @description: 线程1-启动C++接收方，用于接收由py发送的测试用例
-    @param {*}
-    @return {*}
-    '''
-    global isCrash
-    isCrash = 0
-    prog = program_loc
-    out = getstatusoutput(prog)
-    isCrash = out[0]
-    print(out[1])
-
-
-def threadMonitor():
+def threadMonitor(senderAddress):
     '''
     @description: 线程2-启动python监控方，用于收集C++返回的UDP
     @param {*}
     @return {*}
     '''
+    # TODO 现在py还收不到cpp发回来的UDP
     global returnUDPInfo
-    # 启动同目录下的getudp.py
-    prog = os.path.dirname(os.path.abspath(__file__)) + "/getudp.py"
-    try:
-        out = getstatusoutput(prog)
-    except BaseException as e:
-        print("监视程序出错:", e)
-        out = [[], []]
-    # print("getudp.py: ", out)
-    global returnUDPInfo
-    returnUDPInfo = out[1]
+    returnUDPInfo.clear()
+    monitorSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # 创建 socket 对象
+    print(senderAddress)
+    # host = senderAddress.split(':')[0]
+    # port = int(senderAddress.split(':')[1])
+    # monitorSocket.bind((host, port))
+    monitorSocket.bind(("127.0.0.1", 9999))  # 绑定端口
+    data, client_addr = monitorSocket.recvfrom(1024)
+    print("data:", data)
+    returnUDPInfo = str(bytes(data))
 
 
-def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, dllDict, isMutateInRange):
+def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict, isMutateInRange):
     """根据南京大学徐安孜同学的例子重新写了一下获取适应度的函数
 
     Parameters
@@ -195,15 +180,9 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, dllDict,
     变异机会的多少，适应度越高的测试用例更有可能变异出覆盖到目标
     的测试用例，因此它得到的变异机会更多，反之则会更少
     """
-    # 先启动线程2，用于监控
-    thread2 = threading.Thread(target=threadMonitor, name="thread_monitor", )
+    # 启动线程2，用于监控
+    thread2 = threading.Thread(target=threadMonitor, name="thread_monitor", args=(senderAddress,))
     thread2.start()
-    # 启动线程2后，稍微等下，如果线程1速度快了可能会导致线程2无法获得返回的UDP包
-    # 从而陷入一直等待线程2结束的状态
-    time.sleep(0.2)
-    # 一段时间后，启动线程1，注意args是一个元组，结尾必须有逗号
-    thread1 = threading.Thread(target=threadReceiver, name="thread_receiver", args=(program_loc,))
-    thread1.start()
 
     # 测试用例是bytes
     data = testcase
@@ -212,19 +191,27 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, dllDict,
         dllDict["mutate"].setValueInRange(data)
 
     # 发送测试用例
-    s = socket.socket()
-    host = socket.gethostname()
-    port = 8888
-    s.connect((host, port))
-    s.send(data)
-    s.close()
-    # 等待线程1和线程2结束
-    thread1.join()
+    global isCrash
+    global crashTC
+    try:
+        s = socket.socket()
+        host = receiverAddress.split(":")[0]
+        port = int(receiverAddress.split(":")[1])
+        s.connect((host, port))
+        s.send(data)
+        s.close()
+        isCrash = 0
+        crashTC = data
+    except BaseException as e:
+        print("测试用例发送失败:", e)
+        isCrash += 1
+    # 等待线程2结束
     thread2.join(maxTimeout)
 
     # 读取返回的UDP包的内容
     global returnUDPInfo
     try:
+        print(returnUDPInfo)
         returnUDPInfo = returnUDPInfo.split(",")
         returnUDPInfo.pop(-1)
         returnUDPInfo[0] = re.sub("[^0-9]", "", returnUDPInfo[0])
@@ -247,7 +234,7 @@ def getFitness(testcase, targetSet, program_loc, callGraph, maxTimeout, dllDict,
     if distance == 0 or isCrash:
         distance = 1
     fitness = 1 / distance
-    crashResult = isCrash
+    crashResult = isCrash == 10
     timeout = False
     return (testcase, distance, fitness, coverNode, crashResult, timeout)
 
@@ -335,12 +322,12 @@ def crossover(population):
     print(population)
 
 
-def generateReport(source_loc_list, fuzzInfoDict):
+def generateReport(header_loc_list, fuzzInfoDict):
     """生成测试报告
 
     Parameters
     ----------
-    source_loc_list : list
+    header_loc_list : list
         存储了所有源文件的位置
     fuzzInfoDict : [type]
         存储了模糊测试相关信息的字典
@@ -349,13 +336,13 @@ def generateReport(source_loc_list, fuzzInfoDict):
     -----
     [description]
     """
-    basic_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
+    basic_loc = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0])
     allCoveredNode = fuzzInfoDict["已覆盖结点"]
     report_loc = basic_loc + "out/测试报告.txt"
 
     reportContent = "=============================测试报告============================\n"
     reportContent += "测试对象: "
-    for source in source_loc_list:
+    for source in header_loc_list:
         reportContent += source.rstrip("\n").split("/")[-1] + ","
     reportContent = reportContent.rstrip(",") + "\n"
     reportContent += "循环次数: " + fuzzInfoDict["循环次数"] + "轮\n"
@@ -393,12 +380,12 @@ def generateReport(source_loc_list, fuzzInfoDict):
     f.close()
 
 
-def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
+def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     """模糊测试的函数, 是该项目核心的函数之一
 
     Parameters
     ----------
-    source_loc_list : list
+    header_loc_list : list
         存储了所有C文件的位置
     ui : Ui_MainWindow
         主页面，即Ui_window
@@ -417,49 +404,24 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
     该方法实现了模糊测试的过程，包括变异，保存覆盖新代码的测试
     用例，保存触发缺陷的测试用例等
     """
-    for source in source_loc_list:
-        if not os.path.exists(source):
-            print(source)
-            fuzzThread.fuzzInfoSgn.emit("\n\n\t\t被测文件不存在!")
-            return "source not exist!"
 
     # 当前所在目录
-    now_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
-    # 输出exe和obj的位置
-    output_loc = now_loc
+    now_loc = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0])
     # 可执行文件位置
     program_loc = now_loc + "instrument.exe"
     # 初始测试用例位置
     seed_loc = now_loc + "in/seed"
     # 调用图位置
-    graph_loc = now_loc + "graph_cg.txt"
-    # 插装后的文件位置，因为是多文件，所以这里用了列表
-    instrument_loc = []
-
-    # 因为要多文件编译，所以记录一下每个文件的位置，以便生成插装的源文件
-    for source in source_loc_list:
-        sourceName = source.split("/")[-1]
-        instrument_loc.append(re.sub(sourceName, "ins_" + sourceName, source))
-
-    # 获取插装变量的名字，并进行插装与编译
-    # 如果存在旧的插装程序，则需要先删除
-    if os.path.exists(program_loc):
-        os.remove(program_loc)
-    instrument_var = open(now_loc + "in/instrument.txt").readline()
-    instrument_var = instrument_var.split(" ")[-1].split(":")[0].rstrip("\n")
-    # 尝试生成instrument.exe，如果失败了，表示被测程序的源码可能有误
-    try:
-        instr.instrument(source_loc_list, instrument_loc, output_loc, instrument_var)
-    except:
-        return "编译程序失败，请检查代码是否正确!"
-
-    # 创建函数调用图
-    cg.createCallGraph(source_loc_list, graph_loc)
+    graph_loc = now_loc + "in/callgraph.txt"
 
     # 加载所需的DLL文件，并将CDLL存入一个字典，以便调用
     mutateDll = ctypes.cdll.LoadLibrary(now_loc + "in/mutate.dll")
-    instrumentDll = ctypes.cdll.LoadLibrary(now_loc + "in/instrument.dll")
-    dllDict = {"mutate": mutateDll, "instrument": instrumentDll}
+    instrumentDll = ctypes.cdll.LoadLibrary(now_loc + "in/insFunc.dll")
+    dllDict = {"mutate": mutateDll, "instrument" : instrumentDll}
+
+    # 设置地址
+    senderAddress = uiPrepareFuzz.senderIPLabel.text()
+    receiverAddress = uiPrepareFuzz.receiverIPLabel.text()
 
     # 如果已经有out了, 就删掉它
     if os.path.exists(now_loc + "/out"):
@@ -479,16 +441,13 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
     mutateNum = 1  # 统计总共变异了多少次
     maxMutateTC = 200  # 最多保留多少个变异的测试用例
     maxTimeout = 20  # 最大超时时间
-    maxTCLen = 10  # 测试用例最大长度
     mutateTime = 0  # 测试用例生成时间
     executeTime = 0  # 执行总时间
 
     maxMutateTC = int(ui.TCNumPerCyc.text())
     maxTimeout = int(ui.timeoutLEdit.text())
     # 设置目标集
-    targetSet = ui.targetSetInfo.toPlainText()
-    targetSet = re.sub("[^A-Za-z1-9_\n]", "", targetSet)
-    targetSet = targetSet.split("\n")
+    targetSet = fuzzThread.targetSetInfo
     print("targetSet:", targetSet)
     # 变异体是否需要在用户指定的范围内
     isMutateInRange = ui.isMutateInRangeCheckbox.isChecked()
@@ -499,8 +458,7 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
     # 统计所有的函数，读取调用图
     callGraph = loadData(graph_loc)
     global allNode
-    allNode = public.getAllFunctions(source_loc_list)
-    allNode = sorted(set(allNode), key=allNode.index)
+    allNode = uiPrepareFuzz.allNodes
     print("allNode:", allNode)
 
     # 读取初始种子测试用例
@@ -533,7 +491,7 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
 
         for i in range(0, len(testcase)):
             uiFuzz.textBrowser.append("正在执行第" + str(i) + "个测试用例")
-            returnData = getFitness(testcase[i], targetSet, program_loc, callGraph, maxTimeout, dllDict,
+            returnData = getFitness(testcase[i], targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict,
                                     isMutateInRange)
             distance = returnData[1]
             fitness = returnData[2]
@@ -542,7 +500,7 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
             timeout = returnData[5]
             if crash:
                 crashFile = open(now_loc + "/out/crash/crash" + str(uniq_crash), mode="wb")
-                crashFile.write(testcase[i])
+                crashFile.write(crashTC)
                 crashFile.close()
                 uniq_crash += 1
                 crashes += 1
@@ -617,7 +575,7 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
     # 生成测试报告
     fuzzThread.fuzzInfoSgn.emit(fuzzInfo)
     fuzzInfoDict = {"测试时间": str(int(end - start)),
-                    "测试对象": source_loc_list[0].split("/")[-1],
+                    "测试对象": header_loc_list[0].split("/")[-1],
                     "循环次数": str(cycle),
                     "制导目标数量": str(len(targetSet)),
                     "生成速度": str(int(maxMutateTC / mutateTime)),
@@ -630,7 +588,7 @@ def fuzz(source_loc_list, ui, uiFuzz, fuzzThread):
                     "已发现结点数量": str(len(allNode)),
                     "已覆盖结点": allCoveredNode,
                     "整体覆盖率": str(int(coverage[1] * 100))}
-    generateReport(source_loc_list, fuzzInfoDict)
+    generateReport(header_loc_list, fuzzInfoDict)
     uiFuzz.textBrowser.append("\n已生成测试报告! 点击<查看结果>按钮以查看")
 
     print("\n", allCoveredNode)
@@ -655,6 +613,7 @@ def initGloablVariable():
     crashNode.clear()
     allNode = ["main"]
     isCrash = 0
+    crashTC = bytes()
     crashes = 0
 
 
@@ -663,7 +622,8 @@ crash_code = []  # 存储异常退出导致的错误代码
 crashNode = []  # 触发错误覆盖到了哪些结点，如果覆盖到crashNode中没有的结点，就将该结点
 # 添加到crashNode中，并保存测试用例
 allNode = []  # 储存了图里的所有结点
-isCrash = 0  # 程序的返回值
+isCrash = 0  # 计算没有相应的测试用例数量
+crashTC = bytes() # 存储触发缺陷的测试用例
 crashes = 0  # 统计触发了多少次缺陷
 returnUDPInfo = []  # 存储发送回来的UDP数据包
 # ============================================================================================

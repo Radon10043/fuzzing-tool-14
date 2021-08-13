@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-08-09 12:18:14
+LastEditTime: 2021-08-11 16:53:47
 Description: Some public function
 '''
 
@@ -11,14 +11,13 @@ import sys
 import os
 import re
 
-'''
-@description: 删除程序中的注释
-@param {*} source 代码列表，source = f.readlines()
-@return {*}
-'''
-
 
 def deleteNote(source):
+    '''
+    @description: 删除程序中的注释
+    @param {*} source 代码列表，source = f.readlines()
+    @return {*}
+    '''
     skip = False
     for i in range(len(source)):
         if "//" in source[i]:
