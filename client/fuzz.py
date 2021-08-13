@@ -140,11 +140,12 @@ def threadMonitor(senderAddress):
     returnUDPInfo.clear()
     monitorSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # 创建 socket 对象
     print(senderAddress)
-    # host = senderAddress.split(':')[0]
-    # port = int(senderAddress.split(':')[1])
-    # monitorSocket.bind((host, port))
-    monitorSocket.bind(("127.0.0.1", 9999))  # 绑定端口
+    host = senderAddress.split(':')[0]
+    port = int(senderAddress.split(':')[1])
+    monitorSocket.bind((host, port))
+    # monitorSocket.bind(("", 9999))  # 绑定端口
     data, client_addr = monitorSocket.recvfrom(1024)
+    monitorSocket.close()
     print("data:", data)
     returnUDPInfo = str(bytes(data))
 
@@ -258,6 +259,7 @@ def mutate(testcase, mutateSavePath, dllDict):
     """
 
     # 将对测试用例进行变异并保存为二进制文件和txt文件
+    mutateStartTime = time.time()
     test_case_visualization_file_path = mutateSavePath + ".txt"
     mutateSavePath_backup = mutateSavePath
     txtSavePath = bytes(test_case_visualization_file_path, encoding="utf8")
@@ -265,7 +267,9 @@ def mutate(testcase, mutateSavePath, dllDict):
     r = random.randint(0, 255)
     dllDict["mutate"].mutate(testcase, mutateSavePath, r)
     dllDict["mutate"].testcaseVisualization(testcase, txtSavePath)
+    mutateTime = time.time() - mutateStartTime
 
+    checkStartTime = time.time()
     testcase_file_str_list = open(test_case_visualization_file_path, mode="r").readlines()
     structDict = json.load(open(test_case_visualization_file_path.split("out")[0] + "\\in\\input.json"))
     check_code_name, check_code_field = None, list()
@@ -294,6 +298,9 @@ def mutate(testcase, mutateSavePath, dllDict):
                       encoding="utf").readlines()
     public.gen_test_case_from_structDict(header_loc, structName, structDict=structDict, path=mutateSavePath_backup)
     print(check_code)
+    checkTime = time.time() - checkStartTime
+
+    return (mutateTime, checkTime)
 
 
 def crossover(population):
@@ -489,8 +496,10 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         executeStart = time.time()
         executeNum = len(testcase)
 
+        uiFuzz.textBrowser.append("\n\n")
         for i in range(0, len(testcase)):
-            uiFuzz.textBrowser.append("正在执行第" + str(i) + "个测试用例")
+            print()
+            uiFuzz.textBrowser.append("正在执行第" + str(i + 1) + "个测试用例")
             returnData = getFitness(testcase[i], targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict,
                                     isMutateInRange)
             distance = returnData[1]
@@ -527,8 +536,10 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         executeEnd = time.time()
         testcaseData = sorted(testcaseData, key=itemgetter(1))
         mkdir(now_loc + "/out/mutate/cycle" + str(cycle))
-        mutateStart = time.time()  # 记录变异开始时间
+
         checkpoint = mutateNum
+        mutateAndCheckTime = list()
+        uiFuzz.textBrowser.append("校验中...")
         while mutateNum - checkpoint < maxMutateTC:
             pTargetMutate = 98.0
             pNoTargetMutate = 50.0
@@ -540,7 +551,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
             for data in testcaseData:
                 if random.randint(0, 100) < pm:  # 小于阈值就进行下列变异操作
                     mutateSavePath = now_loc + "/out/mutate/cycle" + str(cycle) + "/mutate" + str(mutateNum).zfill(6)
-                    mutate(data[0], mutateSavePath, dllDict)
+                    mutateAndCheckTime.append(mutate(data[0], mutateSavePath, dllDict))
                     mutateNum += 1
                 pTargetMutate -= (98.0 / maxMutateTC)
                 if mutateNum - checkpoint >= maxMutateTC:
@@ -556,11 +567,16 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
                 continue
             f = open(mutateSavePath + file, mode="rb")
             testcase.append(f.read())
+            f.close()
         cycle += 1
         end = time.time()
 
         # 生成简短的测试信息
-        mutateTime = end - mutateStart
+        mutateTime = 0
+        checkTime = 0
+        for data in mutateAndCheckTime:
+            mutateTime += data[0]
+            checkTime += data[1]
         executeTime = executeEnd - executeStart
         fuzzInfo = "\n测试时间\t\t\t" + str(int(end - start)) + "s\n"
         fuzzInfo += "循环次数\t\t\t" + str(cycle) + "\n"
@@ -568,6 +584,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         fuzzInfo += "缺陷数量\t\t\t" + str(uniq_crash - 1) + "(" + str(crashes) + ")\n"
         fuzzInfo += "测试用例生成速度\t\t" + str(int(maxMutateTC / mutateTime)) + "个/s\n"
         fuzzInfo += "测试用例执行速度\t\t" + str(int(executeNum / executeTime)) + "个/s\n"
+        fuzzInfo += "测试用例校验速度\t\t" + str(int(checkTime / maxMutateTC)) + "s/个\n"
         fuzzThread.fuzzInfoSgn.emit(fuzzInfo)
         if uiFuzz.stop == True:
             break

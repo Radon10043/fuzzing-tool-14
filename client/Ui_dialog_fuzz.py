@@ -118,6 +118,7 @@ class Ui_Dialog(object):
         @return {*}
         '''
         # self.fuzzInfoTBrowser.setText(fuzzInfo)
+        self.textBrowser.clear()
         self.textBrowser.setText(fuzzInfo)
         QtWidgets.QApplication.processEvents()
         print(fuzzInfo)
@@ -144,6 +145,7 @@ class Ui_Dialog(object):
         self.stopBtn.setEnabled(False)
         self.ui.startFuzzBtn.setEnabled(True)
         self.ui.seedInputBtn.setEnabled(True)
+        self.fuzzThread.quit()
 
     def errorFuzz(self):
         '''
