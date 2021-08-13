@@ -141,9 +141,9 @@ class Ui_MainWindow(object):
         self.startValidateBtn.clicked.connect(self.popValidateDialog)
         self.startFuzzBtn.clicked.connect(self.popPrepareFuzzDialog)
 
-        # self.senderIPLineEdit.setText("192.168.50.84")
+        # self.senderIPLineEdit.setText("")
         # self.senderPortLineEdit.setText("9999")
-        # self.receiverIPLineEdit.setText("192.168.50.84")
+        # self.receiverIPLineEdit.setText("192.168.50.176")
         # self.receiverPortLineEdit.setText("8888")
         # =========================================================================
 
