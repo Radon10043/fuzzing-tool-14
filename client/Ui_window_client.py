@@ -243,9 +243,9 @@ class Ui_MainWindow(object):
                 self.seedDialog = QtWidgets.QDialog()
                 self.uiSeed = seedDialogPY.Ui_Dialog()
                 self.uiSeed.setupUi(self.seedDialog)
-                self.seedDialog.show()
                 # 如果读取JSON的话，后两个参数其实是用不上的
                 self.uiSeed.initStructDict(self.header_loc_list, JSONPath, readJSON, self, struct="struct", allStruct=["all","struct"])
+                self.seedDialog.show()
             except BaseException as e:
                 traceback.print_exc()
                 loadJSONFailedBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败: " + str(e))
