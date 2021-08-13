@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-08-12 15:33:22
+LastEditTime: 2021-08-13 11:41:51
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -122,7 +122,7 @@ class Ui_Dialog(object):
         global structDict
         Dialog.setObjectName("Dialog")
         Dialog.setWindowTitle("自定义结构体成员变量值")
-        Dialog.resize(1500, 550)
+        Dialog.resize(900, 550)
         self.setTable(Dialog)
 
     def setTable(self, Dialog):  # 界面函数
@@ -149,6 +149,15 @@ class Ui_Dialog(object):
         # self.generateBtn.clicked.connect(Dialog.accept)
         # 生成按钮-end
 
+        structDict = {
+            "struct" : {
+                "var" : {
+                    "bitsize" : 8,
+                    "comment" : "注释",
+                    "instrument" : False
+                }
+            }
+        }
         self.setTableContent(structDict)
 
 
@@ -268,7 +277,7 @@ class Ui_Dialog(object):
                     return value
             return -1
 
-    def initStructDict(self, header_loc_list, JSONPath, readJSON, uiSelectIOStruct, struct, allStruct):
+    def initStructDict(self, header_loc_list, JSONPath, readJSON, ui, struct, allStruct):
         """根据传入的路径分析头文件，或直接读取现有的json文件
 
         Parameters
@@ -279,8 +288,8 @@ class Ui_Dialog(object):
             JSON文件的存储路径
         readJSON : Bool
             是否读取已有的json
-        uiSelectIOStruct : Ui_Dialog
-            选择输入输出结构体的界面
+        ui : Ui_Dialog
+            主界面
         struct : str
             选择的结构体名称
         allStruct : list
@@ -297,7 +306,7 @@ class Ui_Dialog(object):
         """
         self.header_loc_list = header_loc_list
         self.struct = struct
-        self.uiSelectIOStruct = uiSelectIOStruct
+        self.uiSelectIOStruct = ui
         global structDict
         structDict.clear()
         if readJSON:
@@ -362,6 +371,12 @@ class Ui_Dialog(object):
                     f.write(key)
                 instrumentFlag = True
                 break
+
+        # 创建outputStruct.txt
+        f = open(root_loc + "outputStruct.txt", mode="w")
+        f.write(self.struct)
+        f.close()
+
         # 如果没选择插装变量则跳出警告
         if not instrumentFlag:
             noInstrumentValueBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "没有选择插装变量!")

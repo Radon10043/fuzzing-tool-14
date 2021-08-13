@@ -286,8 +286,8 @@ class Ui_MainWindow(object):
                 self.outputDialog = QtWidgets.QDialog()
                 self.uiOutput = outputDialogPY.Ui_Dialog()
                 self.uiOutput.setupUi(self.outputDialog)
-                self.outputDialog.show()
                 self.uiOutput.initStructDict(self.header_loc_list, JSONPath, readJSON, self, struct="struct", allStruct=["all","Struct"])
+                self.outputDialog.show()
             except BaseException as e:
                 traceback.print_exc()
                 loadJSONFailedBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败!")
