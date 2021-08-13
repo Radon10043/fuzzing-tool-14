@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-08-12 14:22:43
+LastEditTime: 2021-08-13 11:47:57
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -175,6 +175,20 @@ class Ui_Dialog(object):
             self.checkCodeComboBox.setItemText(index, check_code_methods[index])
         # 下拉菜单选择校验算法-end
 
+        structDict = {
+            "struct" : {
+                "var" : {
+                    "value" : 2,
+                    "lower" : 0,
+                    "upper" : 255,
+                    "bitsize" : 8,
+                    "comment" : "注释",
+                    "mutation" : False,
+                    "checkCode" : False,
+                    "checkField": False
+                }
+            }
+        }
         self.setTableContent(structDict)
 
     # 发送一个新的dict，设置表格内容
