@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2020-09-28 13:18:56
 LastEditors: Radon
-LastEditTime: 2021-07-10 19:11:56
+LastEditTime: 2021-08-11 21:41:29
 Description: Hi, say something
 '''
 import re
@@ -23,12 +23,25 @@ def get_str_btw(s, f, b):
 '''
 
 
-def createCallGraph(source_loc, graph_loc):
+def createCallGraph(source_loc_list, graph_loc):
+    """生成函数调用图
+
+    Parameters
+    ----------
+    source_loc : list
+        存储源文件位置的列表
+    graph_loc : str
+        调用图生成位置, e.g. /path/to/callgraph.txt
+
+    Notes
+    -----
+    [description]
+    """
     f_graph = open(graph_loc, mode="w+")
     graph = []
     customize = []  # 这个列表用于存储自定义的函数
 
-    for source in source_loc:
+    for source in source_loc_list:
         brace = 0
         try:
             f_source = open(source, encoding="utf8")
@@ -79,6 +92,14 @@ def createCallGraph(source_loc, graph_loc):
         f_graph.write(graph[i] + "\n")
     f_graph.close()
     f_source.close()
+
+    # 将所有结点写入nodes.txt
+    nodes_loc = re.sub(graph_loc.split("/")[-1], "", graph_loc) + "nodes.txt"
+    f_nodes = open(nodes_loc, mode="w")
+    nodes = public.getAllFunctions(source_loc_list)
+    for node in nodes:
+        f_nodes.write(node + "\n")
+    f_nodes.close()
 
 
 import sys

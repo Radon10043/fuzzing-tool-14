@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-23 17:55:03
+LastEditTime: 2021-08-12 15:33:22
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -116,7 +116,6 @@ dataRangeDict = {
 }
 # 数据类型上下限字典-end
 
-# TODO 改为报文输入的结构
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -348,23 +347,19 @@ class Ui_Dialog(object):
         Notes
         -----
         生成的必要文件分别有：
-        instrument.txt：记录了插装的变量
-
+        instrument.txt: 记录了插装的变量
+        outputStruct.txt: 记录了输出结构体的名称
         """
         # 1.生成instrument.txt
         root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0]) + "in/"
+        if not os.path.exists(root_loc):
+            os.mkdir(root_loc)
         f = open(root_loc + "instrument.txt", mode="w")
         instrumentFlag = False
         for key,value in structDict[self.struct].items():
             if value["instrument"]:
-                # dataType: 数据类型，list -> str
-                dataType = key.split(" ")
-                dataType.pop(-1)
-                dataType = " ".join(dataType)
-                # dataName: 数据名称，str
-                dataName = key.split(" ")[-1].split(":")[0]
                 with open(root_loc + "instrument.txt", mode="w") as f:
-                    f.write(dataName)
+                    f.write(key)
                 instrumentFlag = True
                 break
         # 如果没选择插装变量则跳出警告
@@ -372,35 +367,6 @@ class Ui_Dialog(object):
             noInstrumentValueBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "没有选择插装变量!")
             noInstrumentValueBox.exec_()
             return
-
-        try:
-            # 2.C代码，获取插装值
-            code = "#include <stdio.h>\n#include <stdbool.h>\n"
-            for header in self.header_loc_list:
-                code += "#include \"" + header + "\"\n"
-            code += "\n" + dataType + " getInstrumentValue(" + self.struct + " data){\n"
-            code += "\treturn data." + dataName + ";\n"
-            code += "}\n"
-            # 写入instrument.c
-            with open(root_loc + "instrument.c", mode="w") as f:
-                f.write(code)
-        except BaseException as e:
-            genErrorBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Error, "错误", "生成失败!\n" + repr(e))
-            genErrorBox.exec_()
-            return
-
-        try:
-            # 将输出结构体的JSON保存在in目录下，名字是output.json
-            jsonFile = open(root_loc + "output.json", "w")
-            self.delCheckBox()
-            json.dump(structDict, jsonFile)
-            jsonFile.close()
-            self.uiSelectIOStruct.outputStructLabel.setText(self.struct)
-            self.setTableContent(structDict)
-        except BaseException as e:
-            print("\033[1;31m")
-            traceback.print_exc()
-            print("\033[0m")
 
         genSuccessBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "生成成功!\n")
         genSuccessBox.exec_()

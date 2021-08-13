@@ -73,7 +73,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "选择目标"))
+        Dialog.setWindowTitle(_translate("Dialog", "选择结构体"))
         item = self.structTableWidget.verticalHeaderItem(0)
         item.setText(_translate("Dialog", "1"))
         item = self.structTableWidget.verticalHeaderItem(1)
