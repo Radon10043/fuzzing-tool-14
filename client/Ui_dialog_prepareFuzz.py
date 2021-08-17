@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-08-12 17:22:34
 LastEditors: Radon
-LastEditTime: 2021-08-12 22:15:08
+LastEditTime: 2021-08-13 21:34:04
 Description: Hi, say something
 '''
 # -*- coding: utf-8 -*-
@@ -19,7 +19,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 import Ui_dialog_fuzz as fuzzDialogPY
 
-import re, os, ctypes
+import re, os, traceback
 
 
 class Ui_Dialog(object):
@@ -188,12 +188,19 @@ class Ui_Dialog(object):
             modifyInsVarInitValueBox.exec_()
             return
 
-        self.fuzzDialog = QtWidgets.QDialog()
-        self.fuzzDialog.setWindowTitle("目标制导模糊测试")
-        self.uiFuzz = fuzzDialogPY.Ui_Dialog()
-        self.uiFuzz.setupUi(self.fuzzDialog, False)
-        self.fuzzDialog.show()
-        self.uiFuzz.startFuzz(self.header_loc_list, self.ui, self, self.uiFuzz)
+        try:
+            self.fuzzDialog = QtWidgets.QDialog()
+            self.fuzzDialog.setWindowTitle("目标制导模糊测试")
+            self.uiFuzz = fuzzDialogPY.Ui_Dialog()
+            self.uiFuzz.setupUi(self.fuzzDialog, False)
+            self.fuzzDialog.show()
+            self.uiFuzz.startFuzz(self.header_loc_list, self.ui, self, self.uiFuzz)
+        except BaseException as e:
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
+            fuzzErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "发生错误:" + str(e))
+            fuzzErrBox.show()
 
 
     def startNoTargetFuzz(self):
@@ -219,11 +226,18 @@ class Ui_Dialog(object):
             modifyInsVarInitValueBox.exec_()
             return
 
-        self.targetSet = list()
-        self.fuzzDialog = QtWidgets.QDialog()
-        self.fuzzDialog.setWindowTitle("无目标模糊测试")
-        self.uiFuzz = fuzzDialogPY.Ui_Dialog()
-        self.uiFuzz.setupUi(self.fuzzDialog, False)
-        self.fuzzDialog.show()
-        self.uiFuzz.startFuzz(self.header_loc_list, self.ui, self, self.uiFuzz)
+        try:
+            self.targetSet = list()
+            self.fuzzDialog = QtWidgets.QDialog()
+            self.fuzzDialog.setWindowTitle("无目标模糊测试")
+            self.uiFuzz = fuzzDialogPY.Ui_Dialog()
+            self.uiFuzz.setupUi(self.fuzzDialog, False)
+            self.uiFuzz.startFuzz(self.header_loc_list, self.ui, self, self.uiFuzz)
+            self.fuzzDialog.show()
+        except BaseException as e:
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
+            fuzzErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "发生错误:" + str(e))
+            fuzzErrBox.show()
     # ==========定义功能================================================================

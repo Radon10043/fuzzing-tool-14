@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-08-11 19:51:25
+LastEditTime: 2021-08-13 17:05:34
 Description: Hi, say something
 '''
 import os
@@ -49,6 +49,9 @@ def instrument(source_loc, instrument_loc, instrument_var):
         j = 0
         while j != length:
             if "(" in lines[j] and brace == 0:
+                if "#" in lines[j]:
+                    j += 1
+                    continue
                 code = lines[j].split("(")[0]
                 code = re.sub("[^A-Za-z1-9_]", " ", code)
                 # 插桩语句，更换为改变结构体的值
@@ -66,7 +69,7 @@ def instrument(source_loc, instrument_loc, instrument_var):
                 brace += 1
             if "}" in lines[j]:
                 brace -= 1
-            if instr == True and brace > 0:
+            if instr and brace > 0:
                 lines.insert(j + 1, instrCode)
                 instr = False
                 length += 1
