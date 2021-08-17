@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-08-11 21:25:35
 LastEditors: Radon
-LastEditTime: 2021-08-13 11:07:06
+LastEditTime: 2021-08-13 21:23:11
 Description: Hi, say something
 '''
 # -*- coding: utf-8 -*-
@@ -90,8 +90,9 @@ class serverExecThread(QThread):
                 break
             try:
                 subprocess.check_output(self.program_loc, timeout=5)
+                print("\033[32m成功 - %d\033[0m" % i)
                 self.uiExecServer.execInfoTextBrowser.append("成功结束 - " + str(i))
             except subprocess.TimeoutExpired as e:
-                print("\033[1;31m超时 - %d\033[0m" % (i))
+                print("\033[1;31m超时 - %d\033[0m" % i)
                 self.uiExecServer.execInfoTextBrowser.append("超时 - " + str(i))
         print("It stopped!")

@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-08-13 11:41:51
+LastEditTime: 2021-08-13 22:24:50
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -144,7 +144,7 @@ class Ui_Dialog(object):
         # 生成按钮-start
         self.generateBtn = QtWidgets.QPushButton(Dialog)
         self.generateBtn.setGeometry(QtCore.QRect(455, 500, 435, 40))
-        self.generateBtn.setText("生成种子文件")
+        self.generateBtn.setText("生成插装文件")
         self.generateBtn.clicked.connect(self.genNecessaryFile)
         # self.generateBtn.clicked.connect(Dialog.accept)
         # 生成按钮-end
