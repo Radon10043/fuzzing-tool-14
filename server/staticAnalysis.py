@@ -67,10 +67,9 @@ def analyze(source_loc_str):
     suspLoc = []
     source = source_loc_list[0].split("/")[-1]
     path = re.sub(source, "", source_loc_list[0])  # 设定存储位置
-    cmd = "cppcheck --output-file=" + path + "AnalyzeResult.txt " + re.sub("\n", " ", source_loc_str)
-    print("cppcheck cmd:", cmd)
+    cmd = "cppcheck --output-file=" + path + "in/AnalyzeResult.txt " + re.sub("\n", " ", source_loc_str)
     os.system(cmd)
-    f = open(path + "AnalyzeResult.txt")
+    f = open(path + "in/AnalyzeResult.txt")
     lines = f.readlines()
     f.close()
     for line in lines:
@@ -127,7 +126,8 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
     """
     structInfo = []
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        # ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True)
         for decl in ast:
             # 如果是函数声明，则跳过
             if isinstance(decl.type, pycparser.c_ast.FuncDecl):

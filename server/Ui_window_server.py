@@ -195,26 +195,26 @@ class Ui_MainWindow(object):
         self.SAResultGenBtn.setText(_translate("MainWindow", "结果生成"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.codeStructTab), _translate("MainWindow", "基于代码结构"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.interfaceTab), _translate("MainWindow", "基于交互接口故规约"))
-        self.selectInsVarGroupBox.setTitle(_translate("MainWindow", "选择插装变量"))
+        self.selectInsVarGroupBox.setTitle(_translate("MainWindow", "选择插桩变量"))
         self.structParameterName.setText(_translate("MainWindow", "dtg"))
         self.structParameterName.setPlaceholderText(_translate("MainWindow", "结构体实参名"))
         self.pointerStyleRadioBtn.setText(_translate("MainWindow", "方式1"))
         self.pointStyleRadioBtn.setText(_translate("MainWindow", "方式2"))
-        self.selectInsVarBtn.setText(_translate("MainWindow", "选择插装变量"))
+        self.selectInsVarBtn.setText(_translate("MainWindow", "选择插桩变量"))
         self.autoGenInsCodeConfirmBtn.setText(_translate("MainWindow", "确定"))
         self.startServerBtn.setText(_translate("MainWindow", "启动服务端程序"))
         self.callGraphGroupBox.setTitle(_translate("MainWindow", "调用图"))
         self.genCallGraphBtn.setText(_translate("MainWindow", "生成函数调用图"))
-        self.manualInputInsCodeGroupBox.setTitle(_translate("MainWindow", "手动输入插装语句"))
-        self.manualInputInsVarType.setToolTip(_translate("MainWindow", "手动输入插装变量类型"))
-        self.manualInputInsVarType.setPlaceholderText(_translate("MainWindow", "手动输入插装变量类型"))
+        self.manualInputInsCodeGroupBox.setTitle(_translate("MainWindow", "手动输入插桩语句"))
+        self.manualInputInsVarType.setToolTip(_translate("MainWindow", "手动输入插桩变量类型"))
+        self.manualInputInsVarType.setPlaceholderText(_translate("MainWindow", "手动输入插桩变量类型"))
         self.manualInputInsCodeConfirmBtn.setText(_translate("MainWindow", "确定"))
-        self.manualInputInsCode.setToolTip(_translate("MainWindow", "手动输入插装语句，输入等号前的内容即可"))
-        self.manualInputInsCode.setPlaceholderText(_translate("MainWindow", "手动输入插装语句"))
-        self.insCodePreviewGroupBox.setTitle(_translate("MainWindow", "插装语句预览"))
+        self.manualInputInsCode.setToolTip(_translate("MainWindow", "手动输入插桩语句，输入等号前的内容即可"))
+        self.manualInputInsCode.setPlaceholderText(_translate("MainWindow", "手动输入插桩语句"))
+        self.insCodePreviewGroupBox.setTitle(_translate("MainWindow", "插桩语句预览"))
         self.instrumentCodeLabel.setText(_translate("MainWindow", "dtg->variable = 1 << x;"))
-        self.instrumentBtn.setText(_translate("MainWindow", "插装"))
-        self.insVarTypeLabelTip.setText(_translate("MainWindow", "插装变量类型:"))
+        self.instrumentBtn.setText(_translate("MainWindow", "插桩"))
+        self.insVarTypeLabelTip.setText(_translate("MainWindow", "插桩变量类型:"))
         self.insVarTypeLabel.setText(_translate("MainWindow", "暂无"))
 
 
@@ -330,7 +330,7 @@ class Ui_MainWindow(object):
         -----
         [description]
         """
-        # TODO cppcheck与人工分析的结果需要存储到txt里
+        # cppcheck与人工分析的结果需要存储到txt里
         self.targetSetInfo.clear()
 
         source_loc_list = self.CFileLoc.toPlainText().split("\n")
@@ -340,19 +340,29 @@ class Ui_MainWindow(object):
                 sourceNotExistBox.exec_()
                 return
 
-        source_loc_str = self.CFileLoc.toPlainText()
-        self.SAResult = sa.analyze(source_loc_str)
-        if len(self.SAResult) == 0:
-            self.targetSetInfo.setText("暂无目标!")
+        # 检查cppcheck是否正确安装
+        if os.system("cppcheck --version") != 0:
+            cppcheckInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到cppcheck")
+            cppcheckInstallErrBox.exec_()
             return
-        if isinstance(self.SAResult, str):
-            self.targetSetInfo.setText(self.SAResult)
-            return
-        self.targetDialog = QtWidgets.QDialog()
-        self.uiTarget = targetDialogPY.Ui_Dialog()
-        self.uiTarget.setupUi(self.targetDialog)
-        self.targetDialog.show()
-        self.uiTarget.setValues(ui, source_loc_str.split("\n"), self.SAResult)
+
+        try:
+            source_loc_str = self.CFileLoc.toPlainText()
+            self.SAResult = sa.analyze(source_loc_str)
+            if len(self.SAResult) == 0:
+                self.targetSetInfo.setText("暂无目标!")
+                return
+            if isinstance(self.SAResult, str):
+                self.targetSetInfo.setText(self.SAResult)
+                return
+            self.targetDialog = QtWidgets.QDialog()
+            self.uiTarget = targetDialogPY.Ui_Dialog()
+            self.uiTarget.setupUi(self.targetDialog)
+            self.uiTarget.setValues(ui, source_loc_str.split("\n"), self.SAResult)
+            self.targetDialog.show()
+        except BaseException as e:
+            cppcheckErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析失败:" + str(e))
+            cppcheckErrBox.exec_()
 
 
     def genSAResult(self):
@@ -389,13 +399,13 @@ class Ui_MainWindow(object):
 
 
     def setInstrumentCode(self):
-        """设置插装语句的预览文本
+        """设置插桩语句的预览文本
 
         Notes
         -----
         [description]
         """
-        # 读取插装变量
+        # 读取插桩变量
         root_loc = self.CFileLoc.toPlainText().split("\n")[0]
         root_loc = re.sub(root_loc.split("/")[-1], "", root_loc)
         if os.path.exists(root_loc + "/in/instrument.txt"):
@@ -407,7 +417,7 @@ class Ui_MainWindow(object):
             insVarType = " ".join(insVarType)       #str
             f.close()
         else:
-            insVarName = "还未生成插装文件"
+            insVarName = "还未生成插桩文件"
             insVarType = "暂无"
 
         # 设置连接符
@@ -422,7 +432,7 @@ class Ui_MainWindow(object):
 
 
     def setInstrumentCodeManually(self):
-        """手动设置插装语句
+        """手动设置插桩语句
 
         Notes
         -----
@@ -436,7 +446,7 @@ class Ui_MainWindow(object):
 
 
     def instrumentSource(self):
-        """对文件进行插装与编译，在源文件同目录下生成instrument.exe文件
+        """对文件进行插桩与编译，在源文件同目录下生成instrument.exe文件
 
         Notes
         -----
@@ -459,13 +469,13 @@ class Ui_MainWindow(object):
             instrument_var = self.instrumentCodeLabel.text().split("|=")[0].rstrip()
 
             # 生成insFunc.c与insFunc.dll
-            # insVarName是插装变量的名字, instrument_var是插装语句等号左边的东西
+            # insVarName是插桩变量的名字, instrument_var是插桩语句等号左边的东西
             insVarName = instrument_var.replace("->", " ").replace(".", " ")
             insVarName = re.sub(insVarName.split(" ")[0], "", instrument_var)
             insVarName = insVarName.lstrip("[->.]")
-            # insVarType是插装变量的类型
+            # insVarType是插桩变量的类型
             insVarType = self.insVarTypeLabel.text()
-            # 生成获取插装值的instrument.dll
+            # 生成获取插桩值的instrument.dll
             f = open(root_loc + "in/insFunc.c", mode="w")
             code = "#include <stdio.h>\n#include <stdbool.h>\n"
             for header in header_loc_list:
@@ -476,16 +486,16 @@ class Ui_MainWindow(object):
             f.close()
             os.system("gcc -shared -o " + root_loc + "in/insFunc.dll " + root_loc + "in/insFunc.c")
 
-            # 插装
+            # 插桩
             instr.instrument(source_loc_list, instrument_loc, instrument_var)
 
-            instrSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "插装成功!")
+            instrSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "插桩成功!")
             instrSuccBox.exec_()
         except BaseException as e:
             print("\033[1;31m")
             traceback.print_exc()
             print("\033[0m")
-            instrErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "插装失败: " + str(e))
+            instrErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "插桩失败: " + str(e))
             instrErrBox.exec_()
 
 
@@ -524,7 +534,7 @@ class Ui_MainWindow(object):
             program_loc = self.CFileLoc.toPlainText().split("\n")[0]
             program_loc = re.sub(program_loc.split("/")[-1], "instrument.exe", program_loc)
             if not os.path.exists(program_loc):
-                programNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "插装程序不存在!")
+                programNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "插桩程序不存在!")
                 programNotExistBox.exec_()
                 return
 
