@@ -3,4 +3,5 @@ AIFuzz/*
 example/
 .idea/
 .vscode/
+.VSCodeCounter/
 venv/

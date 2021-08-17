@@ -269,6 +269,7 @@ def mutate(testcase, mutateSavePath, dllDict):
     dllDict["mutate"].testcaseVisualization(testcase, txtSavePath)
     mutateTime = time.time() - mutateStartTime
 
+    # 校验
     checkStartTime = time.time()
     testcase_file_str_list = open(test_case_visualization_file_path, mode="r").readlines()
     structDict = json.load(open(test_case_visualization_file_path.split("out")[0] + "\\in\\input.json"))
@@ -625,6 +626,8 @@ def initGloablVariable():
     global crash_code
     global crashNode
     global allNode
+    global isCrash
+    global crashTC
     global crashes
     crash_code.clear()
     crashNode.clear()
