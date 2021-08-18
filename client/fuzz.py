@@ -460,7 +460,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     targetSet = fuzzThread.targetSetInfo
     print("targetSet:", targetSet)
     # 变异体是否需要在用户指定的范围内
-    isMutateInRange = ui.isMutateInRangeCheckbox.isChecked()
+    isMutateInRange = ui.isMutateInRangeCheckBox.isChecked()
 
     start = time.time()
     end = time.time()
@@ -489,7 +489,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
             fuzzTime *= 3600
         condition = "end-start<" + str(fuzzTime)
     else:
-        stopNum = int(ui.stopByTCNum.text()) + 1
+        stopNum = int(ui.TCNumsLineEdit.text()) + 1
         condition = "mutateNum<" + str(stopNum)
 
     # Ready to start fuzz!
