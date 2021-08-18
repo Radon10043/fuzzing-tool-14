@@ -157,8 +157,8 @@ def gen_test_case_from_structDict(header_loc, struct, structDict, path):
     # 编辑命令集合
     cmds = []
     cmds.append("g++ -o gen.exe " + path + "_gen.cpp")
-    # cmds.append("gen.exe")
-    # # 切换目录并执行命令
+    cmds.append("gen.exe")
+    # 切换目录并执行命令
     os.chdir(cycle_path)
     for cmd in cmds:
         os.system(cmd)
