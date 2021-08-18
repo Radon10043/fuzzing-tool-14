@@ -91,7 +91,7 @@ def getAllStruct(header_loc_list):
     allStruct = []
     # 获取所有头文件中结构体的名称
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         for decl in ast:
             # 如果当前decl是函数声明，不是结构体，则跳过
             if isinstance(decl.type, pycparser.c_ast.FuncDecl):
@@ -127,8 +127,7 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
     """
     structInfo = []
     for header in header_loc_list:
-        # ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
-        ast = pycparser.parse_file(header, use_cpp=True)
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         for decl in ast:
             # 如果是函数声明，则跳过
             if isinstance(decl.type, pycparser.c_ast.FuncDecl):
@@ -258,7 +257,7 @@ def analyzeHeader(header_loc_list):
     '''
     infoList = []
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         # ast.show()
         info = ""
         for decl in ast:

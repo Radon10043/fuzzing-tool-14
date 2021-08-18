@@ -252,6 +252,11 @@ class Ui_MainWindow(object):
                 loadJSONFailedBox.exec_()
         # 如果不读取现有文件，就让用户选择输入/输出变量格式
         else:
+            # 检查clang是否安装正确
+            if os.system("clang -v") != 0:
+                clangInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
+                clangInstallErrBox.exec_()
+                return
             self.selectStructDialog = QtWidgets.QDialog()
             self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
             self.uiSelectStruct.setupUi(self.selectStructDialog)

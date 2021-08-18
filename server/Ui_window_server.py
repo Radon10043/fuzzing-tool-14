@@ -294,6 +294,11 @@ class Ui_MainWindow(object):
                 loadJSONFailedBox.exec_()
         # 如果不读取现有文件，就让用户选择输入/输出变量格式
         else:
+            # 检查clang是否安装正确
+            if os.system("clang -v") != 0:
+                clangInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
+                clangInstallErrBox.exec_()
+                return
             self.selectStructDialog = QtWidgets.QDialog()
             self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
             self.uiSelectStruct.setupUi(self.selectStructDialog)
@@ -452,16 +457,26 @@ class Ui_MainWindow(object):
         -----
         [description]
         """
+        source_loc_list = self.CFileLoc.toPlainText().split("\n")
+        header_loc_list = self.HFileLoc.toPlainText().split("\n")
+        root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
+
+        # 检查mingw是否安装正确
+        if os.system("gcc --version") != 0:
+            gccInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到mingw")
+            gccInstallErrBox.exec_()
+            return
+
+        # 移除旧的instrument.exe
+        if os.path.exists(root_loc + "instrument.exe"):
+            os.remove(root_loc + "instrument.exe")
         try:
-            source_loc_list = self.CFileLoc.toPlainText().split("\n")
-            header_loc_list = self.HFileLoc.toPlainText().split("\n")
             for header in header_loc_list:
                 if not os.path.exists(header):
                     headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在!")
                     headerNotExistBox.exec_()
                     return
 
-            root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
             instrument_loc = list()
             for source in source_loc_list:
                 sourceName = source.split("/")[-1]
@@ -506,9 +521,16 @@ class Ui_MainWindow(object):
         -----
         [description]
         """
+        source_loc_list = self.CFileLoc.toPlainText().split("\n")
+        root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
+
+        for source in source_loc_list:
+            if not os.path.exists(source):
+                sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
+                sourceNotExistBox.exec_()
+                return
+
         try:
-            source_loc_list = self.CFileLoc.toPlainText().split("\n")
-            root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
             if not os.path.exists(root_loc + "in"):
                 os.mkdir(root_loc+ "in")
             graph_loc =  root_loc + "in/callgraph.txt"
@@ -541,8 +563,8 @@ class Ui_MainWindow(object):
             self.execServerDialog = QtWidgets.QDialog()
             self.uiExecServer = execServerDialogPY.Ui_Dialog()
             self.uiExecServer.setupUi(self.execServerDialog)
-            self.execServerDialog.show()
             self.uiExecServer.startServer(program_loc, ui, self.uiExecServer)
+            self.execServerDialog.show()
         except BaseException as e:
             print("\033[1;31m")
             traceback.print_exc()
