@@ -271,7 +271,9 @@ def mutate(testcase, mutateSavePath, dllDict):
 
     # 校验
     checkStartTime = time.time()
-    testcase_file_str_list = open(test_case_visualization_file_path, mode="r").readlines()
+    f = open(test_case_visualization_file_path, mode="r")
+    testcase_file_str_list = f.readlines()
+    f.close()
     structDict = json.load(open(test_case_visualization_file_path.split("out")[0] + "\\in\\input.json"))
     check_code_name, check_code_field = None, list()
     structName = None
@@ -296,9 +298,9 @@ def mutate(testcase, mutateSavePath, dllDict):
                                                algorithm=check_code_method.split("_")[1])
     structDict[structName][check_code_name]["value"] = check_code
     header_loc = open(test_case_visualization_file_path.split("out")[0] + "\\in\\header_loc.txt", mode="r",
-                      encoding="utf").readlines()
+                      encoding="utf").readlines()  # 读取头文件
     public.gen_test_case_from_structDict(header_loc, structName, structDict=structDict, path=mutateSavePath_backup)
-    print(check_code)
+    print("check code is:" + check_code)
     checkTime = time.time() - checkStartTime
 
     return (mutateTime, checkTime)
@@ -425,7 +427,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     # 加载所需的DLL文件，并将CDLL存入一个字典，以便调用
     mutateDll = ctypes.cdll.LoadLibrary(now_loc + "in/mutate.dll")
     instrumentDll = ctypes.cdll.LoadLibrary(now_loc + "in/insFunc.dll")
-    dllDict = {"mutate": mutateDll, "instrument" : instrumentDll}
+    dllDict = {"mutate": mutateDll, "instrument": instrumentDll}
 
     # 设置地址
     senderAddress = uiPrepareFuzz.senderIPLabel.text()
@@ -501,7 +503,8 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         for i in range(0, len(testcase)):
             print()
             uiFuzz.textBrowser.append("正在执行第" + str(i + 1) + "个测试用例")
-            returnData = getFitness(testcase[i], targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict,
+            returnData = getFitness(testcase[i], targetSet, senderAddress, receiverAddress, callGraph, maxTimeout,
+                                    dllDict,
                                     isMutateInRange)
             distance = returnData[1]
             fitness = returnData[2]
@@ -643,7 +646,7 @@ crashNode = []  # 触发错误覆盖到了哪些结点，如果覆盖到crashNod
 # 添加到crashNode中，并保存测试用例
 allNode = []  # 储存了图里的所有结点
 isCrash = 0  # 计算没有相应的测试用例数量
-crashTC = bytes() # 存储触发缺陷的测试用例
+crashTC = bytes()  # 存储触发缺陷的测试用例
 crashes = 0  # 统计触发了多少次缺陷
 returnUDPInfo = []  # 存储发送回来的UDP数据包
 # ============================================================================================
