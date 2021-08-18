@@ -162,6 +162,9 @@ def gen_test_case_from_structDict(header_loc, struct, structDict, path):
     os.chdir(cycle_path)
     for cmd in cmds:
         os.system(cmd)
+    # 切换目录至in，不占用mutate/cycle目录
+    in_path = cycle_path.split("out")[0] + "in/"
+    os.chdir(in_path)
 
 
 def genMutate(header_loc, struct, structDict):
