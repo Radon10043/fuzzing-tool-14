@@ -461,6 +461,17 @@ class Ui_MainWindow(object):
         header_loc_list = self.HFileLoc.toPlainText().split("\n")
         root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
 
+        for source in source_loc_list:
+            if not os.path.exists(source):
+                sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
+                sourceNotExistBox.exec_()
+                return
+        for header in header_loc_list:
+            if not os.path.exists(header):
+                headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在!")
+                headerNotExistBox.exec_()
+                return
+
         # 检查mingw是否安装正确
         if os.system("gcc --version") != 0:
             gccInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到mingw")
@@ -470,13 +481,8 @@ class Ui_MainWindow(object):
         # 移除旧的instrument.exe
         if os.path.exists(root_loc + "instrument.exe"):
             os.remove(root_loc + "instrument.exe")
-        try:
-            for header in header_loc_list:
-                if not os.path.exists(header):
-                    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在!")
-                    headerNotExistBox.exec_()
-                    return
 
+        try:
             instrument_loc = list()
             for source in source_loc_list:
                 sourceName = source.split("/")[-1]
