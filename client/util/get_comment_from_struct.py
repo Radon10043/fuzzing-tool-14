@@ -7,7 +7,6 @@ Description: Hi, say something
 """
 import re
 import traceback
-import staticAnalysis as sa
 
 singe_comment_patten = '//.*'  # 标准匹配单行注释
 multi_comment_patten = '\/\*(?:[^\*]|\*+[^\/\*])*\*+\/'  # 标准匹配多行注释  可匹配跨行注释
