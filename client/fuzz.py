@@ -135,7 +135,6 @@ def threadMonitor(senderAddress):
     @param {*}
     @return {*}
     '''
-    # TODO 现在py还收不到cpp发回来的UDP
     global returnUDPInfo
     returnUDPInfo.clear()
     monitorSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # 创建 socket 对象
@@ -581,6 +580,11 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         for data in mutateAndCheckTime:
             mutateTime += data[0]
             checkTime += data[1]
+        # 防止除0
+        if mutateTime == 0:
+            mutateTime = 0.1
+        if executeTime == 0:
+            executeTime = 0.1
         executeTime = executeEnd - executeStart
         fuzzInfo = "\n测试时间\t\t\t" + str(int(end - start)) + "s\n"
         fuzzInfo += "循环次数\t\t\t" + str(cycle) + "\n"
@@ -595,6 +599,12 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
 
     # 生成测试报告
     fuzzThread.fuzzInfoSgn.emit(fuzzInfo)
+
+    # 防止除0
+    if mutateTime == 0:
+        mutateTime = 0.1
+    if executeTime == 0:
+        executeTime = 0.1
     fuzzInfoDict = {"测试时间": str(int(end - start)),
                     "测试对象": header_loc_list[0].split("/")[-1],
                     "循环次数": str(cycle),
