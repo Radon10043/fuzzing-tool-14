@@ -59,6 +59,7 @@ def analyze(source_loc_str):
     @param {*} source_loc_str
     @return {*}
     '''
+    # TODO 或许可以根据clang分析出的AST的行号获取函数位置
     source_loc_list = source_loc_str.split("\n")
     for source in source_loc_list:
         if not os.path.exists(source):

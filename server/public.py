@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-08-11 16:53:47
+LastEditTime: 2021-08-23 17:37:14
 Description: Some public function
 '''
 
@@ -10,6 +10,8 @@ from PyQt5 import QtWidgets
 import sys
 import os
 import re
+import subprocess
+import clang.cindex
 
 
 def deleteNote(source):
@@ -36,38 +38,60 @@ def deleteNote(source):
 
 
 def getAllFunctions(source_loc_list):
-    '''
-    @description: 获取所有定义的函数
-    @param {*} source_loc_list 列表，存储了所有源文件地址
-    @return {*} 返回包含所有自定义函数的列表
-    '''
-    funcList = []
+    """使用clang对程序进行分析生成AST树，并获得所有函数
+
+    Parameters
+    ----------
+    source_loc_list : list
+        C文件地址列表
+
+    Returns
+    -------
+    list
+        所有函数
+
+    Notes
+    -----
+    [description]
+    """
+    # 加载dll
+    libclangPath = subprocess.getstatusoutput("where clang")[1]
+    libclangPath = re.sub(libclangPath.split(
+        "\\")[-1], "", libclangPath) + "libclang.dll"
+    if clang.cindex.Config.loaded == True:
+        print("clang.cindex.Config.loaded == True:")
+    else:
+        clang.cindex.Config.set_library_file(libclangPath)
+        print("install path")
+
+    # 获取所有函数
+    funcList = list()
     for source in source_loc_list:
-        try:
-            f = open(source, encoding="utf8")
-            lines = f.readlines()
-        except UnicodeDecodeError:
-            f = open(source)
-            lines = f.readlines()
-        brace = 0
-        f.close()
-        lines = deleteNote(lines)
-        for line in lines:
-            # 程序有时候会误认为#pragma comment(lib, "ws2_32.lib")是函数，还没想到好方法
-            if "#pragma" in line:
-                continue
-            # 有左括号且没在{}内就认为有可能是函数
-            if "(" in line and brace == 0:
-                code = line.split("(")[0]
-                code.rstrip()
-                code = re.sub("[^A-Za-z0-9_]", "+", code)
-                funcList.append(code.split("+")[-1])
-            if "{" in line:
-                brace += 1
-            if "}" in line:
-                brace -= 1
-        funcList = sorted(set(funcList))
+        index = clang.cindex.Index.create()
+        tu = index.parse(source)
+        preorderTraverseToGetAllFunctions(tu.cursor, funcList)
+    funcList = sorted(set(funcList))
     return funcList
+
+
+def preorderTraverseToGetAllFunctions(cursor, funcList):
+    """遍历获得所有函数
+
+    Parameters
+    ----------
+    cursor : clang.cindex.Cursor
+        根节点
+    funcList : list
+        函数列表
+
+    Notes
+    -----
+    [description]
+    """
+    for cur in cursor.get_children():
+        if cur.kind == clang.cindex.CursorKind.CXX_METHOD or cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
+            funcList.append(cur.spelling)
+        preorderTraverseToGetAllFunctions(cur, funcList)
 
 
 def genSeed(header_loc, struct, structDict):
@@ -115,7 +139,8 @@ def genSeed(header_loc, struct, structDict):
     for cmd in cmds:
         os.system(cmd)
     header_loc_save_file_path = root + "header_loc.txt"
-    header_loc_save_file_file = open(header_loc_save_file_path, mode="w", encoding="utf")
+    header_loc_save_file_file = open(
+        header_loc_save_file_path, mode="w", encoding="utf")
     for one_header in header_loc:
         header_loc_save_file_file.write(one_header)
         header_loc_save_file_file.write("\n")
@@ -211,13 +236,15 @@ def genMutate(header_loc, struct, structDict):
     code += "}\n\n"
 
     # 写一个将结构体可视化的方法，savePath需要以.txt结尾
-    code += "void testcaseVisualization(" + struct + " data, char* savePath){\n"
+    code += "void testcaseVisualization(" + \
+        struct + " data, char* savePath){\n"
     code += "\tFILE* f = fopen(savePath, \"w\");\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
         if "noName" in dataName:
             continue
-        code += "\tfprintf(f, \"" + dataName + ": %u\\n\", data." + dataName + ");\n"
+        code += "\tfprintf(f, \"" + dataName + \
+            ": %u\\n\", data." + dataName + ");\n"
     code += "\tfclose(f);\n"
     code += "}\n"
 
