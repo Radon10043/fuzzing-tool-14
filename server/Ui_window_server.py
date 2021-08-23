@@ -313,6 +313,12 @@ class Ui_MainWindow(object):
         -----
         [description]
         """
+        # 获取所有函数需要用clang，检测是否安装clang
+        if os.system("clang -v") != 0:
+            clangInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
+            clangInstallErrBox.exec_()
+            return
+
         self.targetSetInfo.clear()
         source_loc_str = self.CFileLoc.toPlainText()
         source_loc_list = source_loc_str.split("\n")
@@ -324,8 +330,8 @@ class Ui_MainWindow(object):
         self.targetDialog = QtWidgets.QDialog()
         self.uiTarget = targetDialogPY.Ui_Dialog()
         self.uiTarget.setupUi(self.targetDialog)
-        self.targetDialog.show()
         self.uiTarget.setValues(ui, source_loc_list, [])
+        self.targetDialog.show()
 
 
     def SAByCppcheck(self):
@@ -535,6 +541,12 @@ class Ui_MainWindow(object):
                 sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
                 sourceNotExistBox.exec_()
                 return
+
+        # 获取函数调用图需要用clang，检测是否安装clang
+        if os.system("clang -v") != 0:
+            clangInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
+            clangInstallErrBox.exec_()
+            return
 
         try:
             if not os.path.exists(root_loc + "in"):
