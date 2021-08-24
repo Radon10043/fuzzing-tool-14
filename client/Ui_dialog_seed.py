@@ -176,15 +176,15 @@ class Ui_Dialog(object):
         # 下拉菜单选择校验算法-end
 
         structDict = {
-            "struct" : {
-                "var" : {
-                    "value" : 2,
-                    "lower" : 0,
-                    "upper" : 255,
-                    "bitsize" : 8,
-                    "comment" : "注释",
-                    "mutation" : False,
-                    "checkCode" : False,
+            "struct": {
+                "var": {
+                    "value": 2,
+                    "lower": 0,
+                    "upper": 255,
+                    "bitsize": 8,
+                    "comment": "注释",
+                    "mutation": False,
+                    "checkCode": False,
                     "checkField": False
                 }
             }
@@ -578,8 +578,16 @@ class Ui_Dialog(object):
         check_code = calculate_check_code_from_dec(dec_data_list=check_code_value,
                                                    method=check_code_method.split("_")[0],
                                                    algorithm=check_code_method.split("_")[1])
-        structDict[struct][check_code_holder_name]["value"] = check_code
-        return structDict
+        if check_code_holder_name == 0 and len(check_code_value) == 0:
+            print("没有指定校验码和校验字段，生成初始种子时不修改value")
+            return structDict
+        elif (check_code_holder_name == 0 and len(check_code_value) != 0) or (check_code_holder_name != 0 and len(
+                check_code_value) == 0):
+            print("校验码和校验字段应该同时设置，请至少设置一个校验字段和校验码位置，此处当均未设置处理")
+            return structDict
+        else:
+            structDict[struct][check_code_holder_name]["value"] = check_code
+            return structDict
 
     def genSeed(self):
         '''
