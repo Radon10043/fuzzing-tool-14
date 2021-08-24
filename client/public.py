@@ -124,7 +124,7 @@ def genSeed(header_loc, struct, structDict):
 
 def gen_test_case_from_structDict(header_loc, struct, structDict, path):
     """
-    @description: 根据structDict中的value，生成指定测试用例
+    @description: 根据structDict中的value，生成指定测试用例，目前用于生成经过校验码后的测试用例
     @param {*} header_loc 列表，里面存储了所有头文件的路径
     @param {*} struct 用户所选择的结构体名称
     @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息

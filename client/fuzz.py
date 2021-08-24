@@ -270,9 +270,6 @@ def mutate(testcase, mutateSavePath, dllDict):
 
     # 校验
     checkStartTime = time.time()
-    f = open(test_case_visualization_file_path, mode="r")
-    testcase_file_str_list = f.readlines()
-    f.close()
     structDict = json.load(open(test_case_visualization_file_path.split("out")[0] + "\\in\\input.json"))
     check_code_name, check_code_field = None, list()
     structName = None
@@ -283,7 +280,19 @@ def mutate(testcase, mutateSavePath, dllDict):
                 check_code_name = var_type_name
             elif structDict[struct_name][var_type_name]["checkField"]:
                 check_code_field.append(var_type_name)
+    if check_code_name is None and len(check_code_field) == 0:
+        print("没有设置校验字段和校验码位置，跳过校验步骤")
+        checkTime = time.time() - checkStartTime
+        return (mutateTime, checkTime)
+    elif check_code_name is None and len(check_code_field) != 0 or check_code_name is not None and len(
+            check_code_field) == 0:
+        print("校验字段或校验码有一个未设置，跳过校验步骤")
+        checkTime = time.time() - checkStartTime
+        return (mutateTime, checkTime)
     check_code_field_value_list = list()
+    f = open(test_case_visualization_file_path, mode="r")
+    testcase_file_str_list = f.readlines()
+    f.close()
     for one_line in testcase_file_str_list:
         var_name = one_line.split(":")[0]
         var_value = one_line.split(":")[1].strip()
