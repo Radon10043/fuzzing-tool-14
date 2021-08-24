@@ -175,6 +175,13 @@ def genMutate(header_loc, struct, structDict):
     @param {*} structDict 结构体字典
     @return {*}
     '''
+
+    # 计算校验码的准备工作
+    # 1，校验字段的长度
+    checkListLength = 3
+    # 2，校验码的存放位置
+    checkFieldName = ""
+
     # 先设置好相关的位置信息
     root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
     if not os.path.exists(root):
@@ -182,7 +189,8 @@ def genMutate(header_loc, struct, structDict):
     genMutatePath = root + "mutate.c"
 
     # 开始写代码，先include相关内容
-    code = "#include <stdio.h>\n#include <stdbool.h>\n"
+    code = "#include <stdio.h>\n#include <stdbool.h>\n" \
+           "#include \"C:/Users/Administrator/Desktop/checkCodeLib/ParityCheckCodeLib.c\"\n"
     # 把用户选择的头文件位置也include
     for header in header_loc:
         code += "#include \"" + header + "\"\n"
@@ -195,6 +203,20 @@ def genMutate(header_loc, struct, structDict):
             continue
         dataName = key.split(" ")[-1].split(":")[0]
         code += "\tdata." + dataName + " ^= r;\n"
+    # 计算校验码
+
+    count = 0
+    checkPartCode = ""
+    for key, value in structDict[struct].items():
+        if value["checkField"]:
+            checkPartCode += "\tcheckList[" + str(count) + "] = data." + key.split(" ")[-1].split(":")[0] + ";\n"
+            count += 1
+        elif value["checkCode"]:
+            checkFieldName = key.split(" ")[-1].split(":")[0]
+    code += "\tunsigned int checkList[" + str(count) + "];\n"
+    code += checkPartCode
+    code += "\tdata." + checkFieldName + " = getParity(checkList, sizeof(checkList) / sizeof(unsigned int), true);\n"
+    # 校验码完毕
     # 变异体写入文件
     code += "\n\tFILE* f;"
     code += "\n\tf = fopen(savePath, \"wb\");"
