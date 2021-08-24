@@ -73,7 +73,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "选择目标"))
+        Dialog.setWindowTitle(_translate("Dialog", "选择结构体"))
         item = self.structTableWidget.verticalHeaderItem(0)
         item.setText(_translate("Dialog", "1"))
         item = self.structTableWidget.verticalHeaderItem(1)
@@ -192,23 +192,19 @@ class Ui_Dialog(object):
             # 设置选择输入输出界面结构体的label的值
             print(self.choice)
             if self.choice == "input":
-                self.uiSelectIOStruct.inputStructLabel.setText(
-                    self.selectedStruct)
                 self.seedDialog = QtWidgets.QDialog()
                 self.uiSeed = seedDialogPY.Ui_Dialog()
                 self.uiSeed.setupUi(self.seedDialog)
                 # 如果读取JSON的话，JSONPath和readJSON就用不上了，占个位置
                 self.uiSeed.initStructDict(
-                    self.header_loc_list, "JSONPath", False, "uiSelectIOStruct", self.selectedStruct, self.structList)
+                    self.header_loc_list, "JSONPath", False, self.uiSelectIOStruct, self.selectedStruct, self.structList)
                 self.seedDialog.show()
             elif self.choice == "output":
-                self.uiSelectIOStruct.outputStructLabel.setText(
-                    self.selectedStruct)
                 self.outputDialog = QtWidgets.QDialog()
                 self.uiOutput = outputDialogPY.Ui_Dialog()
                 self.uiOutput.setupUi(self.outputDialog)
                 self.uiOutput.initStructDict(
-                    self.header_loc_list, "JSONPath", False, self.selectedStruct, self.structList)
+                    self.header_loc_list, "JSONPath", False, self.uiSelectIOStruct, self.selectedStruct, self.structList)
                 self.outputDialog.show()
         except ValueError as e:
             exceptionBox = QtWidgets.QMessageBox(

@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>714</width>
+    <height>686</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>模糊测试工具 - 客户端</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>30</y>
+      <width>161</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>模糊测试工具 - 客户端</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="fileSelectGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>79</x>
+      <y>70</y>
+      <width>561</width>
+      <height>141</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>文件选择</string>
+    </property>
+    <widget class="QTextBrowser" name="HFileLoc">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>521</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <property name="placeholderText">
+      <string>头文件位置</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="chooseHFileBtn">
+     <property name="geometry">
+      <rect>
+       <x>430</x>
+       <y>100</y>
+       <width>111</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>选择头文件</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="seedInputGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>220</y>
+      <width>251</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>种子设置</string>
+    </property>
+    <widget class="QPushButton" name="seedInputBtn">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>40</y>
+       <width>151</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>设置种子测试用例</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="isMutateInRangeCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>80</y>
+       <width>131</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>变异体在范围内</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="validationGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>490</y>
+      <width>291</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>完整性验证</string>
+    </property>
+    <widget class="QPushButton" name="startValidateBtn">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>30</y>
+       <width>93</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>开始验证</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="validateTipLabel">
+     <property name="geometry">
+      <rect>
+       <x>70</x>
+       <y>70</y>
+       <width>161</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>验证目前是否已持有进行
+模糊测试的必要文件</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="addressSetGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>220</y>
+      <width>291</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>地址设置</string>
+    </property>
+    <widget class="QLineEdit" name="senderIPLineEdit">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>141</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>通常为本机IP地址</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>发送方IP地址</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="receiverIPLineEdit">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>70</y>
+       <width>141</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="placeholderText">
+      <string>接收方IP地址</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="senderPortLineEdit">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>30</y>
+       <width>91</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>端口</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="receiverPortLineEdit">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>70</y>
+       <width>91</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>端口</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="senderColonLabel">
+     <property name="geometry">
+      <rect>
+       <x>165</x>
+       <y>30</y>
+       <width>16</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="receiverColonLabel">
+     <property name="geometry">
+      <rect>
+       <x>165</x>
+       <y>70</y>
+       <width>16</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>:</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="startFuzzBtn">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>510</y>
+      <width>201</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>开始测试</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="stopOptionGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>79</x>
+      <y>340</y>
+      <width>291</width>
+      <height>141</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>终止条件</string>
+    </property>
+    <widget class="QRadioButton" name="stopByCrash">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>161</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>检测到错误就停止</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="stopByTime">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>70</y>
+       <width>81</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>按时间</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="stopByTC">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>110</y>
+       <width>121</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>按测试用例数</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="fuzzTime">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>67</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="maximum">
+      <number>9999</number>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="timeUnit">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>67</y>
+       <width>81</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>分钟</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>小时</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLineEdit" name="TCNumsLineEdit">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>105</y>
+       <width>101</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>2000</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="amountLabel">
+     <property name="geometry">
+      <rect>
+       <x>255</x>
+       <y>110</y>
+       <width>21</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>个</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="otherOptionGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>340</y>
+      <width>261</width>
+      <height>141</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>其他设置</string>
+    </property>
+    <widget class="QLineEdit" name="TCNumPerCyc">
+     <property name="geometry">
+      <rect>
+       <x>137</x>
+       <y>35</y>
+       <width>71</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>5</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="timeoutLEdit">
+     <property name="geometry">
+      <rect>
+       <x>137</x>
+       <y>85</y>
+       <width>71</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>10</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="TCNumPerCycLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>121</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>每轮测试用例生成</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="TCTimeoutLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>121</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>测试用例超时时间</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="secondLabel">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>90</y>
+       <width>21</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>秒</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="pieceLabel">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>40</y>
+       <width>21</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>个</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>714</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

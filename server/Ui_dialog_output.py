@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-07-20 22:53:07
+LastEditTime: 2021-08-13 22:24:50
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -116,14 +116,13 @@ dataRangeDict = {
 }
 # 数据类型上下限字典-end
 
-# TODO 改为报文输入的结构
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         global structDict
         Dialog.setObjectName("Dialog")
         Dialog.setWindowTitle("自定义结构体成员变量值")
-        Dialog.resize(1500, 550)
+        Dialog.resize(900, 550)
         self.setTable(Dialog)
 
     def setTable(self, Dialog):  # 界面函数
@@ -145,11 +144,20 @@ class Ui_Dialog(object):
         # 生成按钮-start
         self.generateBtn = QtWidgets.QPushButton(Dialog)
         self.generateBtn.setGeometry(QtCore.QRect(455, 500, 435, 40))
-        self.generateBtn.setText("生成种子文件")
+        self.generateBtn.setText("生成插装文件")
         self.generateBtn.clicked.connect(self.genNecessaryFile)
         # self.generateBtn.clicked.connect(Dialog.accept)
         # 生成按钮-end
 
+        structDict = {
+            "struct" : {
+                "var" : {
+                    "bitsize" : 8,
+                    "comment" : "注释",
+                    "instrument" : False
+                }
+            }
+        }
         self.setTableContent(structDict)
 
 
@@ -249,11 +257,6 @@ class Ui_Dialog(object):
                 if 'checkBox' in val.keys():
                     del val['checkBox']
 
-    def getRanFloatNum(self, lower, upper):
-        return round(random.uniform(lower, upper), 2)
-
-    def getRanIntNum(self, lower, upper):
-        return int(random.uniform(lower, upper))
 
     def getBitsize(self, variable):
         '''
@@ -274,7 +277,7 @@ class Ui_Dialog(object):
                     return value
             return -1
 
-    def initStructDict(self, header_loc_list, JSONPath, readJSON, uiSelectIOStruct, struct, allStruct):
+    def initStructDict(self, header_loc_list, JSONPath, readJSON, ui, struct, allStruct):
         """根据传入的路径分析头文件，或直接读取现有的json文件
 
         Parameters
@@ -285,8 +288,8 @@ class Ui_Dialog(object):
             JSON文件的存储路径
         readJSON : Bool
             是否读取已有的json
-        uiSelectIOStruct : Ui_Dialog
-            选择输入输出结构体的界面
+        ui : Ui_Dialog
+            主界面
         struct : str
             选择的结构体名称
         allStruct : list
@@ -303,18 +306,17 @@ class Ui_Dialog(object):
         """
         self.header_loc_list = header_loc_list
         self.struct = struct
+        self.uiSelectIOStruct = ui
         global structDict
         structDict.clear()
         if readJSON:
             f = open(JSONPath, "r")
             structDict = json.load(f)
             self.struct = list(structDict.keys())[0]
-            uiSelectIOStruct.outputStructLabel.setText(self.struct)
             f.close()
         else:
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
             structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
-            print(structInfo)
             tempDict = {}
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
@@ -346,7 +348,6 @@ class Ui_Dialog(object):
             structDict[struct] = tempDict
         structDict = handle_struct(struct_dict=structDict)
         # 设置Table
-        print(structDict)
         self.setTableContent(structDict)
 
     def genNecessaryFile(self):
@@ -355,73 +356,48 @@ class Ui_Dialog(object):
         Notes
         -----
         生成的必要文件分别有：
-        instrument.txt：记录了插装的变量
-
+        instrument.txt: 记录了插装的变量
+        outputStruct.txt: 记录了输出结构体的名称
         """
         # 1.生成instrument.txt
         root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0]) + "in/"
+        if not os.path.exists(root_loc):
+            os.mkdir(root_loc)
         f = open(root_loc + "instrument.txt", mode="w")
         instrumentFlag = False
         for key,value in structDict[self.struct].items():
             if value["instrument"]:
-                # dataType: 数据类型，list -> str
-                dataType = key.split(" ")
-                dataType.pop(-1)
-                dataType = " ".join(dataType)
-                # dataName: 数据名称，str
-                dataName = key.split(" ")[-1].split(":")[0]
                 with open(root_loc + "instrument.txt", mode="w") as f:
-                    f.write(dataName)
+                    f.write(key)
                 instrumentFlag = True
                 break
+
+        # 创建outputStruct.txt
+        f = open(root_loc + "outputStruct.txt", mode="w")
+        f.write(self.struct)
+        f.close()
+
         # 如果没选择插装变量则跳出警告
         if not instrumentFlag:
             noInstrumentValueBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "没有选择插装变量!")
             noInstrumentValueBox.exec_()
             return
 
-        try:
-            # 2.C代码，获取插装值
-            code = "#include <stdio.h>\n#include <stdbool.h>\n"
-            for header in self.header_loc_list:
-                code += "#include \"" + header + "\"\n"
-            code += "\n" + dataType + " getInstrumentValue(" + self.struct + "data){\n"
-            code += "\treturn data." + dataName + ";\n"
-            code += "}\n"
-            # 写入instrument.c
-            with open(root_loc + "instrument.c", mode="w") as f:
-                f.write(code)
-        except BaseException as e:
-            genErrorBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Error, "错误", "生成失败!\n" + repr(e))
-            genErrorBox.exec_()
-
-        try:
-            # 将输出结构体的JSON保存在in目录下，名字是output.json
-            jsonFile = open(root_loc + "output.json", "w")
-            self.delCheckBox()
-            json.dump(structDict, jsonFile)
-            jsonFile.close()
-            self.setTableContent(structDict)
-        except BaseException as e:
-            print("\033[1;31m")
-            traceback.print_exc()
-            print("\033[0m")
-
         genSuccessBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "生成成功!\n")
         genSuccessBox.exec_()
     # 结束
 
 
-# if __name__ == "__main__":
-#     app = QtWidgets.QApplication(sys.argv)
-#     headerNotExistBox = QtWidgets.QMessageBox(
-#         QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
-#     headerNotExistBox.exec_()
-
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(dialog)
-    dialog.show()
-    sys.exit(app.exec_())
+    headerNotExistBox = QtWidgets.QMessageBox(
+        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox.exec_()
+
+# if __name__ == "__main__":
+#     app = QtWidgets.QApplication(sys.argv)
+#     dialog = QtWidgets.QDialog()
+#     ui = Ui_Dialog()
+#     ui.setupUi(dialog)
+#     dialog.show()
+#     sys.exit(app.exec_())

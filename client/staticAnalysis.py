@@ -1,7 +1,13 @@
 import os
 import re
+import uuid
 
 import pycparser
+
+
+# 变量无名异常
+class VariableNoNameError(BaseException):
+    pass
 
 
 def findFunction(lineNum, source):
@@ -85,7 +91,7 @@ def getAllStruct(header_loc_list):
     allStruct = []
     # 获取所有头文件中结构体的名称
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         for decl in ast:
             # 如果当前decl是函数声明，不是结构体，则跳过
             if isinstance(decl.type, pycparser.c_ast.FuncDecl):
@@ -121,7 +127,7 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
     """
     structInfo = []
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         for decl in ast:
             # 如果是函数声明，则跳过
             if isinstance(decl.type, pycparser.c_ast.FuncDecl):
@@ -135,7 +141,7 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                         dataType = " ".join(data.type.type.names)
                         # 如果是没有名字的变量
                         if data.name is None:
-                            data.name = "noName"
+                            data.name = "noName?" + str(uuid.uuid4()) + "?"
                         # 如果是普通的变量
                         info = dataType + " " + prefix + data.name
                     except AttributeError:
@@ -160,8 +166,9 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                             print("Analyzing one-dimensional array...")
                             info = []
                             for i in range(int(data.type.dim.value)):
-                                info.extend(getOneStruct(header_loc_list, dataType, prefix + data.name + "[" + str(i) + "].",
-                                                        allStruct))
+                                info.extend(
+                                    getOneStruct(header_loc_list, dataType, prefix + data.name + "[" + str(i) + "].",
+                                                 allStruct))
                         # 如果结构体成员不是数组
                         else:
                             info = getOneStruct(header_loc_list, dataType, prefix + data.name + ".", allStruct)
@@ -171,7 +178,9 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
 
                     # 加上变量所在的文件与行数
                     # 如果info内嵌结构体的返回信息，就不用再转换为元组了，因为已经是list(tuple(name, loc))
-                    if isinstance(info, str):
+                    if data.coord is None:
+                        info = (info, data.bitsize.coord.file + "?" + str(data.bitsize.coord.line))
+                    elif isinstance(info, str):
                         info = (info, data.coord.file + "?" + str(data.coord.line))
 
                     if isinstance(info, tuple):
@@ -208,18 +217,23 @@ def analyzeInternalStruct(decls, struct):
     internalInfoList = []
     for data in decls:
         try:
-            # 查看是否指定了bitsize
+            # 假如内嵌了无名变量
             if data.name is None:
-                data.name = "noName"
+                internalInfoList.append(
+                    (" ".join(data.type.type.names) + " " + struct + ".noName?" + str(uuid.uuid4()) + "?:" + str(
+                        data.bitsize.value),
+                     data.bitsize.coord.file + "?" + str(data.bitsize.coord.line)))
+                continue
+            # 查看是否指定了bitsize
             # 将data的所在文件与行数的信息也加入到列表中
             if data.bitsize:
                 internalInfoList.append(
                     (" ".join(data.type.type.names) + " " + struct + "." + data.name + ":" + str(data.bitsize.value),
-                    data.coord.file + "?" + str(data.coord.line)))
+                     data.coord.file + "?" + str(data.coord.line)))
             else:
                 internalInfoList.append(
                     (" ".join(data.type.type.names) + " " + struct + "." + data.name,
-                    data.coord.file + "?" + str(data.coord.line)))
+                     data.coord.file + "?" + str(data.coord.line)))
         except AttributeError:
             try:
                 # 这里作一下判断，因为内嵌结构体的时候有两种写法
@@ -243,7 +257,7 @@ def analyzeHeader(header_loc_list):
     '''
     infoList = []
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='gcc', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils/fake_libc_include'])
         # ast.show()
         info = ""
         for decl in ast:

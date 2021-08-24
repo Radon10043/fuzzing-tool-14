@@ -88,22 +88,24 @@ class Ui_Dialog(object):
                                             "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">测试信息</p></body></html>"))
 
     # 以下为手写内容
-    def startFuzz(self, source_loc_list, ui, uiFuzz):
-        # fuzz.fuzz(source_loc_list,ui,ui2)
-        self.source_loc_list = source_loc_list
+    def startFuzz(self, header_loc_list, ui, uiPrepareFuzz, uiFuzz):
+        # fuzz.fuzz(header_loc_list,ui,ui2)
+        self.header_loc_list = header_loc_list
         self.ui = ui
-        self.targetSetInfo = re.sub("[^A-Za-z1-9_\n]", "", ui.targetSetInfo.toPlainText())
+        self.targetSet = uiPrepareFuzz.targetSet
         self.fuzzThread = FuzzThread()
         self.fuzzThread.fuzzInfoSgn.connect(self.fuzzInfoPrint)
         self.fuzzThread.nnInfoSgn.connect(self.nnInfoPrint)
         self.fuzzThread.execInfoSgn.connect(self.execInfoPrint)
         self.fuzzThread.overSgn.connect(self.overFuzz)
         self.fuzzThread.errorSgn.connect(self.errorFuzz)
-        self.fuzzThread.setValues(source_loc_list, ui, uiFuzz, self.targetSetInfo, self.fuzz_ai)
+        self.fuzzThread.setValues(header_loc_list, ui, uiPrepareFuzz, uiFuzz, self.targetSet, self.fuzz_ai)
+        self.ui.startFuzzBtn.setEnabled(False)
+        self.ui.seedInputBtn.setEnabled(False)
         if self.fuzz_ai:
             self.text_browser_nn.setText("\n\n\t\t初始化中...\n\t即将开始基于机器学习的模糊测试...")
             self.text_browser_exec.setText("\n\n\t\t初始化中...\n\t即将开始基于机器学习的模糊测试...")
-        elif len(self.targetSetInfo) == 0:
+        elif len(self.targetSet) == 0:
             self.textBrowser.setText("\n\n\t\t初始化中...\n\t即将开始无目标的模糊测试...")
         else:
             self.textBrowser.setText("\n\n\t\t初始化中...\n\t即将开始目标制导的模糊测试...")
@@ -116,6 +118,7 @@ class Ui_Dialog(object):
         @return {*}
         '''
         # self.fuzzInfoTBrowser.setText(fuzzInfo)
+        self.textBrowser.clear()
         self.textBrowser.setText(fuzzInfo)
         QtWidgets.QApplication.processEvents()
         print(fuzzInfo)
@@ -141,7 +144,8 @@ class Ui_Dialog(object):
         self.checkResultBtn.setEnabled(True)
         self.stopBtn.setEnabled(False)
         self.ui.startFuzzBtn.setEnabled(True)
-        self.ui.manualInputBtn.setEnabled(True)
+        self.ui.seedInputBtn.setEnabled(True)
+        self.fuzzThread.quit()
 
     def errorFuzz(self):
         '''
@@ -171,7 +175,7 @@ class Ui_Dialog(object):
         @param {*} self
         @return {*}
         '''
-        out_loc = self.source_loc_list[0]
+        out_loc = self.header_loc_list[0]
         out_loc = re.sub(out_loc.split("/")[-1], "", out_loc) + "out"
         out_loc = out_loc.replace("/", "\\")
         print(out_loc)
@@ -193,19 +197,20 @@ class FuzzThread(QThread):
     def __init__(self):
         super().__init__()
 
-    def setValues(self, source_loc_list, ui, uiFuzz, targetSetInfo, fuzz_ai):
+    def setValues(self, header_loc_list, ui, uiPrepareFuzz, uiFuzz, targetSetInfo, fuzz_ai):
         '''
         @description: 设置一些初始值
         @param {*} self
-        @param {*} source_loc_list 列表，其中存储了所有源文件的地址
+        @param {*} header_loc_list 列表，其中存储了所有头文件的地址
         @param {*} ui Ui_window的ui
         @param {*} uiFuzz Ui_dialog_fuzz的ui
         @param {*} targetSetInfo 目标集信息
         @return {*}
         '''
         self.fuzz_ai = fuzz_ai
-        self.source_loc_list = source_loc_list
+        self.header_loc_list = header_loc_list
         self.ui = ui
+        self.uiPrepareFuzz = uiPrepareFuzz
         self.uiFuzz = uiFuzz
         self.targetSetInfo = targetSetInfo
         self.start()
@@ -218,10 +223,10 @@ class FuzzThread(QThread):
         '''
         print("FuzzThread has started.")
         if self.fuzz_ai:
-            self.result = fuzz_ai.fuzz(self.source_loc_list, self.ui, self.uiFuzz, self)
+            self.result = fuzz_ai.fuzz(self.header_loc_list, self.ui, self.uiFuzz, self)
         else:
             fuzz.initGloablVariable()
-            self.result = fuzz.fuzz(self.source_loc_list, self.ui, self.uiFuzz, self)
+            self.result = fuzz.fuzz(self.header_loc_list, self.ui, self.uiPrepareFuzz, self.uiFuzz, self)
         if isinstance(self.result, str):
             self.errorSgn.emit(True)
             self.uiFuzz.errorInfo = self.result
