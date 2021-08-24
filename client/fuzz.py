@@ -270,45 +270,45 @@ def mutate(testcase, mutateSavePath, dllDict):
 
     # 校验
     checkStartTime = time.time()
-    structDict = json.load(open(test_case_visualization_file_path.split("out")[0] + "\\in\\input.json"))
-    check_code_name, check_code_field = None, list()
-    structName = None
-    for struct_name in structDict.keys():
-        structName = struct_name
-        for var_type_name in structDict[struct_name].keys():
-            if structDict[struct_name][var_type_name]["checkCode"]:
-                check_code_name = var_type_name
-            elif structDict[struct_name][var_type_name]["checkField"]:
-                check_code_field.append(var_type_name)
-    if check_code_name is None and len(check_code_field) == 0:
-        print("没有设置校验字段和校验码位置，跳过校验步骤")
-        checkTime = time.time() - checkStartTime
-        return (mutateTime, checkTime)
-    elif check_code_name is None and len(check_code_field) != 0 or check_code_name is not None and len(
-            check_code_field) == 0:
-        print("校验字段或校验码有一个未设置，跳过校验步骤")
-        checkTime = time.time() - checkStartTime
-        return (mutateTime, checkTime)
-    check_code_field_value_list = list()
-    f = open(test_case_visualization_file_path, mode="r")
-    testcase_file_str_list = f.readlines()
-    f.close()
-    for one_line in testcase_file_str_list:
-        var_name = one_line.split(":")[0]
-        var_value = one_line.split(":")[1].strip()
-        for one_check_code_field in check_code_field:
-            if var_name in one_check_code_field:
-                check_code_field_value_list.append(int(var_value))
-    check_code_method = open(test_case_visualization_file_path.split("out")[0] + "\\in\\checkCodeMethod.txt",
-                             encoding="utf", mode="r").readline()
-    check_code = calculate_check_code_from_dec(dec_data_list=check_code_field_value_list,
-                                               method=check_code_method.split("_")[0],
-                                               algorithm=check_code_method.split("_")[1])
-    structDict[structName][check_code_name]["value"] = check_code
-    header_loc = open(test_case_visualization_file_path.split("out")[0] + "\\in\\header_loc.txt", mode="r",
-                      encoding="utf").readlines()  # 读取头文件
-    public.gen_test_case_from_structDict(header_loc, structName, structDict=structDict, path=mutateSavePath_backup)
-    print("check code is:" + check_code)
+    # structDict = json.load(open(test_case_visualization_file_path.split("out")[0] + "\\in\\input.json"))
+    # check_code_name, check_code_field = None, list()
+    # structName = None
+    # for struct_name in structDict.keys():
+    #     structName = struct_name
+    #     for var_type_name in structDict[struct_name].keys():
+    #         if structDict[struct_name][var_type_name]["checkCode"]:
+    #             check_code_name = var_type_name
+    #         elif structDict[struct_name][var_type_name]["checkField"]:
+    #             check_code_field.append(var_type_name)
+    # if check_code_name is None and len(check_code_field) == 0:
+    #     print("没有设置校验字段和校验码位置，跳过校验步骤")
+    #     checkTime = time.time() - checkStartTime
+    #     return (mutateTime, checkTime)
+    # elif check_code_name is None and len(check_code_field) != 0 or check_code_name is not None and len(
+    #         check_code_field) == 0:
+    #     print("校验字段或校验码有一个未设置，跳过校验步骤")
+    #     checkTime = time.time() - checkStartTime
+    #     return (mutateTime, checkTime)
+    # check_code_field_value_list = list()
+    # f = open(test_case_visualization_file_path, mode="r")
+    # testcase_file_str_list = f.readlines()
+    # f.close()
+    # for one_line in testcase_file_str_list:
+    #     var_name = one_line.split(":")[0]
+    #     var_value = one_line.split(":")[1].strip()
+    #     for one_check_code_field in check_code_field:
+    #         if var_name in one_check_code_field:
+    #             check_code_field_value_list.append(int(var_value))
+    # check_code_method = open(test_case_visualization_file_path.split("out")[0] + "\\in\\checkCodeMethod.txt",
+    #                          encoding="utf", mode="r").readline()
+    # check_code = calculate_check_code_from_dec(dec_data_list=check_code_field_value_list,
+    #                                            method=check_code_method.split("_")[0],
+    #                                            algorithm=check_code_method.split("_")[1])
+    # structDict[structName][check_code_name]["value"] = check_code
+    # header_loc = open(test_case_visualization_file_path.split("out")[0] + "\\in\\header_loc.txt", mode="r",
+    #                   encoding="utf").readlines()  # 读取头文件
+    # public.gen_test_case_from_structDict(header_loc, structName, structDict=structDict, path=mutateSavePath_backup)
+    # print("check code is:" + check_code)
     checkTime = time.time() - checkStartTime
 
     return (mutateTime, checkTime)
