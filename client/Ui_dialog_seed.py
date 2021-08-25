@@ -124,7 +124,6 @@ dataRangeDict = {
 
 # 数据类型上下限字典-end
 
-
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         global structDict
@@ -550,10 +549,12 @@ class Ui_Dialog(object):
         @param {*} self
         @return {*}
         '''
+        global hasCheckCode
         for key in structDict:
             struct = key
         try:
-            public.genMutate(self.header_loc_list, struct, structDict)
+            public.genMutate(self.header_loc_list, struct, structDict, self.checkCodeComboBox.currentText(),
+                             hasCheckCode)
             print("mutate.c生成成功!")
         except BaseException as e:
             print("\033[1;31m")
@@ -580,14 +581,14 @@ class Ui_Dialog(object):
                                                    algorithm=check_code_method.split("_")[1])
         if check_code_holder_name == 0 and len(check_code_value) == 0:
             print("没有指定校验码和校验字段，生成初始种子时不修改value")
-            return structDict
+            return (structDict, False)
         elif (check_code_holder_name == 0 and len(check_code_value) != 0) or (check_code_holder_name != 0 and len(
                 check_code_value) == 0):
             print("校验码和校验字段应该同时设置，请至少设置一个校验字段和校验码位置，此处当均未设置处理")
-            return structDict
+            return (structDict, False)
         else:
             structDict[struct][check_code_holder_name]["value"] = check_code
-            return structDict
+            return (structDict, True)
 
     def genSeed(self):
         '''
@@ -596,10 +597,11 @@ class Ui_Dialog(object):
         @return {*}
         '''
         global structDict
+        global hasCheckCode
         for key in structDict:
             struct = key
-        structDict = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里，用于初始化种子
-        public.genSeed(self.header_loc_list, struct, structDict)
+        structDict, hasCheckCode = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里，用于初始化种子
+        public.genSeed(self.header_loc_list, struct, structDict, self.checkCodeComboBox.currentText(), hasCheckCode)
         # 生成变异所需的C文件
         try:
             # 生成变异所需C文件
