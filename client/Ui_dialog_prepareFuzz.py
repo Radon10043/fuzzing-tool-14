@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-08-12 17:22:34
 LastEditors: Radon
-LastEditTime: 2021-08-13 21:34:04
+LastEditTime: 2021-08-25 16:47:56
 Description: Hi, say something
 '''
 # -*- coding: utf-8 -*-
@@ -207,7 +207,7 @@ class Ui_Dialog(object):
         root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0])
         # 检查是否存在out文件夹
         if os.path.exists(root_loc + "/out"):
-            outFolderExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.question, "消息", "当前目录下存在out文件夹，是否覆盖?")
+            outFolderExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, "消息", "当前目录下存在out文件夹，是否覆盖?")
             yes = outFolderExistBox.addButton("是", QtWidgets.QMessageBox.YesRole)
             no = outFolderExistBox.addButton("否", QtWidgets.QMessageBox.NoRole)
             outFolderExistBox.exec_()
