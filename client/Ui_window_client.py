@@ -181,7 +181,7 @@ class Ui_MainWindow(object):
         self.timeoutLEdit.setValidator(QtGui.QRegExpValidator(regExp1))
         regExp2 = QtCore.QRegExp("^([1-9]\d{0,6}|10000000)$")
         self.TCNumsLineEdit.setValidator(QtGui.QRegExpValidator(regExp2))
-
+        self.AICfgDialog = None
         # self.senderIPLineEdit.setText("")
         # self.senderPortLineEdit.setText("9999")
         # self.receiverIPLineEdit.setText("192.168.50.176")
@@ -232,7 +232,7 @@ class Ui_MainWindow(object):
         self.TCTimeoutLabel.setText(_translate("MainWindow", "测试用例超时时间"))
         self.secondLabel.setText(_translate("MainWindow", "秒"))
         self.pieceLabel.setText(_translate("MainWindow", "个"))
-
+        self.AICfgBtn.setText(_translate("MainWindow", "设置"))
 
     # ==========定义功能================================================================
     def chooseHFile(self):

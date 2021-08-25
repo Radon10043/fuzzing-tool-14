@@ -11,7 +11,7 @@ import sys
 import os
 import re
 
-from client.util.check_code import CheckCode
+from util.check_code import CheckCode
 
 
 def deleteNote(source):

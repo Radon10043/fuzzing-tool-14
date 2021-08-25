@@ -89,6 +89,7 @@ class serverExecThread(QThread):
             if self.stopThread:
                 break
             try:
+                print(self.program_loc)
                 subprocess.check_output(self.program_loc, timeout=5)
                 print("\033[32m成功 - %d\033[0m" % i)
                 self.uiExecServer.execInfoTextBrowser.append("成功结束 - " + str(i))
