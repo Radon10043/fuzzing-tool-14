@@ -5,3 +5,6 @@ example/
 .vscode/
 .VSCodeCounter/
 venv/
+cmake-build-debug/
+CMakeLists.txt
+client/util/checkCodeLibDir/checkCodeLib/main.c
