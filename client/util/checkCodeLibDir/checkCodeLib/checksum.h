@@ -40,22 +40,22 @@
  */
 
 unsigned char *		checksum_NMEA(     const unsigned char *input_str, unsigned char *result  );
-uint8_t			crc_8(             const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_16(            const unsigned char *input_str, size_t num_bytes       );
-uint32_t		crc_32(            const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_ccitt_1d0f(    const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_ccitt_ffff(    const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_dnp(           const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_kermit(        const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_modbus(        const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_sick(          const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_xmodem(        const unsigned char *input_str, size_t num_bytes       );
-uint8_t			update_crc_8(      uint8_t  crc, unsigned char c                          );
-uint16_t		update_crc_16(     uint16_t crc, unsigned char c                          );
-uint32_t		update_crc_32(     uint32_t crc, unsigned char c                          );
-uint16_t		update_crc_ccitt(  uint16_t crc, unsigned char c                          );
-uint16_t		update_crc_dnp(    uint16_t crc, unsigned char c                          );
-uint16_t		update_crc_kermit( uint16_t crc, unsigned char c                          );
-uint16_t		update_crc_sick(   uint16_t crc, unsigned char c, unsigned char prev_byte );
+static uint8_t			crc_8(             const unsigned char *input_str, size_t num_bytes       );
+static uint16_t		crc_16(            const unsigned char *input_str, size_t num_bytes       );
+static uint32_t		crc_32(            const unsigned char *input_str, size_t num_bytes       );
+static uint16_t		crc_ccitt_1d0f(    const unsigned char *input_str, size_t num_bytes       );
+static uint16_t		crc_ccitt_ffff(    const unsigned char *input_str, size_t num_bytes       );
+static uint16_t		crc_dnp(           const unsigned char *input_str, size_t num_bytes       );
+static uint16_t		crc_kermit(        const unsigned char *input_str, size_t num_bytes       );
+static uint16_t		crc_modbus(        const unsigned char *input_str, size_t num_bytes       );
+static uint16_t		crc_sick(          const unsigned char *input_str, size_t num_bytes       );
+static uint16_t		crc_xmodem(        const unsigned char *input_str, size_t num_bytes       );
+static uint8_t			update_crc_8(      uint8_t  crc, unsigned char c                          );
+static uint16_t		update_crc_16(     uint16_t crc, unsigned char c                          );
+static uint32_t		update_crc_32(     uint32_t crc, unsigned char c                          );
+static uint16_t		update_crc_ccitt(  uint16_t crc, unsigned char c                          );
+static uint16_t		update_crc_dnp(    uint16_t crc, unsigned char c                          );
+static uint16_t		update_crc_kermit( uint16_t crc, unsigned char c                          );
+static uint16_t		update_crc_sick(   uint16_t crc, unsigned char c, unsigned char prev_byte );
 
 #endif  // DEF_LIBCRC_CHECKSUM_H
