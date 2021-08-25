@@ -7,7 +7,7 @@ import crcmod.predefined
 class CheckCode:
     def __init__(self):
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).replace("\\", "/")
-        self.header_file_path = base_path + "/util/checkCodeLibDir/checkCodeLib/ParityCheckCodeLib.c"
+        self.header_file_path = base_path + "/util/checkCodeLibDir/checkCodeLib/CheckCodeLib.c"
         self.algorithmName = ""
         self.option = ""
         self.code = ""
@@ -21,10 +21,22 @@ class CheckCode:
             else:
                 self.option = "even"
                 self.code = "getParity(checkList, sizeof(checkList) / sizeof(unsigned int), false);"
+        if "CRC" in method_str:
+            self.algorithmName = "crc"
+            if "8" in method_str:
+                self.option = "crc_8"
+                self.code = "crc_8(checkList, sizeof(checkList) / sizeof(unsigned int));"
+            elif "16" in method_str:
+                self.option = "crc_16"
+                self.code = "crc_16(checkList, sizeof(checkList) / sizeof(unsigned int));"
+            elif "32" in method_str:
+                self.option = "crc_32"
+                self.code = "crc_32(checkList, sizeof(checkList) / sizeof(unsigned int));"
 
 
 def get_support_methods():
     methods = ["PARITY_ODD", "PARITY_EVEN",
+               "CRC_8", "CRC_16", "CRC_32"
                # "BCC_NONE"
                ]
     # for crc_table in crcmod.predefined._crc_definitions_table:

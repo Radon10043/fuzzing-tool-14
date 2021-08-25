@@ -1,4 +1,10 @@
-#include <stdbool.h>
+#include "crc8.c"
+#include "crc16.c"
+#include "crc32.c"
+#include "crcccitt.c"
+#include "crcdnp.c"
+#include "crckrmit.c"
+#include "crcsick.c"
 
 static char *transfer2Bin(unsigned int num) {
     static char binary[33];
