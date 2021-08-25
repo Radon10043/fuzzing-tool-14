@@ -16,7 +16,7 @@ import Ui_dialog_seed as seedDialogPY
 import Ui_dialog_selectStruct as selectStructDialogPY
 import Ui_dialog_validation as validateDialogPY
 import Ui_dialog_prepareFuzz as prepareFuzzDialogPY
-
+import Ui_dialog_AICfg as  aicfgDialogPY
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -111,27 +111,53 @@ class Ui_MainWindow(object):
         self.amountLabel = QtWidgets.QLabel(self.stopOptionGroupBox)
         self.amountLabel.setGeometry(QtCore.QRect(255, 110, 21, 16))
         self.amountLabel.setObjectName("amountLabel")
-        self.otherOptionGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.otherOptionGroupBox.setGeometry(QtCore.QRect(390, 340, 261, 141))
+
+        self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
+        self.tabWidget.setGeometry(QtCore.QRect(390, 340, 251, 141))
+        self.tabWidget.setStyleSheet("background-color:rgb(235, 235, 235)")
+        self.tabWidget.setTabPosition(QtWidgets.QTabWidget.North)
+        self.tabWidget.setObjectName("tabWidget")
+
+        self.AITab = QtWidgets.QWidget()
+        self.AITab.setObjectName("interfaceTab")
+        self.AICfgInfo = QtWidgets.QTextBrowser(self.AITab)
+        self.AICfgInfo.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.AICfgInfo.setGeometry(QtCore.QRect(20, 10, 201, 71))
+        # self.AIFuzz = QtWidgets.QRadioButton(self.AITab)
+        # self.AIFuzz.setGeometry(QtCore.QRect(230, 10, 93, 31))
+        self.AICfgBtn = QtWidgets.QPushButton(self.AITab)
+        self.AICfgBtn.setGeometry(QtCore.QRect(70, 85, 93, 30))
+        self.AICfgBtn.setObjectName("AICfgBtn")
+
+        # self.AICfgDialog = aicfgDialogPY.Ui_Dialog(self.AICfgInfo)
+
+
+        self.otherOptionGroupBox = QtWidgets.QGroupBox()
+        self.tabWidget.addTab(self.otherOptionGroupBox, "")
+        self.tabWidget.addTab(self.AITab, "")
+        #　self.otherOptionGroupBox.setGeometry(QtCore.QRect(390, 340, 251, 141))
         self.otherOptionGroupBox.setObjectName("otherOptionGroupBox")
         self.TCNumPerCyc = QtWidgets.QLineEdit(self.otherOptionGroupBox)
-        self.TCNumPerCyc.setGeometry(QtCore.QRect(137, 35, 71, 30))
+        self.TCNumPerCyc.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.TCNumPerCyc.setGeometry(QtCore.QRect(137, 15, 71, 30))
         self.TCNumPerCyc.setObjectName("TCNumPerCyc")
         self.timeoutLEdit = QtWidgets.QLineEdit(self.otherOptionGroupBox)
-        self.timeoutLEdit.setGeometry(QtCore.QRect(137, 85, 71, 30))
+        self.timeoutLEdit.setGeometry(QtCore.QRect(137, 65, 71, 30))
         self.timeoutLEdit.setObjectName("timeoutLEdit")
+        self.timeoutLEdit.setStyleSheet("background-color:rgb(255, 255, 255)")
         self.TCNumPerCycLabel = QtWidgets.QLabel(self.otherOptionGroupBox)
-        self.TCNumPerCycLabel.setGeometry(QtCore.QRect(10, 40, 121, 16))
+        self.TCNumPerCycLabel.setGeometry(QtCore.QRect(10, 20, 121, 16))
         self.TCNumPerCycLabel.setObjectName("TCNumPerCycLabel")
         self.TCTimeoutLabel = QtWidgets.QLabel(self.otherOptionGroupBox)
-        self.TCTimeoutLabel.setGeometry(QtCore.QRect(10, 90, 121, 16))
+        self.TCTimeoutLabel.setGeometry(QtCore.QRect(10, 70, 121, 16))
         self.TCTimeoutLabel.setObjectName("TCTimeoutLabel")
         self.secondLabel = QtWidgets.QLabel(self.otherOptionGroupBox)
-        self.secondLabel.setGeometry(QtCore.QRect(210, 90, 21, 16))
+        self.secondLabel.setGeometry(QtCore.QRect(210, 70, 21, 16))
         self.secondLabel.setObjectName("secondLabel")
         self.pieceLabel = QtWidgets.QLabel(self.otherOptionGroupBox)
-        self.pieceLabel.setGeometry(QtCore.QRect(210, 40, 21, 16))
+        self.pieceLabel.setGeometry(QtCore.QRect(210, 20, 21, 16))
         self.pieceLabel.setObjectName("pieceLabel")
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 714, 26))
@@ -146,6 +172,8 @@ class Ui_MainWindow(object):
         self.seedInputBtn.clicked.connect(self.popStructDialog)
         self.startValidateBtn.clicked.connect(self.popValidateDialog)
         self.startFuzzBtn.clicked.connect(self.popPrepareFuzzDialog)
+        self.AICfgBtn.clicked.connect(self.popAICfgDialog)
+
 
         # 每轮测试用例数量、超时时间上线为1000，测试用例总数量上线为1亿
         regExp1 = QtCore.QRegExp("^([1-9]\d{0,2}|1000)$")
@@ -194,7 +222,10 @@ class Ui_MainWindow(object):
         self.timeUnit.setItemText(1, _translate("MainWindow", "小时"))
         self.TCNumsLineEdit.setText(_translate("MainWindow", "2000"))
         self.amountLabel.setText(_translate("MainWindow", "个"))
-        self.otherOptionGroupBox.setTitle(_translate("MainWindow", "其他设置"))
+        # self.otherOptionGroupBox.setTitle(_translate("MainWindow", "其他设置"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.AITab), _translate("MainWindow", "基于机器学习"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.otherOptionGroupBox), _translate("MainWindow", "基于代码结构"))
+
         self.TCNumPerCyc.setText(_translate("MainWindow", "5"))
         self.timeoutLEdit.setText(_translate("MainWindow", "10"))
         self.TCNumPerCycLabel.setText(_translate("MainWindow", "每轮测试用例生成"))
@@ -217,6 +248,11 @@ class Ui_MainWindow(object):
             path += temp[0][i] + "\n"
         path = path.rstrip("\n")
         self.HFileLoc.setText(path)
+
+
+    def popAICfgDialog(self):
+        self.AICfgDialog = aicfgDialogPY.Ui_Dialog(self.AICfgInfo)
+        self.AICfgDialog.show()
 
 
     def popStructDialog(self):
