@@ -4,5 +4,9 @@ example/
 .idea/
 .vscode/
 *.json
-venv/
 *.exe
+.VSCodeCounter/
+venv/
+cmake-build-debug/
+CMakeLists.txt
+client/util/checkCodeLibDir/checkCodeLib/main.c
