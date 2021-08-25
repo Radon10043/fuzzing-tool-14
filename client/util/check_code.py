@@ -1,11 +1,34 @@
 import binascii
+import os
+
 import crcmod.predefined
 
 
+class CheckCode:
+    def __init__(self):
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).replace("\\", "/")
+        self.header_file_path = base_path + "/util/checkCodeLibDir/checkCodeLib/ParityCheckCodeLib.c"
+        self.algorithmName = ""
+        self.option = ""
+        self.code = ""
+
+    def init4str(self, method_str):
+        if "PARITY" in method_str:
+            self.algorithmName = "parity"
+            if "ODD" in method_str:
+                self.option = "odd"
+                self.code = "getParity(checkList, sizeof(checkList) / sizeof(unsigned int), false);"
+            else:
+                self.option = "even"
+                self.code = "getParity(checkList, sizeof(checkList) / sizeof(unsigned int), false);"
+
+
 def get_support_methods():
-    methods = ["PARITY_ODD", "PARITY_EVEN", "BCC_NONE"]
-    for crc_table in crcmod.predefined._crc_definitions_table:
-        methods.append("CRC_" + crc_table[0].upper())
+    methods = ["PARITY_ODD", "PARITY_EVEN",
+               # "BCC_NONE"
+               ]
+    # for crc_table in crcmod.predefined._crc_definitions_table:
+    #     methods.append("CRC_" + crc_table[0].upper())
     return methods
 
 
