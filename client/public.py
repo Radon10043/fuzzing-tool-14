@@ -11,6 +11,8 @@ import sys
 import os
 import re
 
+from client.util.check_code import CheckCode
+
 
 def deleteNote(source):
     '''
@@ -70,7 +72,7 @@ def getAllFunctions(source_loc_list):
     return funcList
 
 
-def genSeed(header_loc, struct, structDict):
+def genSeed(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
     '''
     @description: 写一个生成初始种子的cpp文件，并编译和执行它
     @param {*} header_loc 列表，里面存储了所有头文件的路径
@@ -78,6 +80,8 @@ def genSeed(header_loc, struct, structDict):
     @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
     @return {*}
     '''
+    check_code = CheckCode()
+    check_code.init4str(checkCodeMethod)
     # 先设置好相关的位置信息
     root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
     if not os.path.exists(root):
@@ -85,18 +89,35 @@ def genSeed(header_loc, struct, structDict):
     genSeedPath = root + "genSeed.cpp"
     # 开始写代码，先include相关内容
     code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
+    code += "#include \"" + check_code.header_file_path + "\"\n"
     # 把用户选择的头文件位置也include
     for header in header_loc:
         code += "#include \"" + header + "\"\n"
     code += "using namespace std;\n\n"
     code += "int main(){\n"
+    checkCodePart = ""
+    count_check_code = 0
+    checkFieldName = ""
     # 新建结构体变量，并向它的成员变量赋值
     code += "\t" + struct + " data;\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
-        if "noName" in dataName:
+        if "noName" in dataName:  # 跳过无名变量
             continue
+        if hasCheckCode:  # 存在校验码就搞这些
+            if value["checkField"]:  # 这个是校验字段，添加主代码，然后将这个值方法checkList里
+                code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
+                checkCodePart += "\tcheckList[" + str(count_check_code) + "] = " + str(value["value"]) + ";\n"
+                count_check_code += 1
+                continue
+            elif value["checkCode"]:
+                checkFieldName = dataName
+                continue
         code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
+    if hasCheckCode:
+        code += "\tunsigned int checkList[" + str(count_check_code) + "];\n"
+        code += checkCodePart
+        code += "\tdata." + checkFieldName + " = " + check_code.code + "\n"
     # 赋值结束后，向seed文件中写入内容
     code += "\n\tofstream f(\"seed\");"
     code += "\n\tf.write((char*)&data, sizeof(data));"
@@ -124,7 +145,7 @@ def genSeed(header_loc, struct, structDict):
 
 def gen_test_case_from_structDict(header_loc, struct, structDict, path):
     """
-    @description: 根据structDict中的value，生成指定测试用例
+    @description: 根据structDict中的value，生成指定测试用例，目前用于生成经过校验码后的测试用例
     @param {*} header_loc 列表，里面存储了所有头文件的路径
     @param {*} struct 用户所选择的结构体名称
     @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
@@ -167,7 +188,7 @@ def gen_test_case_from_structDict(header_loc, struct, structDict, path):
     os.chdir(in_path)
 
 
-def genMutate(header_loc, struct, structDict):
+def genMutate(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
     '''
     @description: 写一个mutate.c, 以便测试时进行变异操作
     @param {*} header_loc 列表, 里面存储了所有头文件得位置
@@ -175,6 +196,9 @@ def genMutate(header_loc, struct, structDict):
     @param {*} structDict 结构体字典
     @return {*}
     '''
+    check_code = CheckCode()
+    check_code.init4str(checkCodeMethod)
+
     # 先设置好相关的位置信息
     root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
     if not os.path.exists(root):
@@ -182,7 +206,8 @@ def genMutate(header_loc, struct, structDict):
     genMutatePath = root + "mutate.c"
 
     # 开始写代码，先include相关内容
-    code = "#include <stdio.h>\n#include <stdbool.h>\n"
+    code = "#include <stdio.h>\n#include <stdbool.h>\n" \
+           "#include \"" + check_code.header_file_path + "\"\n"
     # 把用户选择的头文件位置也include
     for header in header_loc:
         code += "#include \"" + header + "\"\n"
@@ -195,6 +220,22 @@ def genMutate(header_loc, struct, structDict):
             continue
         dataName = key.split(" ")[-1].split(":")[0]
         code += "\tdata." + dataName + " ^= r;\n"
+
+    # 计算校验码
+    if hasCheckCode:
+        count = 0
+        checkPartCode = ""
+        checkFieldName = ""
+        for key, value in structDict[struct].items():
+            if value["checkField"]:
+                checkPartCode += "\tcheckList[" + str(count) + "] = data." + key.split(" ")[-1].split(":")[0] + ";\n"
+                count += 1
+            elif value["checkCode"]:
+                checkFieldName = key.split(" ")[-1].split(":")[0]
+        code += "\tunsigned int checkList[" + str(count) + "];\n"
+        code += checkPartCode
+        code += "\tdata." + checkFieldName + " = " + check_code.code + "\n"
+    # 校验码完毕
     # 变异体写入文件
     code += "\n\tFILE* f;"
     code += "\n\tf = fopen(savePath, \"wb\");"
