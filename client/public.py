@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-08-11 16:53:47
+LastEditTime: 2021-08-25 14:31:31
 Description: Some public function
 '''
 
@@ -11,7 +11,7 @@ import sys
 import os
 import re
 
-from client.util.check_code import CheckCode
+from util.check_code import CheckCode
 
 
 def deleteNote(source):

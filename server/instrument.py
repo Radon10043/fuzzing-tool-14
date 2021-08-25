@@ -2,11 +2,12 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-08-13 17:05:34
+LastEditTime: 2021-08-25 17:56:59
 Description: Hi, say something
 '''
 import os
-import re
+import re, subprocess
+import clang.cindex
 
 import public
 
@@ -20,100 +21,123 @@ def printInfo(msg):
     print("\n\033[0;32mInfo:\033[0m" + msg)
 
 
-def instrument(source_loc, instrument_loc, instrument_var):
-    '''
-    @description: 多文件插装的方法
-    @param {*} source_loc 列表，存储了所有源文件位置
-    @param {*} instrument_loc 插装后的源文件位置
-    @param {*} output_loc 输出文件位置，输出的文件是instrument.exe
-    @param {*} instrument_var 插装变量
-    @return {*}
-    '''
-    # 获取所有函数结点，方便编号
-    allNode = public.getAllFunctions(source_loc)
-    allNode = sorted(set(allNode), key=allNode.index)
-    print(allNode)
-    for num in range(len(source_loc)):
-        brace = 0  # 记录大括号数量，方便后续操作
-        instr = False
-        try:
-            f = open(source_loc[num])
-            lines = f.readlines()
-        except UnicodeDecodeError:
-            f = open(source_loc[num], encoding="utf8")
-            lines = f.readlines()
+def instrumentBaseOnAST(cursor, allFunc, source, instrTemplate):
+    """根据AST的内容进行插装
+
+    Parameters
+    ----------
+    cursor : clang.cindex.Cursor
+        根节点
+    allFunc : list
+        全部函数
+    source : str
+        源文件地址
+    instrTemplate : str
+        插装模板
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
+    """
+    instrTemplate += " |= 1 << "
+    instr = False
+    brace = 0
+    try:
+        f = open(source, mode="r", encoding="utf-8")
+        codeList = f.readlines()
         f.close()
-        # 删除注释
-        lines = public.deleteNote(lines)
-        length = len(lines)
-        j = 0
-        while j != length:
-            if "(" in lines[j] and brace == 0:
-                if "#" in lines[j]:
-                    j += 1
-                    continue
-                code = lines[j].split("(")[0]
-                code = re.sub("[^A-Za-z1-9_]", " ", code)
-                # 插桩语句，更换为改变结构体的值
-                funcName = code.split(" ")[-1]
-                if funcName == "main":
-                    j += 1
-                    continue
-                for k in range(len(allNode)):
-                    if allNode[k] == funcName:
-                        break
-                # 把变量的某一位置为1，用或操作
-                instrCode = "\t" + instrument_var + " |= 1<<" + str(k) + ";\n"
-                instr = True
-            if "{" in lines[j]:
-                brace += 1
-            if "}" in lines[j]:
-                brace -= 1
-            if instr and brace > 0:
-                lines.insert(j + 1, instrCode)
+    except UnicodeDecodeError:
+        f = open(source, mode="r", encoding="gbk")
+        codeList = f.readlines()
+        f.close()
+    except:
+        print("err!")
+        return
+
+    for token in cursor.get_tokens():
+        if token.spelling in allFunc:
+            if token.spelling == "main":
+                continue
+            idx = allFunc.index(token.spelling)
+            instrCode = instrTemplate +  str(idx) + ";"
+            instr = True
+            print(token.spelling, ",", token.location.file.name + "?" + str(token.location.line))
+        if token.spelling == "{":
+            if instr and brace == 0:
+                temp = codeList[token.location.line - 1].split("{")
+                temp[1] = instrCode + temp[1]
+                codeList[token.location.line - 1] = "{".join(temp)
                 instr = False
-                length += 1
-            j += 1
-        f = open(instrument_loc[num], mode="w")
-        for code in lines:
+            brace += 1
+        if token.spelling == "}":
+            brace -= 1
+
+    newSource = re.sub(source.split("/")[-1], "ins_" + source.split("/")[-1], source)
+    try:
+        f = open(newSource, mode="w", encoding="utf-8")
+        for code in codeList:
             f.write(code)
         f.close()
-    printInfo("Instrument complete.")
-    multiFileCompile(instrument_loc)
+    except UnicodeEncodeError:
+        f = open(newSource, mode="w", encoding="gbk")
+        for code in codeList:
+            f.write(code)
+        f.close()
+    except BaseException as e:
+        print("Error occured in instrumentBaseOnAST:", e)
+
+    return newSource
 
 
-def multiFileCompile(source_loc):
-    '''
-    @description: 多文件编译的方法
-    @param {*} source_loc 列表，其中存储了要编译的源文件的位置
-    @return {*}
-    '''
-    # 获取所有源文件的名字
-    cppFileName = []
-    for source in source_loc:
-        cppFileName.append(source.split("/")[-1])
-    # 源文件所在的根目录
-    root_loc = re.sub(source_loc[0].split("/")[-1], "", source_loc[0])
-    # 指令集合
-    cmds = []
-    oFileName = []
-    for f in cppFileName:
-        cmds.append("g++ -c " + f)
-        f = f.split(".")[0] + ".o"
-        oFileName.append(f)
+def instrument(source_loc_list, instrTemplate):
+    """插装与编译
 
-    # 切换工作目录，开始编译
-    os.chdir(root_loc)
-    cmds.append("g++ -o instrument.exe " + " ".join(oFileName) + " -lws2_32")
-    for cmd in cmds:
-        if os.system(cmd) != 0:
-            print("出错!")
-    # 移除插装的源文件
-    for source in source_loc:
-        os.remove(source)
-    # 删掉.o文件
-    for oFile in oFileName:
-        os.remove(oFile)
+    Parameters
+    ----------
+    source_loc_list : list
+        源文件地址
+    instrTemplate : str
+        插装语句模板
+
+    Notes
+    -----
+    [description]
+    """
+    root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
+
+    # 加载dll
+    libclangPath = subprocess.getstatusoutput("where clang")[1]
+    libclangPath = re.sub(libclangPath.split(
+        "\\")[-1], "", libclangPath) + "libclang.dll"
+    if clang.cindex.Config.loaded == True:
+        print("clang.cindex.Config.loaded == True:")
+    else:
+        clang.cindex.Config.set_library_file(libclangPath)
+        print("install path")
+
+    # 获取所有函数，下标决定了它的id
+    # TODO 如果函数数量超过插装变量的位数量
+    allFunc = public.getAllFunctions(source_loc_list)
+    ins_loc_list = list()
+    for source in source_loc_list:
+        index = clang.cindex.Index.create()
+        tu = index.parse(source)
+        ins_loc_list.append(instrumentBaseOnAST(tu.cursor, allFunc, source, instrTemplate))
+
+    # 编译生成exe文件
+    # g++ -g aaa.cpp bbb.cpp -o ccc.exe -lws2_32
+    cmd = "g++ -g "
+    for file in ins_loc_list:
+        cmd += file + " "
+    cmd += "-o " + root_loc + "instrument.exe -lws2_32"
+    os.system(cmd)
+    for file in ins_loc_list:
+        os.remove(file)
 
 
 import sys

@@ -489,16 +489,12 @@ class Ui_MainWindow(object):
             os.remove(root_loc + "instrument.exe")
 
         try:
-            instrument_loc = list()
-            for source in source_loc_list:
-                sourceName = source.split("/")[-1]
-                instrument_loc.append(root_loc + "/ins_" + sourceName)
-            instrument_var = self.instrumentCodeLabel.text().split("|=")[0].rstrip()
+            instrTemplate = self.instrumentCodeLabel.text().split("|=")[0].rstrip()
 
             # 生成insFunc.c与insFunc.dll
-            # insVarName是插桩变量的名字, instrument_var是插桩语句等号左边的东西
-            insVarName = instrument_var.replace("->", " ").replace(".", " ")
-            insVarName = re.sub(insVarName.split(" ")[0], "", instrument_var)
+            # insVarName是插桩变量的名字, instrTemplate是插桩语句等号左边的东西
+            insVarName = instrTemplate.replace("->", " ").replace(".", " ")
+            insVarName = re.sub(insVarName.split(" ")[0], "", instrTemplate)
             insVarName = insVarName.lstrip("[->.]")
             # insVarType是插桩变量的类型
             insVarType = self.insVarTypeLabel.text()
@@ -514,7 +510,7 @@ class Ui_MainWindow(object):
             os.system("gcc -shared -o " + root_loc + "in/insFunc.dll " + root_loc + "in/insFunc.c")
 
             # 插桩
-            instr.instrument(source_loc_list, instrument_loc, instrument_var)
+            instr.instrument(source_loc_list, instrTemplate)
 
             instrSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "插桩成功!")
             instrSuccBox.exec_()
