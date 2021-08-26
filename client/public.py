@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-08-11 16:53:47
+LastEditTime: 2021-08-25 14:31:31
 Description: Some public function
 '''
 
@@ -211,6 +211,24 @@ def genMutate(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
     # 把用户选择的头文件位置也include
     for header in header_loc:
         code += "#include \"" + header + "\"\n"
+    # 计算校验码，这部分生成了一个calculateCheckCode函数，应该在主代码中调用这个函数
+    checkPartCode = ""
+    if hasCheckCode:
+        count = 0
+        checkFieldName = ""
+        for key, value in structDict[struct].items():
+            if value["checkField"]:
+                checkPartCode += "\tcheckList[" + str(count) + "] = data." + key.split(" ")[-1].split(":")[0] + ";\n"
+                count += 1
+            elif value["checkCode"]:
+                checkFieldName = key.split(" ")[-1].split(":")[0]
+        checkPartCode += "\tdata." + checkFieldName + " = " + check_code.code + "\n"
+        checkPartCode += "\treturn data;\n}\n"
+        checkPartCode = struct + " calculateCheckCode(" + struct + " data){\n\tunsigned int checkList[" + str(
+            count) + "];\n" + checkPartCode
+    # 将calculateCheckCode函数添加到主代码中，默认是空的，如果存在校验码则会添加一段
+    code += checkPartCode
+    # 校验码完毕
     # mutate函数中有三个形参: struct data是发送数据的结构体, seedPath是变异后的文件保存路径, 精确到.txt
     # r是一个随机数, 用于与原来的值进行异或
     code += "\nvoid mutate(" + struct + " data, char* savePath, int r){\n"
@@ -220,22 +238,8 @@ def genMutate(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
             continue
         dataName = key.split(" ")[-1].split(":")[0]
         code += "\tdata." + dataName + " ^= r;\n"
-
-    # 计算校验码
     if hasCheckCode:
-        count = 0
-        checkPartCode = ""
-        checkFieldName = ""
-        for key, value in structDict[struct].items():
-            if value["checkField"]:
-                checkPartCode += "\tcheckList[" + str(count) + "] = data." + key.split(" ")[-1].split(":")[0] + ";\n"
-                count += 1
-            elif value["checkCode"]:
-                checkFieldName = key.split(" ")[-1].split(":")[0]
-        code += "\tunsigned int checkList[" + str(count) + "];\n"
-        code += checkPartCode
-        code += "\tdata." + checkFieldName + " = " + check_code.code + "\n"
-    # 校验码完毕
+        code += "\tdata = calculateCheckCode(data);\n"
     # 变异体写入文件
     code += "\n\tFILE* f;"
     code += "\n\tf = fopen(savePath, \"wb\");"
