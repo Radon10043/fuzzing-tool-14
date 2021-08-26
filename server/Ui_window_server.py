@@ -504,13 +504,20 @@ class Ui_MainWindow(object):
             insVarType = self.insVarTypeLabel.text()
             # 生成获取插桩值的instrument.dll
             f = open(root_loc + "in/insFunc.c", mode="w")
+
             code = "#include <stdio.h>\n#include <stdbool.h>\n"
             for header in header_loc_list:
                 code += "#include \"" + header + "\"\n"
             code += "\n\n" + insVarType + " getInstrumentValue(" + open(root_loc + "in/outputStruct.txt").read() + "* data) {\n"
             code += "\treturn data->" + insVarName + ";\n}"
+
+            # XXX TEMP 插装值置0
+            code += "\n\nvoid setInstrValueToZero(" + open(root_loc + "in/outputStruct.txt").read() + "* data) {\n"
+            code += "\tdata->" + insVarName + " = 0;\n}"
+
             f.write(code)
             f.close()
+
             os.system("gcc -shared -o " + root_loc + "in/insFunc.dll " + root_loc + "in/insFunc.c")
 
             # 插桩
