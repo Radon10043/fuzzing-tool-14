@@ -251,13 +251,15 @@ class Ui_Dialog(object):
     # ==========定义功能================================================================
 
     def startAIFuzz(self):
-        if self.ui.AICfgDialog == None:
+        root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0])
+
+        if self.ui.AICfgDialog is None:
             fuzzErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请正确配置测试参数！")
             fuzzErrBox.exec_()
             return
 
         if self.ui.AICfgDialog.existTS.isChecked() and self.ui.AICfgDialog.tsLoc.toPlainText() == "":
-            msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请确保已将初始训练集拷贝到" + os.path.join(utils.ROOT, "AIFuzz", "seeds") + "目录下！")
+            msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请确保已将初始训练集拷贝到" + os.path.join(root_loc, "AIFuzz", "seeds") + "目录下！")
             msg.addButton("确定", QtWidgets.QMessageBox.YesRole)
             msg.exec_()
 

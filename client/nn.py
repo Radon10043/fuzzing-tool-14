@@ -75,7 +75,7 @@ class LossHistory(keras.callbacks.Callback):
 
 
 class NN():
-    def __init__(self, ui, ui_fuzz, fuzz_thread, input_dim, all_node, grads_cnt, program_loc, MAIdll):
+    def __init__(self, ui, ui_fuzz, fuzz_thread, input_dim, all_node, grads_cnt, program_loc, MAIdll, root_loc):
         tf.compat.v1.disable_eager_execution()
         # threading.Thread.__init__(self)
         self.ui = ui
@@ -84,7 +84,7 @@ class NN():
         self.input_dim = input_dim
         self.output_dim = len(all_node)
         self.grads_cnt = grads_cnt
-        self.dir = os.path.join(utils.ROOT, "AIFuzz")
+        self.dir = os.path.join(root_loc, "AIFuzz")
         self.program_loc = program_loc
         self.MAIdll = MAIdll
         self.nodes_map = {}
@@ -130,9 +130,10 @@ class NN():
                 tail = list(tail)
                 tail[:splice_at] = head[:splice_at]
                 tail = bytes(tail)
-                with open(os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx)), 'wb') as f:
-                    self.MAIdll.setValueInRange(tail)
-                    f.write(tail)
+                fn = os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx))
+                self.MAIdll["mutate"].setValueInRange(tail)
+                fn = bytes(fn, encoding="utf8")
+                self.MAIdll["mutate"].mutate(tail, fn, 0xffffffff)
                 ret = 0
             print(f_diff, l_diff)
             randd = random.choice(self.seed_list)
@@ -150,7 +151,7 @@ class NN():
             if f in self.exec_module.cov_map.keys():
                 out, crash = self.exec_module.cov_map[f]
             else:
-                _, out, crash, _ = utils.getCoverage(open(f, "rb").read(), self.program_loc, self.MAIdll)
+                _, out, crash, _ = utils.getCoverage(open(f, "rb").read(), self.exec_module.s, self.exec_module.r,1, self.MAIdll)
             cov = cov.union(set(out))
             if crash:
                 crash_cnt += 1

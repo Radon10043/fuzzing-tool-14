@@ -96,70 +96,47 @@ def run_target(cmd, t=1):
 """
 
 
-def write_to_testcase(fn, buf):
-    with open(fn, "wb") as f:
-        f.write(buf)
+def write_to_testcase(fn, buf, dll):
+    fn = bytes(fn, encoding="utf8")
+    dll["mutate"].mutate(buf, fn, 0xffffffff)
+    # with open(fn, "wb") as f:
+    #    f.write(buf)
 
 
-def fuzz(source_loc, ui, uiFuzz, fuzzThread):
-    '''
-    @description: 模糊测试的函数, 是该项目核心的函数之一
-    @param {*} source_loc 列表, 其中存储了所有C文件的位置
-    @param {*} ui 主页面
-    @param {*} uiFuzz 模糊测试页面
-    @param {*} fuzzThread 模糊测试页面新开的测试线程, 单线程的话在测试期间会卡住
-    @return {*}
-    '''
-    for source in source_loc:
-        if not os.path.exists(source):
-            print(source)
-            fuzzThread.fuzzInfoSgn.emit("\n\n\t\t被测文件不存在!")
-            return "source not exist!"
+def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
+    # 当前所在目录
+    now_loc = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0])
+    # 可执行文件位置
+    program_loc = now_loc + "instrument.exe"
+    # 初始测试用例位置
+    seed_loc = now_loc + "in/seed"
+    # 调用图位置
+    graph_loc = now_loc + "in/callgraph.txt"
 
-    now_loc = os.path.split(source_loc[0])[0]
-    output_loc = now_loc
-    program_loc = os.path.join(now_loc, "instrument.exe")
-    seed_loc = os.path.join(now_loc, "in", "seed")
-    # now_loc = re.sub(source_loc[0].split("\\")[-1],"",source_loc[0])      # 当前所在目录
-    # now_loc = utils.ROOT
-    # output_loc = os.path.join(now_loc, "example")  # 输出exe和obj的位置
-    # program_loc = os.path.join(now_loc, "example", "instrument.exe")  # 可执行文件位置
-    # seed_loc = os.path.join(now_loc, "example", "in", "seed")  # 初始测试用例位置
+    # 加载所需的DLL文件，并将CDLL存入一个字典，以便调用
+    mutateDll = ctypes.cdll.LoadLibrary(now_loc + "in/mutate.dll")
+    instrumentDll = ctypes.cdll.LoadLibrary(now_loc + "in/insFunc.dll")
+    dllDict = {"mutate": mutateDll, "instrument": instrumentDll}
 
-    # 插装后的文件位置，因为是多文件，所以这里用了列表
-    instrument_loc = []
-    instr_var_loc = os.path.join(now_loc, "in", "instrument.txt")
-    if os.path.exists(program_loc):
-        os.remove(program_loc)
-    # 因为要多文件编译，所以记录一下每个文件的位置，以便生成插装的源文件
-    for source in source_loc:
-        print(source)
-        sourceName = os.path.split(source)[1]
-        instrument_loc.append(re.sub(sourceName, "ins_" + sourceName, source))
-    # print(instrument_loc)
-    # 获取插装变量的名字
-    # instrument_var = open(now_loc + "in\\instrument.txt").readline()
-    instrument_var = open(instr_var_loc).readline()
-    instrument_var = instrument_var.split(" ")[-1].split(":")[0].rstrip("\n")
-    instr.instrument(source_loc, instrument_loc, output_loc, instrument_var)
-
+    # 设置地址
+    s = uiPrepareFuzz.senderIPLabel.text()
+    r = uiPrepareFuzz.receiverIPLabel.text()
     allCoveredNode = []  # 储存了所有被覆盖到的结点
 
-    allNode = public.getAllFunctions(source_loc)
-    allNode = sorted(set(allNode), key=allNode.index)
+    allNode = uiPrepareFuzz.allNodes
     utils.allNode = allNode
     print("allNode:", allNode)
-    MAIdll = ctypes.cdll.LoadLibrary(os.path.join(now_loc, "in", "mutate_instru.dll"))
+
 
     # 待修改
     testcase = open(seed_loc, "rb").read()
 
     # testcase[0] = [str(data) for data in testcase[0]]
-    seeds_dir = os.path.join(utils.ROOT, "AIFuzz", "seeds")
-    p2 = os.path.join(utils.ROOT, "AIFuzz", "crossovers")
-    p3 = os.path.join(utils.ROOT, "AIFuzz", "mutations")
-    p4 = os.path.join(utils.ROOT, "AIFuzz", "bitmaps")
-    p5 = os.path.join(utils.ROOT, "AIFuzz", "crashes")
+    seeds_dir = os.path.join(now_loc, "AIFuzz", "seeds")
+    p2 = os.path.join(now_loc, "AIFuzz", "crossovers")
+    p3 = os.path.join(now_loc, "AIFuzz", "mutations")
+    p4 = os.path.join(now_loc, "AIFuzz", "bitmaps")
+    p5 = os.path.join(now_loc, "AIFuzz", "crashes")
     utils.mkdir(seeds_dir, del_if_exist=False)
     utils.mkdir(p2)
     utils.mkdir(p3)
@@ -169,8 +146,8 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     if ui.AICfgDialog.randTS.isChecked():
         for f in [os.path.join(seeds_dir, path) for path in os.listdir(seeds_dir)]:
             os.remove(f)
-        utils.gen_training_data(os.path.join(utils.ROOT, "AIFuzz"), seed_loc, int(ui.AICfgDialog.randTSSize.text()),
-                                MAIdll)
+        utils.gen_training_data(os.path.join(now_loc, "AIFuzz"), seed_loc, int(ui.AICfgDialog.randTSSize.text()),
+                                dllDict)
         # uiFuzz.text_browser_nn.append("已生成初始训练数据...\n")
         fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经生成初始训练数据，训练集规模：" + ui.AICfgDialog.randTSSize.text() + "\n")
     else:
@@ -202,9 +179,9 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
 
     condition += " or self.uiFuzz.stop"
     n = nn.NN(ui, uiFuzz, fuzzThread, len(testcase), allNode, int(ui.AICfgDialog.seedPerRound.text()), program_loc,
-              MAIdll)
-    e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, MAIdll, allNode, n, condition,
-                 ui.AICfgDialog.mutSize.currentText())
+              dllDict, now_loc)
+    e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, dllDict, allNode, n, condition,
+                 ui.AICfgDialog.mutSize.currentText(), now_loc, s, r)
     n.setExec(e)
     start = time.time()
     e.run()
@@ -219,7 +196,7 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
     # 生成测试报告
     fuzzThread.execInfoSgn.emit(e.genFuzzInfo() + "\n测试完成！")
     fuzzInfoDict = {"测试时间": str(int(end - start)),
-                    "测试对象": source_loc[0].split("\\")[-1],
+                    "测试对象": now_loc,
                     "循环次数": str(e.round_cnt + 1),
                     "生成速度": 0 if e.mut_cnt == 0 else "{:.2f}".format(e.mut_cnt / e.mut_time),
                     "执行速度": 0 if e.exec_time == 0 else "{:.2f}".format(int(e.exec_cnt / e.exec_time)),
@@ -228,7 +205,7 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
                     "已发现结点数量": str(len(allNode)),
                     "已覆盖结点": str(len(e.program_cov)),
                     "整体覆盖率": "{:.2f}".format(len(e.program_cov) / len(allNode))}
-    with open(os.path.join(now_loc, 'out', '测试报告.txt'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(now_loc, 'AIFuzz', '测试报告.txt'), 'w', encoding='utf-8') as f:
         f.write(str(fuzzInfoDict))
     # generateReport(source_loc[0], fuzzInfoDict)
     uiFuzz.text_browser_exec.append("\n已生成测试报告! 点击<查看结果>按钮以查看")
@@ -239,13 +216,13 @@ def fuzz(source_loc, ui, uiFuzz, fuzzThread):
 
 
 class FuzzExec():
-    def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes, nn, cond, mut_size):
+    def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes, nn, cond, mut_size, root_loc,s, r):
         self.ui = ui
         self.uiFuzz = ui_fuzz
         self.fuzzThread = fuzz_thread
         self.program_loc = program_loc
         self.MAIdll = MAIdll
-        self.dir = os.path.abspath(os.path.join(utils.ROOT, "AIFuzz"))
+        self.dir = os.path.join(root_loc, "AIFuzz")
         self.round_cnt = 0
         self.mut_cnt = 0
         self.mut_time = 0
@@ -263,6 +240,8 @@ class FuzzExec():
         self.stop = False
         self.mut_size = mut_size
         self.cov_map = {}
+        self.s = s
+        self.r = r
 
     def genFuzzInfo(self):
         info = "轮次：\t\t\t" + str(self.round_cnt + 1) + "\n"
@@ -303,10 +282,10 @@ class FuzzExec():
                 if fn in self.cov_map.keys():
                     cur_cov, crash = self.cov_map[fn]
                 else:
-                    _, cur_cov, crash, _ = utils.getCoverage(tc, self.program_loc, self.MAIdll)
+                    _, cur_cov, crash, _ = utils.getCoverage(tc, self.s, self.r, 1, self.MAIdll)
                     self.cov_map[fn] = cur_cov, crash
             else:
-                _, cur_cov, crash, _ = utils.getCoverage(tc, self.program_loc, self.MAIdll)
+                _, cur_cov, crash, _ = utils.getCoverage(tc, self.s, self.r, 1, self.MAIdll)
             if crash:
                 crash_fn = os.path.join(self.dir, "crashes", str(self.round_cnt) + "_" + str(self.crash_cnt))
                 copyfile(fn, crash_fn)
@@ -418,8 +397,8 @@ class FuzzExec():
                 #                  "input_{:d}_{:06d}".format(iter, self.mut_cnt))
                 fn = save_dir + "\\" + str(self.mut_cnt)
                 tmp = bytes(out_buf1)
-                self.MAIdll.setValueInRange(tmp)
-                write_to_testcase(fn, tmp)
+                # self.MAIdll.setValueInRange(tmp)
+                write_to_testcase(fn, tmp, self.MAIdll)
                 self.mut_cnt += 1
                 self.mut_time += (time.time() - time_ckpt)
                 time_ckpt = time.time()
@@ -471,8 +450,8 @@ class FuzzExec():
                 #                  "input_{:d}_{:06d}".format(iter, self.mut_cnt))
                 fn = save_dir + "\\" + str(self.mut_cnt)
                 tmp = bytes(out_buf2)
-                self.MAIdll.setValueInRange(tmp)
-                write_to_testcase(fn, tmp)
+                # self.MAIdll.setValueInRange(tmp)
+                write_to_testcase(fn, tmp, self.MAIdll)
                 self.mut_cnt += 1
                 self.mut_time += (time.time() - time_ckpt)
                 time_ckpt = time.time()

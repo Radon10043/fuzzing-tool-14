@@ -70,81 +70,68 @@ def getCoverNode(num):
     return coverNode
 
 
-def threadReceiver(program_loc):
-    global isCrash
-    isCrash = 0
-    # prog = "D:\\fuzzing-tool-14\\example\\main.exe"
-    # prog = os.path.join(os.curdir, "example", "main.exe")
-    out = getstatusoutput(program_loc)
-    isCrash = out[0]
-    print("Receiver print:\n", out[1])
-
-
-'''
-@description: 线程2-启动python监控方，用于收集C++返回的UDP
-@param {*}
-@return {*}
-'''
-
-
-def threadMonitor():
+def threadMonitor(senderAddress):
+    '''
+    @description: 线程2-启动python监控方，用于收集C++返回的UDP
+    @param {*}
+    @return {*}
+    '''
     global returnUDPInfo
-    # prog = "D:\\fuzzing-tool-14\\example\\cppudptest\\getudp.py"
-    prog = prog = os.path.dirname(os.path.abspath(__file__)) + "/getudp.py"
-    out = getstatusoutput(prog)
-    # print("getudp.py: ", out)
-    returnUDPInfo = out[1]
+    returnUDPInfo.clear()
+    monitorSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # 创建 socket 对象
+    print(senderAddress)
+    host = senderAddress.split(':')[0]
+    port = int(senderAddress.split(':')[1])
+    monitorSocket.bind((host, port))
+    # monitorSocket.bind(("", 9999))  # 绑定端口
+    data, client_addr = monitorSocket.recvfrom(1024)
+    monitorSocket.close()
+    print("data:", data)
+    returnUDPInfo = str(bytes(data))
 
 
-def getCoverage(testcase, program_loc, MAIdll):
-    """
-    @param {*} testcase 需要发送的测试用例，类型为bytes
-    @param {*} program_loc 程序位置
-    @return {*} 返回(测试用例, 距离, 适应度, 覆盖点, 是否触发缺陷, 是否超时)，返回结果是一个元组
-    """
-
-    # print("old", testcase)
-    # MAIdll.setInstrumentValueToZero(testcase)
-    # MAIdll.setValueInRange(testcase)
-    # print("new", testcase)
-    # 先启动线程2，用于监控
-    thread2 = threading.Thread(target=threadMonitor, name="thread_monitor", )
+def getCoverage(testcase, senderAddress, receiverAddress, maxTimeout, dllDict):
+    crash = False
+    thread2 = threading.Thread(target=threadMonitor, name="thread_monitor", args=(senderAddress,))
     thread2.start()
-    # 启动线程2后，稍微等下，如果线程1速度快了可能会导致线程2无法获得返回的UDP包
-    # 从而陷入一直等待线程2结束的状态
-    time.sleep(0.2)
-    # 一段时间后，启动线程1
-    thread1 = threading.Thread(target=threadReceiver, args=(program_loc,), name="thread_receiver")
-    thread1.start()
-    # 形参的测试用例是str类型的list，转换成int后再转为byte
-    # data = bytes([int(data) for data in testcase])
-    # 发送测试用例
-    s = socket.socket()
-    host = socket.gethostname()
-    port = 8888
-    s.connect((host, port))
-    # s.send(data)
-    s.send(testcase)
-    s.close()
-    # 等待线程1和线程2结束
-    thread1.join()
-    thread2.join()
+
+    # 测试用例是bytes
+    data = testcase
+    try:
+        s = socket.socket()
+        host = receiverAddress.split(":")[0]
+        port = int(receiverAddress.split(":")[1])
+        s.connect((host, port))
+        s.send(data)
+        s.close()
+    except BaseException as e:
+        print("测试用例发送失败:", e)
+
+    # 等待线程2结束
+    thread2.join(maxTimeout)
+
     # 读取返回的UDP包的内容
     global returnUDPInfo
-    returnUDPInfo = returnUDPInfo.split(",")
-    returnUDPInfo.pop(-1)
-    returnUDPInfo[0] = re.sub("[^0-9]", "", returnUDPInfo[0])
-    returnUDPInfo = [int(data) for data in returnUDPInfo]
-    print("returnData", returnUDPInfo)
-    # 获得覆盖的结点
-    instrValue = MAIdll.getInstrumentValue(bytes(returnUDPInfo))
-    print("instrValue:", instrValue)
-    crashResult = isCrash
-    coverNode = getCoverNode(instrValue)
-    print("coverNode:", coverNode)
+    try:
+        print(returnUDPInfo)
+        returnUDPInfo = returnUDPInfo.split(",")
+        returnUDPInfo.pop(-1)
+        returnUDPInfo[0] = re.sub("[^0-9]", "", returnUDPInfo[0])
+        returnUDPInfo = [int(data) for data in returnUDPInfo]
+        print("returnData", returnUDPInfo)
+        # 获得覆盖的结点
+        instrValue = dllDict["instrument"].getInstrumentValue(bytes(returnUDPInfo))
+        print("instrValue:", instrValue)
+        coverNode = getCoverNode(instrValue)
+        print("coverNode:", coverNode)
+    except BaseException as e:
+        print("解析失败: ", e)
+        coverNode = ["main"]
+        crash = True
 
+    crashResult = isCrash == 10
     timeout = False
-    return testcase, coverNode, crashResult, timeout
+    return (testcase, coverNode, crash, timeout)
 
 
 def mutate(a, add=True, delete=True):
@@ -165,7 +152,7 @@ def mutate(a, add=True, delete=True):
     return bytes(res)
 
 
-def gen_training_data(PATH_PREFIX, seed_fn, num, MAIdll):
+def gen_training_data(PATH_PREFIX, seed_fn, num, dll):
     # population = [bytearray([1, 2, 3, 4]), bytearray([0, 10, 100, 200])]
     population = [open(seed_fn, "rb").read()]
     while len(population) <= num:
@@ -180,9 +167,10 @@ def gen_training_data(PATH_PREFIX, seed_fn, num, MAIdll):
         if i >= num:
             break
         input_fn = os.path.join(PATH_PREFIX, "seeds", "input_" + str(i).zfill(10))
-        with open(input_fn, "wb") as f:
-            MAIdll.setValueInRange(tc)
-            f.write(tc)
+        if i / num > 0.4:
+            dll['mutate'].setValueInRange(tc)
+        input_fn = bytes(input_fn, encoding="utf8")
+        dll["mutate"].mutate(tc, input_fn, 0xffffffff)
     return population
 
 
