@@ -66,9 +66,11 @@ class Ui_MainWindow(object):
         self.SAResultGenBtn.setGeometry(QtCore.QRect(210, 105, 93, 31))
         self.SAResultGenBtn.setObjectName("SAResultGenBtn")
         self.tabWidget.addTab(self.codeStructTab, "")
-        self.interfaceTab = QtWidgets.QWidget()
-        self.interfaceTab.setObjectName("interfaceTab")
-        self.tabWidget.addTab(self.interfaceTab, "")
+
+        # self.interfaceTab = QtWidgets.QWidget()
+        # self.interfaceTab.setObjectName("interfaceTab")
+        # self.tabWidget.addTab(self.interfaceTab, "")
+
         self.selectInsVarGroupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.selectInsVarGroupBox.setGeometry(QtCore.QRect(70, 310, 291, 131))
         self.selectInsVarGroupBox.setObjectName("selectInsVarGroupBox")
@@ -194,7 +196,9 @@ class Ui_MainWindow(object):
         self.targetSetInfo.setPlaceholderText(_translate("MainWindow", "目标集信息"))
         self.SAResultGenBtn.setText(_translate("MainWindow", "结果生成"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.codeStructTab), _translate("MainWindow", "基于代码结构"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.interfaceTab), _translate("MainWindow", "基于交互接口故规约"))
+
+        # self.tabWidget.setTabText(self.tabWidget.indexOf(self.interfaceTab), _translate("MainWindow", "基于交互接口故规约"))
+
         self.selectInsVarGroupBox.setTitle(_translate("MainWindow", "选择插桩变量"))
         self.structParameterName.setText(_translate("MainWindow", "dtg"))
         self.structParameterName.setPlaceholderText(_translate("MainWindow", "结构体实参名"))
