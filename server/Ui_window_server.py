@@ -302,8 +302,8 @@ class Ui_MainWindow(object):
             self.selectStructDialog = QtWidgets.QDialog()
             self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
             self.uiSelectStruct.setupUi(self.selectStructDialog)
-            self.selectStructDialog.show()
             self.uiSelectStruct.setValues(self.header_loc_list, "output", self)
+            self.selectStructDialog.show()
 
 
     def popTargetDialog(self):

@@ -115,22 +115,32 @@ class Ui_Dialog(object):
         [description]
         """
         self.header_loc_list = header_loc_list
-        self.structList = staticAnalysis.getAllStruct(header_loc_list)
-        self.structTableWidget.setRowCount(len(self.structList))
+
+        # self.structOneDimList = list()
+        # structTwoDimList = staticAnalysis.getAllStruct(header_loc_list)
+        # for struct in structTwoDimList:
+        #     if struct[0] != "":
+        #         self.structOneDimList.append(struct[0])
+        #     else:
+        #         self.structOneDimList.append(struct[1])
+
+        self.structOneDimList = staticAnalysis.getAllStruct(header_loc_list)
+
+        self.structTableWidget.setRowCount(len(self.structOneDimList))
         self.choice = choice
         self.uiSelectIOStruct = uiSelectIOStruct
 
         s_cbx = "{"
         s_lab = "{"
-        for i in range(len(self.structList)):
+        for i in range(len(self.structOneDimList)):
             s_cbx += str(i) + ":QtWidgets.QCheckBox(),"
             s_lab += str(i) + ":QtWidgets.QLabel(),"
         s_cbx += "}"
         s_lab += "}"
         self.checkboxs = eval(s_cbx)
         self.labels = eval(s_lab)
-        print(self.structList)
-        for i in range(len(self.structList)):
+        print(self.structOneDimList)
+        for i in range(len(self.structOneDimList)):
             hLayout = QtWidgets.QHBoxLayout()
             hLayout.addWidget(self.checkboxs[i])
             hLayout.setAlignment(self.checkboxs[i], QtCore.Qt.AlignCenter)
@@ -138,7 +148,7 @@ class Ui_Dialog(object):
             widget.setLayout(hLayout)
             self.structTableWidget.setCellWidget(i, 1, widget)
             self.structTableWidget.setRowHeight(i, 40)
-            self.labels[i].setText(self.structList[i])
+            self.labels[i].setText(self.structOneDimList[i])
             hLayout2 = QtWidgets.QHBoxLayout()
             hLayout2.addWidget(self.labels[i])
             hLayout2.setAlignment(self.labels[i], QtCore.Qt.AlignCenter)
@@ -146,10 +156,10 @@ class Ui_Dialog(object):
             widget2.setLayout(hLayout2)
             self.structTableWidget.setCellWidget(i, 0, widget2)
             self.checkboxs[i].clicked.connect(
-                lambda x, i=i: self.selectStruct(self.checkboxs[i], self.structList[i]))
+                lambda x, i=i: self.selectStruct(self.checkboxs[i], self.structOneDimList[i]))
 
         # 默认高度较矮，需要设置一下
-        for i in range(len(self.structList)):
+        for i in range(len(self.structOneDimList)):
             self.structTableWidget.setRowHeight(i, 50)
 
     def selectStruct(self, checkbox, label):
@@ -170,7 +180,7 @@ class Ui_Dialog(object):
         @param {*} self
         @return {*}
         '''
-        for i in range(len(self.structList)):
+        for i in range(len(self.structOneDimList)):
             self.checkboxs[i].setChecked(False)
         self.selectedStruct = ""
 
@@ -197,14 +207,14 @@ class Ui_Dialog(object):
                 self.uiSeed.setupUi(self.seedDialog)
                 # 如果读取JSON的话，JSONPath和readJSON就用不上了，占个位置
                 self.uiSeed.initStructDict(
-                    self.header_loc_list, "JSONPath", False, self.uiSelectIOStruct, self.selectedStruct, self.structList)
+                    self.header_loc_list, "JSONPath", False, self.uiSelectIOStruct, self.selectedStruct, self.structOneDimList)
                 self.seedDialog.show()
             elif self.choice == "output":
                 self.outputDialog = QtWidgets.QDialog()
                 self.uiOutput = outputDialogPY.Ui_Dialog()
                 self.uiOutput.setupUi(self.outputDialog)
                 self.uiOutput.initStructDict(
-                    self.header_loc_list, "JSONPath", False, self.uiSelectIOStruct, self.selectedStruct, self.structList)
+                    self.header_loc_list, "JSONPath", False, self.uiSelectIOStruct, self.selectedStruct, self.structOneDimList)
                 self.outputDialog.show()
         except ValueError as e:
             exceptionBox = QtWidgets.QMessageBox(

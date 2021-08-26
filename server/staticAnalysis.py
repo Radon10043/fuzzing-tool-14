@@ -1,8 +1,10 @@
 import os
 import re
+import subprocess
 import uuid
 
 import pycparser
+import clang.cindex
 
 
 # 变量无名异常
@@ -80,6 +82,79 @@ def analyze(source_loc_str):
     suspFunction = getSuspFunction(suspLoc, source_loc_list)
     suspFunction = list(set(suspFunction))
     return suspFunction
+
+
+def getAllStruct_clang(header_loc_list):
+    """获得所有头文件中所有结构体信息
+
+    Parameters
+    ----------
+    header_loc_list : list
+        头文件列表
+
+    Returns
+    -------
+    list
+        二位列表，存储了所有头文件中结构体信息
+        [0]是结构体名字，剩下的是别名
+
+    Notes
+    -----
+    [description]
+    """
+    # 加载dll
+    libclangPath = subprocess.getstatusoutput("where clang")[1]
+    libclangPath = re.sub(libclangPath.split(
+        "\\")[-1], "", libclangPath) + "libclang.dll"
+    if clang.cindex.Config.loaded == True:
+        print("clang.cindex.Config.loaded == True:")
+    else:
+        clang.cindex.Config.set_library_file(libclangPath)
+        print("install path")
+
+    # 获取所有结构体
+    structTwoDimList = list()
+    for header in header_loc_list:
+        index = clang.cindex.Index.create()
+        tu = index.parse(header)
+        headerstructTwoDimList = traverseASTToGetAllStruct(tu.cursor)
+        # 去重
+        [structTwoDimList.append(struct) for struct in headerstructTwoDimList if not struct in structTwoDimList]
+
+    return structTwoDimList
+
+
+def traverseASTToGetAllStruct(cursor):
+    """遍历AST获得一个文件中的所有结构体信息
+
+    Parameters
+    ----------
+    cursor : clang.cindex.Cursor
+        根节点
+
+    Returns
+    -------
+    list
+        一个文件中结构体的所有信息
+        二维列表，每个列表中第一个元素表示第一个名字，剩下的是别名
+
+    Notes
+    -----
+    [description]
+    """
+    struct = list()
+    headerStructList = list()
+    for cur in cursor.get_children():
+        if cur.kind == clang.cindex.CursorKind.STRUCT_DECL:
+            if len(struct) > 0:
+                headerStructList.append(struct.copy())
+                struct.clear()
+            struct.append(cur.spelling)
+            print(cur.spelling, ",", cur.kind)
+        elif cur.kind == clang.cindex.CursorKind.TYPEDEF_DECL:
+            struct.append(cur.spelling)
+    headerStructList.append(struct)
+    return headerStructList
 
 
 def getAllStruct(header_loc_list):
