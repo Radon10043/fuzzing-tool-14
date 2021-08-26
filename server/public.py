@@ -88,6 +88,7 @@ def preorderTraverseToGetAllFunctions(cursor, funcList):
     -----
     [description]
     """
+
     for cur in cursor.get_children():
         if cur.kind == clang.cindex.CursorKind.CXX_METHOD or cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
             funcList.append(cur.spelling)

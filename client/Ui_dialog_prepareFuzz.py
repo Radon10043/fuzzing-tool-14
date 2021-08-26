@@ -18,14 +18,15 @@ Description: Hi, say something
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import Ui_dialog_fuzz as fuzzDialogPY
-
+import utils
 import re, os, traceback
 
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(464, 398)
+
+        Dialog.resize(464, 458)
         self.textBrowser = QtWidgets.QTextBrowser(Dialog)
         self.textBrowser.setGeometry(QtCore.QRect(40, 30, 381, 241))
         self.textBrowser.setObjectName("textBrowser")
@@ -37,6 +38,12 @@ class Ui_Dialog(object):
         self.startNoTargetFuzzBtn.setEnabled(False)
         self.startNoTargetFuzzBtn.setGeometry(QtCore.QRect(240, 350, 181, 28))
         self.startNoTargetFuzzBtn.setObjectName("startNoTargetFuzzBtn")
+
+        self.startAIFuzzBtn = QtWidgets.QPushButton(Dialog)
+        self.startAIFuzzBtn.setEnabled(False)
+        self.startAIFuzzBtn.setGeometry(QtCore.QRect(140, 390, 181, 28))
+        self.startAIFuzzBtn.setObjectName("startAIFuzzBtn")
+
         self.senderLabel = QtWidgets.QLabel(Dialog)
         self.senderLabel.setGeometry(QtCore.QRect(120, 290, 61, 16))
         self.senderLabel.setObjectName("senderLabel")
@@ -55,6 +62,8 @@ class Ui_Dialog(object):
         self.startTargetFuzzBtn.clicked.connect(Dialog.accept)
         self.startNoTargetFuzzBtn.clicked.connect(self.startNoTargetFuzz)
         self.startNoTargetFuzzBtn.clicked.connect(Dialog.accept)
+        self.startAIFuzzBtn.clicked.connect(self.startAIFuzz)
+        self.startAIFuzzBtn.clicked.connect(Dialog.accept)
         # =================================================================
 
         self.retranslateUi(Dialog)
@@ -70,6 +79,7 @@ class Ui_Dialog(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">检验中...</p></body></html>"))
         self.startTargetFuzzBtn.setText(_translate("Dialog", "开始目标制导模糊测试"))
         self.startNoTargetFuzzBtn.setText(_translate("Dialog", "开始无目标制导模糊测试"))
+        self.startAIFuzzBtn.setText(_translate("Dialog", "开始机器学习模糊测试"))
         self.senderLabel.setText(_translate("Dialog", "发送方:"))
         self.receiverLabel.setText(_translate("Dialog", "接收方:"))
         self.senderIPLabel.setText(_translate("Dialog", "255.255.255.255:65535"))
@@ -150,6 +160,7 @@ class Ui_Dialog(object):
                 self.startTargetFuzzBtn.setEnabled(True)
                 self.startNoTargetFuzzBtn.setEnabled(True)
 
+                self.startAIFuzzBtn.setEnabled(True)
                 # 设置目标
                 self.targetSet = open(root_loc + "saresult.txt").read().split("\n")
                 self.targetSet.pop(-1)
@@ -159,6 +170,8 @@ class Ui_Dialog(object):
             elif noTargetFilesValidation and not targetFilesValidation:
                 self.textBrowser.append("<font color='orange'>- %s</font>" % ("可以开始无目标制导的模糊测试"))
                 self.startNoTargetFuzzBtn.setEnabled(True)
+                self.startAIFuzzBtn.setEnabled(True)
+
             else:
                 self.textBrowser.append("<font color='red'>- %s</font>" % ("无法开始模糊测试，请尝试重新生成文件"))
         else:
@@ -241,3 +254,31 @@ class Ui_Dialog(object):
             fuzzErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "发生错误:" + str(e))
             fuzzErrBox.show()
     # ==========定义功能================================================================
+
+
+    def startAIFuzz(self):
+        root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0])
+
+        if self.ui.AICfgDialog is None:
+            fuzzErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请正确配置测试参数！")
+            fuzzErrBox.exec_()
+            return
+
+        if self.ui.AICfgDialog.existTS.isChecked() and self.ui.AICfgDialog.tsLoc.toPlainText() == "":
+            msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请确保已将初始训练集拷贝到" + os.path.join(root_loc, "AIFuzz", "seeds") + "目录下！")
+            msg.addButton("确定", QtWidgets.QMessageBox.YesRole)
+            msg.exec_()
+
+        try:
+            self.fuzzDialog = QtWidgets.QDialog()
+            self.fuzzDialog.setWindowTitle("基于机器学习的模糊测试")
+            self.uiFuzz = fuzzDialogPY.Ui_Dialog()
+            self.uiFuzz.setupUi(self.fuzzDialog, True)
+            self.uiFuzz.startFuzz(self.header_loc_list, self.ui, self, self.uiFuzz)
+            self.fuzzDialog.show()
+        except BaseException as e:
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
+            fuzzErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "发生错误:" + str(e))
+            fuzzErrBox.show()
