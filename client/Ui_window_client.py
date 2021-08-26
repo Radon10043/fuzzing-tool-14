@@ -16,6 +16,7 @@ import Ui_dialog_seed as seedDialogPY
 import Ui_dialog_selectStruct as selectStructDialogPY
 import Ui_dialog_validation as validateDialogPY
 import Ui_dialog_prepareFuzz as prepareFuzzDialogPY
+
 import Ui_dialog_AICfg as  aicfgDialogPY
 
 class Ui_MainWindow(object):
@@ -158,6 +159,7 @@ class Ui_MainWindow(object):
         self.pieceLabel.setGeometry(QtCore.QRect(210, 20, 21, 16))
         self.pieceLabel.setObjectName("pieceLabel")
 
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 714, 26))
@@ -172,7 +174,9 @@ class Ui_MainWindow(object):
         self.seedInputBtn.clicked.connect(self.popStructDialog)
         self.startValidateBtn.clicked.connect(self.popValidateDialog)
         self.startFuzzBtn.clicked.connect(self.popPrepareFuzzDialog)
+
         self.AICfgBtn.clicked.connect(self.popAICfgDialog)
+
 
 
         # 每轮测试用例数量、超时时间上线为1000，测试用例总数量上线为1亿
@@ -182,6 +186,7 @@ class Ui_MainWindow(object):
         regExp2 = QtCore.QRegExp("^([1-9]\d{0,6}|10000000)$")
         self.TCNumsLineEdit.setValidator(QtGui.QRegExpValidator(regExp2))
         self.AICfgDialog = None
+
         # self.senderIPLineEdit.setText("")
         # self.senderPortLineEdit.setText("9999")
         # self.receiverIPLineEdit.setText("192.168.50.176")
@@ -222,9 +227,11 @@ class Ui_MainWindow(object):
         self.timeUnit.setItemText(1, _translate("MainWindow", "小时"))
         self.TCNumsLineEdit.setText(_translate("MainWindow", "2000"))
         self.amountLabel.setText(_translate("MainWindow", "个"))
+
         # self.otherOptionGroupBox.setTitle(_translate("MainWindow", "其他设置"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.AITab), _translate("MainWindow", "基于机器学习"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.otherOptionGroupBox), _translate("MainWindow", "基于代码结构"))
+
 
         self.TCNumPerCyc.setText(_translate("MainWindow", "5"))
         self.timeoutLEdit.setText(_translate("MainWindow", "10"))
@@ -233,6 +240,7 @@ class Ui_MainWindow(object):
         self.secondLabel.setText(_translate("MainWindow", "秒"))
         self.pieceLabel.setText(_translate("MainWindow", "个"))
         self.AICfgBtn.setText(_translate("MainWindow", "设置"))
+
 
     # ==========定义功能================================================================
     def chooseHFile(self):
@@ -248,6 +256,7 @@ class Ui_MainWindow(object):
             path += temp[0][i] + "\n"
         path = path.rstrip("\n")
         self.HFileLoc.setText(path)
+
 
 
     def popAICfgDialog(self):

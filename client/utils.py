@@ -5,8 +5,6 @@ import shutil
 import socket
 import threading
 import time
-import json
-import ctypes
 from subprocess import *
 
 isCrash = 0
@@ -14,14 +12,6 @@ ROOT = "D:\\fuzzing-tool-14"
 returnUDPInfo = []
 allNode = []
 
-
-def struct2TC(struct):
-    TC = {}
-    for key, value in struct["Datagram"].items():
-        dataName = key.split(" ")[-1].split(":")[0]
-        dataValue = value["value"]
-        TC[dataName] =dataValue
-    return TC
 
 
 def parse_array(text):
@@ -134,6 +124,7 @@ def getCoverage(testcase, senderAddress, receiverAddress, maxTimeout, dllDict):
     return (testcase, coverNode, crash, timeout)
 
 
+
 def mutate(a, add=True, delete=True):
     res = bytearray()
     for i in range(0, len(a)):
@@ -152,9 +143,11 @@ def mutate(a, add=True, delete=True):
     return bytes(res)
 
 
+
 def gen_training_data(PATH_PREFIX, seed_fn, num, dll):
     # population = [bytearray([1, 2, 3, 4]), bytearray([0, 10, 100, 200])]
     population = [open(seed_fn, "rb").read()]
+
     while len(population) <= num:
         new_population = []
         for tc in population:
@@ -167,6 +160,7 @@ def gen_training_data(PATH_PREFIX, seed_fn, num, dll):
         if i >= num:
             break
         input_fn = os.path.join(PATH_PREFIX, "seeds", "input_" + str(i).zfill(10))
+
         if i / num > 0.4:
             dll['mutate'].setValueInRange(tc)
         input_fn = bytes(input_fn, encoding="utf8")

@@ -25,6 +25,7 @@ import re, os, traceback
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
+
         Dialog.resize(464, 458)
         self.textBrowser = QtWidgets.QTextBrowser(Dialog)
         self.textBrowser.setGeometry(QtCore.QRect(40, 30, 381, 241))
@@ -37,10 +38,12 @@ class Ui_Dialog(object):
         self.startNoTargetFuzzBtn.setEnabled(False)
         self.startNoTargetFuzzBtn.setGeometry(QtCore.QRect(240, 350, 181, 28))
         self.startNoTargetFuzzBtn.setObjectName("startNoTargetFuzzBtn")
+
         self.startAIFuzzBtn = QtWidgets.QPushButton(Dialog)
         self.startAIFuzzBtn.setEnabled(False)
         self.startAIFuzzBtn.setGeometry(QtCore.QRect(140, 390, 181, 28))
         self.startAIFuzzBtn.setObjectName("startAIFuzzBtn")
+
         self.senderLabel = QtWidgets.QLabel(Dialog)
         self.senderLabel.setGeometry(QtCore.QRect(120, 290, 61, 16))
         self.senderLabel.setObjectName("senderLabel")
@@ -156,6 +159,7 @@ class Ui_Dialog(object):
                 self.textBrowser.append("<font color='green'>- %s</font>" % ("可以开始目标制导的模糊测试"))
                 self.startTargetFuzzBtn.setEnabled(True)
                 self.startNoTargetFuzzBtn.setEnabled(True)
+
                 self.startAIFuzzBtn.setEnabled(True)
                 # 设置目标
                 self.targetSet = open(root_loc + "saresult.txt").read().split("\n")
@@ -167,6 +171,7 @@ class Ui_Dialog(object):
                 self.textBrowser.append("<font color='orange'>- %s</font>" % ("可以开始无目标制导的模糊测试"))
                 self.startNoTargetFuzzBtn.setEnabled(True)
                 self.startAIFuzzBtn.setEnabled(True)
+
             else:
                 self.textBrowser.append("<font color='red'>- %s</font>" % ("无法开始模糊测试，请尝试重新生成文件"))
         else:
@@ -249,6 +254,7 @@ class Ui_Dialog(object):
             fuzzErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "发生错误:" + str(e))
             fuzzErrBox.show()
     # ==========定义功能================================================================
+
 
     def startAIFuzz(self):
         root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0])

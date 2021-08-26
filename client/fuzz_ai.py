@@ -132,6 +132,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     testcase = open(seed_loc, "rb").read()
 
     # testcase[0] = [str(data) for data in testcase[0]]
+
     seeds_dir = os.path.join(now_loc, "AIFuzz", "seeds")
     p2 = os.path.join(now_loc, "AIFuzz", "crossovers")
     p3 = os.path.join(now_loc, "AIFuzz", "mutations")
@@ -146,8 +147,10 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     if ui.AICfgDialog.randTS.isChecked():
         for f in [os.path.join(seeds_dir, path) for path in os.listdir(seeds_dir)]:
             os.remove(f)
+
         utils.gen_training_data(os.path.join(now_loc, "AIFuzz"), seed_loc, int(ui.AICfgDialog.randTSSize.text()),
                                 dllDict)
+
         # uiFuzz.text_browser_nn.append("已生成初始训练数据...\n")
         fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经生成初始训练数据，训练集规模：" + ui.AICfgDialog.randTSSize.text() + "\n")
     else:
@@ -205,6 +208,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
                     "已发现结点数量": str(len(allNode)),
                     "已覆盖结点": str(len(e.program_cov)),
                     "整体覆盖率": "{:.2f}".format(len(e.program_cov) / len(allNode))}
+
     with open(os.path.join(now_loc, 'AIFuzz', '测试报告.txt'), 'w', encoding='utf-8') as f:
         f.write(str(fuzzInfoDict))
     # generateReport(source_loc[0], fuzzInfoDict)

@@ -75,6 +75,7 @@ class LossHistory(keras.callbacks.Callback):
 
 
 class NN():
+
     def __init__(self, ui, ui_fuzz, fuzz_thread, input_dim, all_node, grads_cnt, program_loc, MAIdll, root_loc):
         tf.compat.v1.disable_eager_execution()
         # threading.Thread.__init__(self)

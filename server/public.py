@@ -95,8 +95,6 @@ def preorderTraverseToGetAllFunctions(cursor, funcList):
         preorderTraverseToGetAllFunctions(cur, funcList)
 
 
-
-
 def genSeed(header_loc, struct, structDict):
     '''
     @description: 写一个生成初始种子的cpp文件，并编译和执行它

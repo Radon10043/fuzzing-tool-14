@@ -224,6 +224,7 @@ class FuzzThread(QThread):
         print("FuzzThread has started.")
         if self.fuzz_ai:
             self.result = fuzz_ai.fuzz(self.header_loc_list, self.ui, self.uiPrepareFuzz, self.uiFuzz, self)
+
         else:
             fuzz.initGloablVariable()
             self.result = fuzz.fuzz(self.header_loc_list, self.ui, self.uiPrepareFuzz, self.uiFuzz, self)
