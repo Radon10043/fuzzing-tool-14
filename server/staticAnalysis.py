@@ -153,8 +153,8 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                         elif isinstance(data.type, pycparser.c_ast.ArrayDecl):
                             dataType = " ".join(data.type.type.type.names)
                             info = list()
-                            for i in range(0, data.type.dim.value):
-                                info.append(dataType + " " + prefix + data.name + "[" + i + "]")
+                            for i in range(0, int(data.type.dim.value)):
+                                info.append((dataType + " " + prefix + data.name + "[" + str(i) + "]", data.coord.file + "?" + str(data.coord.line)))
                         # 如果是结构体
                         elif isinstance(data.type.type, pycparser.c_ast.Struct):
                             info = analyzeInternalStruct(data.type.type.decls, prefix + data.name)
