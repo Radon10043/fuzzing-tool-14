@@ -133,6 +133,7 @@ class NN():
                 tail = bytes(tail)
                 fn = os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx))
                 self.MAIdll["mutate"].setValueInRange(tail)
+                self.MAIdll['instrument'].setInstrValueToZero(tail)
                 fn = bytes(fn, encoding="utf8")
                 self.MAIdll["mutate"].mutate(tail, fn, 0xffffffff)
                 ret = 0
@@ -149,6 +150,7 @@ class NN():
             tmp_list = []
             out = None
             crash = None
+            self.fuzzThread.nnInfoSgn.emit("正在执行训练数据：" + f + "\n")
             if f in self.exec_module.cov_map.keys():
                 out, crash = self.exec_module.cov_map[f]
             else:

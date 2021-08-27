@@ -97,6 +97,7 @@ def run_target(cmd, t=1):
 
 
 def write_to_testcase(fn, buf, dll):
+    dll['instrument'].setInstrValueToZero(buf)
     fn = bytes(fn, encoding="utf8")
     dll["mutate"].mutate(buf, fn, 0xffffffff)
     # with open(fn, "wb") as f:
@@ -168,7 +169,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     # 设置终止条件
     condition = ""
     if ui.stopByCrash.isChecked():
-        condition = "self.crash_cnt >= 1"
+        condition = "self.crash_cnt > 2"
     elif ui.stopByTime.isChecked():
         fuzzTime = int(ui.fuzzTime.text())
         if ui.timeUnit.currentText() == "分钟":
@@ -177,8 +178,8 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
             fuzzTime *= 3600
         condition = "time.time() - self.start > " + str(fuzzTime)
     else:
-        stopNum = int(ui.stopByTCNum.text()) + 1
-        condition = "self.mut_cnt > " + str(stopNum)
+        stopNum = int(ui.TCNumsLineEdit.text()) + 1
+        condition = "self.exec_cnt >" + str(stopNum)
 
     condition += " or self.uiFuzz.stop"
     n = nn.NN(ui, uiFuzz, fuzzThread, len(testcase), allNode, int(ui.AICfgDialog.seedPerRound.text()), program_loc,
@@ -293,9 +294,10 @@ class FuzzExec():
             if crash:
                 crash_fn = os.path.join(self.dir, "crashes", str(self.round_cnt) + "_" + str(self.crash_cnt))
                 copyfile(fn, crash_fn)
+                self.MAIdll['mutate'].testcaseVisualization(tc, crash_fn+".txt")
                 self.crash_cnt += 1
             ret = self.update_program_cov(cur_cov)
-            if ret != 0 and stage == 1:
+            if ret == 2 and stage == 1:
                 cov_fn = os.path.join(self.dir, "seeds", "id_" + str(self.round_cnt) + "_" + str(self.cov_gain_cnt))
                 copyfile(fn, cov_fn)
                 self.cov_gain_cnt += 1
@@ -309,8 +311,8 @@ class FuzzExec():
                 info += "执行速度：" + (
                     "-" if time.time() - start < 1e-4 else "{:.2f}".format((i + 1) / (time.time() - start))) + "个/秒\n"
                 self.fuzzThread.execInfoSgn.emit(info)
-            else:
-                self.fuzzThread.nnInfoSgn.emit("正在执行训练数据：" + fn + "\n")
+            # else:
+            #     self.fuzzThread.nnInfoSgn.emit("正在执行训练数据：" + fn + "\n")
             if eval(self.cond):
                 self.stop = True
                 return
