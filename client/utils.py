@@ -163,6 +163,7 @@ def gen_training_data(PATH_PREFIX, seed_fn, num, dll):
 
         if i / num > 0.4:
             dll['mutate'].setValueInRange(tc)
+        dll['instrument'].setInstrValueToZero(tc)
         input_fn = bytes(input_fn, encoding="utf8")
         dll["mutate"].mutate(tc, input_fn, 0xffffffff)
     return population

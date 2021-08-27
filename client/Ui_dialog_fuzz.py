@@ -29,11 +29,15 @@ class Ui_Dialog(object):
         self.text_browser_exec = None
         self.textBrowser = None
         if fuzz_ai:
-            Dialog.resize(794, 357)
+            Dialog.resize(794, 387)
+            self.nnLabel = QtWidgets.QLabel(Dialog)
+            self.execLabel = QtWidgets.QLabel(Dialog)
+            self.nnLabel.setGeometry(QtCore.QRect(35, 15, 100, 30))
+            self.execLabel.setGeometry(QtCore.QRect(400, 15, 100, 30))
             self.text_browser_nn = QtWidgets.QTextBrowser(Dialog)
             self.text_browser_exec = QtWidgets.QTextBrowser(Dialog)
-            self.text_browser_nn.setGeometry(QtCore.QRect(35, 21, 321, 271))
-            self.text_browser_exec.setGeometry(QtCore.QRect(400, 21, 321, 271))
+            self.text_browser_nn.setGeometry(QtCore.QRect(35, 41, 321, 271))
+            self.text_browser_exec.setGeometry(QtCore.QRect(400, 41, 321, 271))
         else:
             Dialog.resize(494, 357)
             self.textBrowser = QtWidgets.QTextBrowser(Dialog)
@@ -41,10 +45,10 @@ class Ui_Dialog(object):
             self.textBrowser.setObjectName("textBrowser")
 
         self.stopBtn = QtWidgets.QPushButton(Dialog)
-        self.stopBtn.setGeometry(QtCore.QRect(50, 300, 93, 28))
+        self.stopBtn.setGeometry(QtCore.QRect(50, 330, 93, 28))
         self.stopBtn.setObjectName("stopBtn")
         self.checkResultBtn = QtWidgets.QPushButton(Dialog)
-        self.checkResultBtn.setGeometry(QtCore.QRect(200, 300, 93, 28))
+        self.checkResultBtn.setGeometry(QtCore.QRect(200, 330, 93, 28))
         self.checkResultBtn.setObjectName("checkResultBtn")
         self.checkResultBtn.setEnabled(False)
 
@@ -54,7 +58,7 @@ class Ui_Dialog(object):
         # ======================================以下为手写内容==============================================
         # 新建并设置关闭页面的按钮
         self.closeBtn = QtWidgets.QPushButton(Dialog)
-        self.closeBtn.setGeometry(QtCore.QRect(350, 300, 93, 28))
+        self.closeBtn.setGeometry(QtCore.QRect(350, 330, 93, 28))
         self.closeBtn.setObjectName("closeBtn")
         self.closeBtn.setText("关闭页面")
         self.closeBtn.setDisabled(True)
@@ -86,6 +90,9 @@ class Ui_Dialog(object):
                                             "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
                                             "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
                                             "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">测试信息</p></body></html>"))
+        else:
+            self.nnLabel.setText(_translate("Dialog", "模型训练信息："))
+            self.execLabel.setText(_translate("Dialog", "测试执行信息："))
 
     # 以下为手写内容
     def startFuzz(self, header_loc_list, ui, uiPrepareFuzz, uiFuzz):
