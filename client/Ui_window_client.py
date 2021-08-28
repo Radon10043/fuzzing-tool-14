@@ -229,7 +229,7 @@ class Ui_MainWindow(object):
         self.amountLabel.setText(_translate("MainWindow", "个"))
 
         # self.otherOptionGroupBox.setTitle(_translate("MainWindow", "其他设置"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.AITab), _translate("MainWindow", "基于机器学习"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.AITab), _translate("MainWindow", "基于交互接口规约"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.otherOptionGroupBox), _translate("MainWindow", "基于代码结构"))
 
 

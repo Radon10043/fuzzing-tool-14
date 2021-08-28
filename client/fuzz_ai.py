@@ -287,14 +287,15 @@ class FuzzExec():
                 if fn in self.cov_map.keys():
                     cur_cov, crash = self.cov_map[fn]
                 else:
-                    _, cur_cov, crash, _ = utils.getCoverage(tc, self.s, self.r, 1, self.MAIdll)
+                    _, cur_cov, crash, data = utils.getCoverage(tc, self.s, self.r, 1, self.MAIdll)
                     self.cov_map[fn] = cur_cov, crash
             else:
-                _, cur_cov, crash, _ = utils.getCoverage(tc, self.s, self.r, 1, self.MAIdll)
+                _, cur_cov, crash, data = utils.getCoverage(tc, self.s, self.r, 1, self.MAIdll)
             if crash:
                 crash_fn = os.path.join(self.dir, "crashes", str(self.round_cnt) + "_" + str(self.crash_cnt))
-                copyfile(fn, crash_fn)
-                self.MAIdll['mutate'].testcaseVisualization(tc, crash_fn+".txt")
+                open(crash_fn, "wb").write(bytes(data))
+                # copyfile(fn, crash_fn)
+                self.MAIdll['mutate'].testcaseVisualization(bytes(data), bytes(crash_fn+".txt", encoding="utf8"))
                 self.crash_cnt += 1
             ret = self.update_program_cov(cur_cov)
             if ret == 2 and stage == 1:

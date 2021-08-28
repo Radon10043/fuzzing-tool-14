@@ -183,7 +183,10 @@ class Ui_Dialog(object):
         @return {*}
         '''
         out_loc = self.header_loc_list[0]
-        out_loc = re.sub(out_loc.split("/")[-1], "", out_loc) + "out"
+        if self.fuzz_ai:
+            out_loc = re.sub(out_loc.split("/")[-1], "", out_loc) + "AIFuzz"
+        else:
+            out_loc = re.sub(out_loc.split("/")[-1], "", out_loc) + "out"
         out_loc = out_loc.replace("/", "\\")
         print(out_loc)
         if os.path.exists(out_loc):

@@ -70,7 +70,7 @@ class Ui_Dialog(QtWidgets.QDialog):
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("Dialog", "基于机器学习的模糊测试设置"))
+        self.setWindowTitle(_translate("Dialog", "基于交互接口规约的模糊测试设置"))
         self.nnOptionGroup.setTitle(_translate("Dialog", "模型训练"))
         self.execOptionGroup.setTitle(_translate("Dialog", "测试执行"))
         self.randTS.setText(_translate("nnOptionGroup", "随机生成初始训练数据"))
