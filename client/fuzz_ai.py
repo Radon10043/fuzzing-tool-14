@@ -291,7 +291,7 @@ class FuzzExec():
                     self.cov_map[fn] = cur_cov, crash
             else:
                 _, cur_cov, crash, data = utils.getCoverage(tc, self.s, self.r, 1, self.MAIdll)
-            if crash:
+            if crash and stage != 2:
                 crash_fn = os.path.join(self.dir, "crashes", str(self.round_cnt) + "_" + str(self.crash_cnt))
                 open(crash_fn, "wb").write(bytes(data))
                 # copyfile(fn, crash_fn)
