@@ -11,6 +11,9 @@ isCrash = 0
 ROOT = "D:\\fuzzing-tool-14"
 returnUDPInfo = []
 allNode = []
+isCrash = 0  # 计算没有相应的测试用例数量
+crashTC = bytes()  # 存储触发缺陷的测试用例
+
 
 
 
@@ -81,12 +84,13 @@ def threadMonitor(senderAddress):
 
 
 def getCoverage(testcase, senderAddress, receiverAddress, maxTimeout, dllDict):
-    crash = False
     thread2 = threading.Thread(target=threadMonitor, name="thread_monitor", args=(senderAddress,))
     thread2.start()
 
     # 测试用例是bytes
     data = testcase
+    global isCrash
+    global crashTC
     try:
         s = socket.socket()
         host = receiverAddress.split(":")[0]
@@ -94,8 +98,11 @@ def getCoverage(testcase, senderAddress, receiverAddress, maxTimeout, dllDict):
         s.connect((host, port))
         s.send(data)
         s.close()
+        isCrash = 0
+        crashTC = data
     except BaseException as e:
         print("测试用例发送失败:", e)
+        isCrash += 1
 
     # 等待线程2结束
     thread2.join(maxTimeout)
@@ -117,11 +124,11 @@ def getCoverage(testcase, senderAddress, receiverAddress, maxTimeout, dllDict):
     except BaseException as e:
         print("解析失败: ", e)
         coverNode = ["main"]
-        crash = True
+
 
     crashResult = isCrash == 10
     timeout = False
-    return (testcase, coverNode, crash, timeout)
+    return (testcase, coverNode, crashResult, crashTC)
 
 
 

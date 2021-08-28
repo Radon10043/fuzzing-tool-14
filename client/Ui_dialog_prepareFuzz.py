@@ -79,7 +79,7 @@ class Ui_Dialog(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">检验中...</p></body></html>"))
         self.startTargetFuzzBtn.setText(_translate("Dialog", "开始目标制导模糊测试"))
         self.startNoTargetFuzzBtn.setText(_translate("Dialog", "开始无目标制导模糊测试"))
-        self.startAIFuzzBtn.setText(_translate("Dialog", "开始机器学习模糊测试"))
+        self.startAIFuzzBtn.setText(_translate("Dialog", "开始交互接口规约模糊测试"))
         self.senderLabel.setText(_translate("Dialog", "发送方:"))
         self.receiverLabel.setText(_translate("Dialog", "接收方:"))
         self.senderIPLabel.setText(_translate("Dialog", "255.255.255.255:65535"))
