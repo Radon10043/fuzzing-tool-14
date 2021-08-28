@@ -163,15 +163,20 @@ def getAllStruct(header_loc_list):
     @param {*} header_loc_list 一个列表，里面存储了所有要解析的头文件的位置
     @return {*} 返回一个列表，列表里存储了所有结构体的名称
     '''
-    allStruct = []
+    allStruct = list()
+    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
+    fake_lib_loc += "/fake_lib/fake_libc_include"
+
     # 获取所有头文件中结构体的名称
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', '-I' + fake_lib_loc])
         for decl in ast:
-            # 如果当前decl是函数声明，不是结构体，则跳过
-            if isinstance(decl.type, pycparser.c_ast.FuncDecl):
+            # 如果当前decl不是结构体，则跳过
+            try:
+                if isinstance(decl.type.type, pycparser.c_ast.Struct) and decl.type.type.coord.file == header:
+                    allStruct.append(decl.name)
+            except:
                 continue
-            allStruct.append(decl.name)
     result = []
     [result.append(s) for s in allStruct if not s in result]
     return result
@@ -200,12 +205,18 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
     -----
     [description]
     """
-    structInfo = []
+    structInfo = list()
+    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
+    fake_lib_loc += "/fake_lib/fake_libc_include"
+
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', '-I' + fake_lib_loc])
         for decl in ast:
-            # 如果是函数声明，则跳过
-            if isinstance(decl.type, pycparser.c_ast.FuncDecl):
+            # 如果不是结构体，则跳过
+            try:
+                if not isinstance(decl.type.type, pycparser.c_ast.Struct):
+                    continue
+            except:
                 continue
             # 找到要获取数据的某个结构体后，进行遍历
             if decl.name == struct:
@@ -223,7 +234,10 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                         # 如果是二维数组
                         if isinstance(data.type.type, pycparser.c_ast.ArrayDecl):
                             dataType = " ".join(data.type.type.type.type.names)
-                            info = dataType + " " + prefix + data.name + "[" + data.type.dim.value + "]" + "[" + data.type.type.dim.value + "]"
+                            info = list()
+                            for i in range(int(data.type.dim.value)):
+                                for j in range (int(data.type.type.dim.value)):
+                                    info.append((dataType + " " + prefix + data.name + "[" + str(i) + "][" + str(j) + "]", data.coord.file + "?" + str(data.coord.line)))
                         # 如果是一维数组
                         elif isinstance(data.type, pycparser.c_ast.ArrayDecl):
                             dataType = " ".join(data.type.type.type.names)

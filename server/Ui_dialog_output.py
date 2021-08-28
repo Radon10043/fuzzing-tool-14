@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-08-13 22:24:50
+LastEditTime: 2021-08-27 13:09:54
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -89,7 +89,7 @@ structDict = {
 # 数据类型字典-start
 # 其中存储了数据类型和它对应的位
 dataBitsizeDict = {
-    "_Bool": 8,
+    "bool": 8,
     "char": 8,
     "int": 32,
     "short": 16,
@@ -103,7 +103,7 @@ dataBitsizeDict = {
 
 # 数据类型上下限字典-start
 dataRangeDict = {
-    "_Bool": {"lower": 0, "upper": 1},
+    "bool": {"lower": 0, "upper": 1},
     "char": {"lower": -128, "upper": 127},
     "int": {"lower": 0 - 2 ** 31, "upper": 2 ** 31 - 1},
     "short": {"lower": 0 - 2 ** 15, "upper": 2 ** 15 - 1},

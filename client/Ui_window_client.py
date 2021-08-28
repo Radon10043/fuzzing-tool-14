@@ -317,11 +317,19 @@ class Ui_MainWindow(object):
                 clangInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
                 clangInstallErrBox.exec_()
                 return
-            self.selectStructDialog = QtWidgets.QDialog()
-            self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
-            self.uiSelectStruct.setupUi(self.selectStructDialog)
-            self.selectStructDialog.show()
-            self.uiSelectStruct.setValues(self.header_loc_list, "input", self)
+
+            try:
+                self.selectStructDialog = QtWidgets.QDialog()
+                self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
+                self.uiSelectStruct.setupUi(self.selectStructDialog)
+                self.uiSelectStruct.setValues(self.header_loc_list, "input", self)
+                self.selectStructDialog.show()
+            except BaseException as e:
+                print("\033[1;31m")
+                traceback.print_exc()
+                print("\033[0m")
+                analyzeStructErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
+                analyzeStructErrBox.exec_()
 
 
     def popValidateDialog(self):
