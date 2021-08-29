@@ -10,7 +10,9 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import sys, os, traceback
+import sys
+import os
+import traceback
 import re
 
 import Ui_dialog_execServer as execServerDialogPY
@@ -74,25 +76,31 @@ class Ui_MainWindow(object):
         self.selectInsVarGroupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.selectInsVarGroupBox.setGeometry(QtCore.QRect(70, 310, 291, 131))
         self.selectInsVarGroupBox.setObjectName("selectInsVarGroupBox")
-        self.structParameterName = QtWidgets.QLineEdit(self.selectInsVarGroupBox)
+        self.structParameterName = QtWidgets.QLineEdit(
+            self.selectInsVarGroupBox)
         self.structParameterName.setGeometry(QtCore.QRect(20, 80, 113, 31))
-        self.structParameterName.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
+        self.structParameterName.setCursor(
+            QtGui.QCursor(QtCore.Qt.IBeamCursor))
         self.structParameterName.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.structParameterName.setCursorPosition(3)
         self.structParameterName.setObjectName("structParameterName")
-        self.pointerStyleRadioBtn = QtWidgets.QRadioButton(self.selectInsVarGroupBox)
+        self.pointerStyleRadioBtn = QtWidgets.QRadioButton(
+            self.selectInsVarGroupBox)
         self.pointerStyleRadioBtn.setGeometry(QtCore.QRect(160, 70, 115, 19))
         self.pointerStyleRadioBtn.setChecked(True)
         self.pointerStyleRadioBtn.setObjectName("pointerStyleRadioBtn")
-        self.pointStyleRadioBtn = QtWidgets.QRadioButton(self.selectInsVarGroupBox)
+        self.pointStyleRadioBtn = QtWidgets.QRadioButton(
+            self.selectInsVarGroupBox)
         self.pointStyleRadioBtn.setGeometry(QtCore.QRect(160, 100, 115, 19))
         self.pointStyleRadioBtn.setChecked(False)
         self.pointStyleRadioBtn.setObjectName("pointStyleRadioBtn")
         self.selectInsVarBtn = QtWidgets.QPushButton(self.selectInsVarGroupBox)
         self.selectInsVarBtn.setGeometry(QtCore.QRect(80, 30, 141, 28))
         self.selectInsVarBtn.setObjectName("selectInsVarBtn")
-        self.autoGenInsCodeConfirmBtn = QtWidgets.QPushButton(self.selectInsVarGroupBox)
-        self.autoGenInsCodeConfirmBtn.setGeometry(QtCore.QRect(230, 80, 51, 28))
+        self.autoGenInsCodeConfirmBtn = QtWidgets.QPushButton(
+            self.selectInsVarGroupBox)
+        self.autoGenInsCodeConfirmBtn.setGeometry(
+            QtCore.QRect(230, 80, 51, 28))
         self.autoGenInsCodeConfirmBtn.setObjectName("autoGenInsCodeConfirmBtn")
         self.startServerBtn = QtWidgets.QPushButton(self.centralwidget)
         self.startServerBtn.setGeometry(QtCore.QRect(400, 610, 321, 71))
@@ -103,20 +111,29 @@ class Ui_MainWindow(object):
         self.genCallGraphBtn = QtWidgets.QPushButton(self.callGraphGroupBox)
         self.genCallGraphBtn.setGeometry(QtCore.QRect(90, 30, 151, 28))
         self.genCallGraphBtn.setObjectName("genCallGraphBtn")
-        self.manualInputInsCodeGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.manualInputInsCodeGroupBox.setGeometry(QtCore.QRect(70, 460, 291, 121))
-        self.manualInputInsCodeGroupBox.setObjectName("manualInputInsCodeGroupBox")
-        self.manualInputInsVarType = QtWidgets.QLineEdit(self.manualInputInsCodeGroupBox)
+        self.manualInputInsCodeGroupBox = QtWidgets.QGroupBox(
+            self.centralwidget)
+        self.manualInputInsCodeGroupBox.setGeometry(
+            QtCore.QRect(70, 460, 291, 121))
+        self.manualInputInsCodeGroupBox.setObjectName(
+            "manualInputInsCodeGroupBox")
+        self.manualInputInsVarType = QtWidgets.QLineEdit(
+            self.manualInputInsCodeGroupBox)
         self.manualInputInsVarType.setGeometry(QtCore.QRect(20, 30, 201, 31))
-        self.manualInputInsVarType.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
+        self.manualInputInsVarType.setCursor(
+            QtGui.QCursor(QtCore.Qt.IBeamCursor))
         self.manualInputInsVarType.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.manualInputInsVarType.setText("")
         self.manualInputInsVarType.setCursorPosition(0)
         self.manualInputInsVarType.setObjectName("manualInputInsVarType")
-        self.manualInputInsCodeConfirmBtn = QtWidgets.QPushButton(self.manualInputInsCodeGroupBox)
-        self.manualInputInsCodeConfirmBtn.setGeometry(QtCore.QRect(230, 70, 51, 28))
-        self.manualInputInsCodeConfirmBtn.setObjectName("manualInputInsCodeConfirmBtn")
-        self.manualInputInsCode = QtWidgets.QLineEdit(self.manualInputInsCodeGroupBox)
+        self.manualInputInsCodeConfirmBtn = QtWidgets.QPushButton(
+            self.manualInputInsCodeGroupBox)
+        self.manualInputInsCodeConfirmBtn.setGeometry(
+            QtCore.QRect(230, 70, 51, 28))
+        self.manualInputInsCodeConfirmBtn.setObjectName(
+            "manualInputInsCodeConfirmBtn")
+        self.manualInputInsCode = QtWidgets.QLineEdit(
+            self.manualInputInsCodeGroupBox)
         self.manualInputInsCode.setGeometry(QtCore.QRect(20, 70, 201, 31))
         self.manualInputInsCode.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
         self.manualInputInsCode.setLayoutDirection(QtCore.Qt.LeftToRight)
@@ -124,9 +141,11 @@ class Ui_MainWindow(object):
         self.manualInputInsCode.setCursorPosition(0)
         self.manualInputInsCode.setObjectName("manualInputInsCode")
         self.insCodePreviewGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.insCodePreviewGroupBox.setGeometry(QtCore.QRect(70, 600, 291, 121))
+        self.insCodePreviewGroupBox.setGeometry(
+            QtCore.QRect(70, 600, 291, 121))
         self.insCodePreviewGroupBox.setObjectName("insCodePreviewGroupBox")
-        self.instrumentCodeLabel = QtWidgets.QLabel(self.insCodePreviewGroupBox)
+        self.instrumentCodeLabel = QtWidgets.QLabel(
+            self.insCodePreviewGroupBox)
         self.instrumentCodeLabel.setGeometry(QtCore.QRect(20, 20, 271, 20))
         self.instrumentCodeLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.instrumentCodeLabel.setTextFormat(QtCore.Qt.AutoText)
@@ -149,7 +168,8 @@ class Ui_MainWindow(object):
         self.insVarTypeLabel.setGeometry(QtCore.QRect(130, 45, 151, 20))
         self.insVarTypeLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.insVarTypeLabel.setTextFormat(QtCore.Qt.AutoText)
-        self.insVarTypeLabel.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.insVarTypeLabel.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.insVarTypeLabel.setWordWrap(False)
         self.insVarTypeLabel.setIndent(-1)
         self.insVarTypeLabel.setObjectName("insVarTypeLabel")
@@ -169,7 +189,8 @@ class Ui_MainWindow(object):
         self.autoGenInsCodeConfirmBtn.clicked.connect(self.setInstrumentCode)
         self.pointerStyleRadioBtn.clicked.connect(self.setInstrumentCode)
         self.pointStyleRadioBtn.clicked.connect(self.setInstrumentCode)
-        self.manualInputInsCodeConfirmBtn.clicked.connect(self.setInstrumentCodeManually)
+        self.manualInputInsCodeConfirmBtn.clicked.connect(
+            self.setInstrumentCodeManually)
         self.SAByCppcheckBtn.clicked.connect(self.SAByCppcheck)
         self.SAByManBtn.clicked.connect(self.popTargetDialog)
         self.SAResultGenBtn.clicked.connect(self.genSAResult)
@@ -193,15 +214,18 @@ class Ui_MainWindow(object):
         self.chooseHBtn.setText(_translate("MainWindow", "选择头文件"))
         self.SAByCppcheckBtn.setText(_translate("MainWindow", "cppcheck"))
         self.SAByManBtn.setText(_translate("MainWindow", "手动选择"))
-        self.targetSetInfo.setPlaceholderText(_translate("MainWindow", "目标集信息"))
+        self.targetSetInfo.setPlaceholderText(
+            _translate("MainWindow", "目标集信息"))
         self.SAResultGenBtn.setText(_translate("MainWindow", "结果生成"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.codeStructTab), _translate("MainWindow", "基于代码结构"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(
+            self.codeStructTab), _translate("MainWindow", "基于代码结构"))
 
         # self.tabWidget.setTabText(self.tabWidget.indexOf(self.interfaceTab), _translate("MainWindow", "基于交互接口故规约"))
 
         self.selectInsVarGroupBox.setTitle(_translate("MainWindow", "选择插桩变量"))
         self.structParameterName.setText(_translate("MainWindow", "dtg"))
-        self.structParameterName.setPlaceholderText(_translate("MainWindow", "结构体实参名"))
+        self.structParameterName.setPlaceholderText(
+            _translate("MainWindow", "结构体实参名"))
         self.pointerStyleRadioBtn.setText(_translate("MainWindow", "方式1"))
         self.pointStyleRadioBtn.setText(_translate("MainWindow", "方式2"))
         self.selectInsVarBtn.setText(_translate("MainWindow", "选择插桩变量"))
@@ -209,20 +233,28 @@ class Ui_MainWindow(object):
         self.startServerBtn.setText(_translate("MainWindow", "启动服务端程序"))
         self.callGraphGroupBox.setTitle(_translate("MainWindow", "调用图"))
         self.genCallGraphBtn.setText(_translate("MainWindow", "生成函数调用图"))
-        self.manualInputInsCodeGroupBox.setTitle(_translate("MainWindow", "手动输入插桩语句"))
-        self.manualInputInsVarType.setToolTip(_translate("MainWindow", "手动输入插桩变量类型"))
-        self.manualInputInsVarType.setPlaceholderText(_translate("MainWindow", "手动输入插桩变量类型"))
-        self.manualInputInsCodeConfirmBtn.setText(_translate("MainWindow", "确定"))
-        self.manualInputInsCode.setToolTip(_translate("MainWindow", "手动输入插桩语句，输入等号前的内容即可"))
-        self.manualInputInsCode.setPlaceholderText(_translate("MainWindow", "手动输入插桩语句"))
-        self.insCodePreviewGroupBox.setTitle(_translate("MainWindow", "插桩语句预览"))
-        self.instrumentCodeLabel.setText(_translate("MainWindow", "dtg->variable = 1 << x;"))
+        self.manualInputInsCodeGroupBox.setTitle(
+            _translate("MainWindow", "手动输入插桩语句"))
+        self.manualInputInsVarType.setToolTip(
+            _translate("MainWindow", "手动输入插桩变量类型"))
+        self.manualInputInsVarType.setPlaceholderText(
+            _translate("MainWindow", "手动输入插桩变量类型"))
+        self.manualInputInsCodeConfirmBtn.setText(
+            _translate("MainWindow", "确定"))
+        self.manualInputInsCode.setToolTip(
+            _translate("MainWindow", "手动输入插桩语句，输入等号前的内容即可"))
+        self.manualInputInsCode.setPlaceholderText(
+            _translate("MainWindow", "手动输入插桩语句"))
+        self.insCodePreviewGroupBox.setTitle(
+            _translate("MainWindow", "插桩语句预览"))
+        self.instrumentCodeLabel.setText(_translate(
+            "MainWindow", "dtg->variable = 1 << x;"))
         self.instrumentBtn.setText(_translate("MainWindow", "插桩"))
         self.insVarTypeLabelTip.setText(_translate("MainWindow", "插桩变量类型:"))
         self.insVarTypeLabel.setText(_translate("MainWindow", "暂无"))
 
-
     # ==========定义功能================================================================
+
     def chooseCFile(self):
         """选择C文件
 
@@ -233,13 +265,12 @@ class Ui_MainWindow(object):
         # 注意！getOpenFileNames()中的filter如果想选择多个文件的话，需要用两个分号隔开！
         # temp = QtWidgets.QFileDialog.getOpenFileNames(None,"choose file","C:/Users/Radon/Desktop/",filter="c files (*.c);;cpp Files (*.cpp)")
         temp = QtWidgets.QFileDialog.getOpenFileNames(None, "choose file", "C:/Users/Radon/Desktop/",
-                                                    filter="cpp files(*.cpp);;c files(*.c)")
+                                                      filter="cpp files(*.cpp);;c files(*.c)")
         path = ""
         for i in range(len(temp[0])):
             path += temp[0][i] + "\n"
         path = path.rstrip("\n")
         self.CFileLoc.setText(path)
-
 
     def chooseHFile(self):
         """选择头文件
@@ -248,13 +279,13 @@ class Ui_MainWindow(object):
         -----
         [description]
         """
-        temp = QtWidgets.QFileDialog.getOpenFileNames(None, "choose file", "C:/Users/Radon/Desktop/", "h files (*.h)")
+        temp = QtWidgets.QFileDialog.getOpenFileNames(
+            None, "choose file", "C:/Users/Radon/Desktop/", "h files (*.h)")
         path = ""
         for i in range(len(temp[0])):
             path += temp[0][i] + "\n"
         path = path.rstrip("\n")
         self.HFileLoc.setText(path)
-
 
     def popStructDialog(self):
         """弹出选择结构体的对话框
@@ -266,13 +297,15 @@ class Ui_MainWindow(object):
         self.header_loc_list = self.HFileLoc.toPlainText().split("\n")
         for header in self.header_loc_list:
             if not os.path.exists(header):
-                headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件" + header + "不存在!")
+                headerNotExistBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "头文件" + header + "不存在!")
                 headerNotExistBox.exec_()
                 return
 
         # 询问用户是否读取JSON
         readJSON = False
-        whetherReadJSONBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, "读取文件", "是否读取现有JSON文件?")
+        whetherReadJSONBox = QtWidgets.QMessageBox(
+            QtWidgets.QMessageBox.Question, "读取文件", "是否读取现有JSON文件?")
         yes = whetherReadJSONBox.addButton("是", QtWidgets.QMessageBox.YesRole)
         no = whetherReadJSONBox.addButton("否", QtWidgets.QMessageBox.NoRole)
         whetherReadJSONBox.exec_()
@@ -281,7 +314,8 @@ class Ui_MainWindow(object):
 
         # 如果读取现有文件，就让用户选择JSON
         if readJSON:
-            selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
+            selectedFile = QtWidgets.QFileDialog.getOpenFileName(
+                None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
             JSONPath = selectedFile[0]
             try:
                 # 如果JSONPath是空字符串，表示用户点击了右上角的X
@@ -290,32 +324,44 @@ class Ui_MainWindow(object):
                 self.outputDialog = QtWidgets.QDialog()
                 self.uiOutput = outputDialogPY.Ui_Dialog()
                 self.uiOutput.setupUi(self.outputDialog)
-                self.uiOutput.initStructDict(self.header_loc_list, JSONPath, readJSON, self, struct="struct", allStruct=["all","Struct"])
+                self.uiOutput.initStructDict(
+                    self.header_loc_list, JSONPath, readJSON, self, struct="struct", allStruct=["all", "Struct"])
                 self.outputDialog.show()
             except BaseException as e:
                 traceback.print_exc()
-                loadJSONFailedBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败!")
+                loadJSONFailedBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败!")
                 loadJSONFailedBox.exec_()
         # 如果不读取现有文件，就让用户选择输入/输出变量格式
         else:
             # 检查clang是否安装正确
             if os.system("clang -v") != 0:
-                clangInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
+                clangInstallErrBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
                 clangInstallErrBox.exec_()
                 return
             try:
                 self.selectStructDialog = QtWidgets.QDialog()
                 self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
                 self.uiSelectStruct.setupUi(self.selectStructDialog)
-                self.uiSelectStruct.setValues(self.header_loc_list, "output", self)
+                self.uiSelectStruct.setValues(
+                    self.header_loc_list, "output", self)
                 self.selectStructDialog.show()
             except BaseException as e:
-                analyzeStructErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
+                analyzeStructErrBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
                 analyzeStructErrBox.exec_()
+
+                # 提示用户解决方案
+                analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" +
+                                                            "1.请确认代码无误\n" +
+                                                            "2.请给结构体定义别名，否则可能会导致显示不全\n" +
+                                                            "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
+                analyzeStructTipBox.exec_()
+
                 print("\033[1;31m")
                 traceback.print_exc()
                 print("\033[0m")
-
 
     def popTargetDialog(self):
         """弹出一个dialog，其中显示了C中所有函数，供用户选择目标
@@ -326,7 +372,8 @@ class Ui_MainWindow(object):
         """
         # 获取所有函数需要用clang，检测是否安装clang
         if os.system("clang -v") != 0:
-            clangInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
+            clangInstallErrBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
             clangInstallErrBox.exec_()
             return
 
@@ -335,7 +382,8 @@ class Ui_MainWindow(object):
         source_loc_list = source_loc_str.split("\n")
         for source in source_loc_list:
             if not os.path.exists(source):
-                sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
+                sourceNotExistBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
                 sourceNotExistBox.exec_()
                 return
         self.targetDialog = QtWidgets.QDialog()
@@ -343,7 +391,6 @@ class Ui_MainWindow(object):
         self.uiTarget.setupUi(self.targetDialog)
         self.uiTarget.setValues(ui, source_loc_list, [])
         self.targetDialog.show()
-
 
     def SAByCppcheck(self):
         """通过CPPCHECK进行静态分析获取可能有缺陷的地方
@@ -358,13 +405,15 @@ class Ui_MainWindow(object):
         source_loc_list = self.CFileLoc.toPlainText().split("\n")
         for source in source_loc_list:
             if not os.path.exists(source):
-                sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在")
+                sourceNotExistBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "C文件不存在")
                 sourceNotExistBox.exec_()
                 return
 
         # 检查cppcheck是否正确安装
         if os.system("cppcheck --version") != 0:
-            cppcheckInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到cppcheck")
+            cppcheckInstallErrBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "未检测到cppcheck")
             cppcheckInstallErrBox.exec_()
             return
 
@@ -380,12 +429,13 @@ class Ui_MainWindow(object):
             self.targetDialog = QtWidgets.QDialog()
             self.uiTarget = targetDialogPY.Ui_Dialog()
             self.uiTarget.setupUi(self.targetDialog)
-            self.uiTarget.setValues(ui, source_loc_str.split("\n"), self.SAResult)
+            self.uiTarget.setValues(
+                ui, source_loc_str.split("\n"), self.SAResult)
             self.targetDialog.show()
         except BaseException as e:
-            cppcheckErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析失败:" + str(e))
+            cppcheckErrBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "分析失败:" + str(e))
             cppcheckErrBox.exec_()
-
 
     def genSAResult(self):
         """将目标集信息写入saresult.txt
@@ -398,7 +448,8 @@ class Ui_MainWindow(object):
             source_loc_list = self.CFileLoc.toPlainText().split("\n")
             for source in source_loc_list:
                 if not os.path.exists(source):
-                    sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在")
+                    sourceNotExistBox = QtWidgets.QMessageBox(
+                        QtWidgets.QMessageBox.Warning, "警告", "C文件不存在")
                     sourceNotExistBox.exec_()
                     return
 
@@ -410,15 +461,16 @@ class Ui_MainWindow(object):
             for data in self.targetSetInfo.toPlainText().split("\n"):
                 f.write(data + "\n")
             f.close()
-            genSAResultSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "结果生成成功!")
+            genSAResultSuccBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Information, "消息", "结果生成成功!")
             genSAResultSuccBox.exec_()
         except BaseException as e:
             print("\033[1;31m")
             traceback.print_exc()
             print("\033[0m")
-            genSAResultErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "结果生成失败:" + str(e))
+            genSAResultErrBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "结果生成失败:" + str(e))
             genSAResultErrBox.exec_()
-
 
     def setInstrumentCode(self):
         """设置插桩语句的预览文本
@@ -436,7 +488,7 @@ class Ui_MainWindow(object):
             insVarName = content.split(" ")[-1].split(":")[0]
             insVarType = content.split(":")[0].split(" ")   # list
             insVarType.pop(-1)
-            insVarType = " ".join(insVarType)       #str
+            insVarType = " ".join(insVarType)  # str
             f.close()
         else:
             insVarName = "还未生成插桩文件"
@@ -449,9 +501,9 @@ class Ui_MainWindow(object):
             connectStr = "."
 
         # 设置预览文本
-        self.instrumentCodeLabel.setText(self.structParameterName.text() + connectStr + insVarName + " |= 1<<x;")
+        self.instrumentCodeLabel.setText(
+            self.structParameterName.text() + connectStr + insVarName + " |= 1<<x;")
         self.insVarTypeLabel.setText(insVarType)
-
 
     def setInstrumentCodeManually(self):
         """手动设置插桩语句
@@ -460,12 +512,12 @@ class Ui_MainWindow(object):
         -----
         [description]
         """
-        self.instrumentCodeLabel.setText(self.manualInputInsCode.text() + " |= 1<<x;")
+        self.instrumentCodeLabel.setText(
+            self.manualInputInsCode.text() + " |= 1<<x;")
         if self.manualInputInsVarType.text() == "":
             self.insVarTypeLabel.setText("暂无")
         else:
             self.insVarTypeLabel.setText(self.manualInputInsVarType.text())
-
 
     def instrumentSource(self):
         """对文件进行插桩与编译，在源文件同目录下生成instrument.exe文件
@@ -476,22 +528,26 @@ class Ui_MainWindow(object):
         """
         source_loc_list = self.CFileLoc.toPlainText().split("\n")
         header_loc_list = self.HFileLoc.toPlainText().split("\n")
-        root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
+        root_loc = re.sub(source_loc_list[0].split(
+            "/")[-1], "", source_loc_list[0])
 
         for source in source_loc_list:
             if not os.path.exists(source):
-                sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
+                sourceNotExistBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
                 sourceNotExistBox.exec_()
                 return
         for header in header_loc_list:
             if not os.path.exists(header):
-                headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在!")
+                headerNotExistBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "头文件不存在!")
                 headerNotExistBox.exec_()
                 return
 
         # 检查mingw是否安装正确
         if os.system("gcc --version") != 0:
-            gccInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到mingw")
+            gccInstallErrBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "未检测到mingw")
             gccInstallErrBox.exec_()
             return
 
@@ -500,7 +556,8 @@ class Ui_MainWindow(object):
             os.remove(root_loc + "instrument.exe")
 
         try:
-            instrTemplate = self.instrumentCodeLabel.text().split("|=")[0].rstrip()
+            instrTemplate = self.instrumentCodeLabel.text().split("|=")[
+                0].rstrip()
 
             # 生成insFunc.c与insFunc.dll
             # insVarName是插桩变量的名字, instrTemplate是插桩语句等号左边的东西
@@ -515,30 +572,35 @@ class Ui_MainWindow(object):
             code = "#include <stdio.h>\n#include <stdbool.h>\n"
             for header in header_loc_list:
                 code += "#include \"" + header + "\"\n"
-            code += "\n\n" + insVarType + " getInstrumentValue(" + open(root_loc + "in/outputStruct.txt").read() + "* data) {\n"
+            code += "\n\n" + insVarType + \
+                " getInstrumentValue(" + open(root_loc +
+                                              "in/outputStruct.txt").read() + "* data) {\n"
             code += "\treturn data->" + insVarName + ";\n}"
 
             # XXX TEMP 插装值置0
-            code += "\n\nvoid setInstrValueToZero(" + open(root_loc + "in/outputStruct.txt").read() + "* data) {\n"
+            code += "\n\nvoid setInstrValueToZero(" + open(
+                root_loc + "in/outputStruct.txt").read() + "* data) {\n"
             code += "\tdata->" + insVarName + " = 0;\n}"
 
             f.write(code)
             f.close()
 
-            os.system("gcc -shared -o " + root_loc + "in/insFunc.dll " + root_loc + "in/insFunc.c")
+            os.system("gcc -shared -o " + root_loc +
+                      "in/insFunc.dll " + root_loc + "in/insFunc.c")
 
             # 插桩
             instr.instrument(source_loc_list, instrTemplate)
 
-            instrSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "插桩成功!")
+            instrSuccBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Information, "消息", "插桩成功!")
             instrSuccBox.exec_()
         except BaseException as e:
             print("\033[1;31m")
             traceback.print_exc()
             print("\033[0m")
-            instrErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "插桩失败: " + str(e))
+            instrErrBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "插桩失败: " + str(e))
             instrErrBox.exec_()
-
 
     def genCallGraph(self):
         """在源文件根目录的in文件夹下生成调用图callgraph.txt
@@ -548,34 +610,38 @@ class Ui_MainWindow(object):
         [description]
         """
         source_loc_list = self.CFileLoc.toPlainText().split("\n")
-        root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
+        root_loc = re.sub(source_loc_list[0].split(
+            "/")[-1], "", source_loc_list[0])
 
         for source in source_loc_list:
             if not os.path.exists(source):
-                sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
+                sourceNotExistBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
                 sourceNotExistBox.exec_()
                 return
 
         # 获取函数调用图需要用clang，检测是否安装clang
         if os.system("clang -v") != 0:
-            clangInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
+            clangInstallErrBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
             clangInstallErrBox.exec_()
             return
 
         try:
             if not os.path.exists(root_loc + "in"):
-                os.mkdir(root_loc+ "in")
-            graph_loc =  root_loc + "in/callgraph.txt"
+                os.mkdir(root_loc + "in")
+            graph_loc = root_loc + "in/callgraph.txt"
             cg.createCallGraph(source_loc_list, graph_loc)
-            genCGSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "调用图生成成功!")
+            genCGSuccBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Information, "消息", "调用图生成成功!")
             genCGSuccBox.exec_()
         except BaseException as e:
             print("\033[1;31m")
             traceback.print_exc()
             print("\033[0m")
-            genCGErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "调用图生成失败: " + str(e))
+            genCGErrBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "调用图生成失败: " + str(e))
             genCGErrBox.exec_()
-
 
     def startServer(self):
         """启动服务端程序
@@ -586,9 +652,11 @@ class Ui_MainWindow(object):
         """
         try:
             program_loc = self.CFileLoc.toPlainText().split("\n")[0]
-            program_loc = re.sub(program_loc.split("/")[-1], "instrument.exe", program_loc)
+            program_loc = re.sub(program_loc.split(
+                "/")[-1], "instrument.exe", program_loc)
             if not os.path.exists(program_loc):
-                programNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "插桩程序不存在!")
+                programNotExistBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "插桩程序不存在!")
                 programNotExistBox.exec_()
                 return
 
@@ -601,7 +669,8 @@ class Ui_MainWindow(object):
             print("\033[1;31m")
             traceback.print_exc()
             print("\033[0m")
-            startServerErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "服务端启动失败:" + str(e))
+            startServerErrBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "服务端启动失败:" + str(e))
             startServerErrBox.exec_()
     # ==================================================================================
 

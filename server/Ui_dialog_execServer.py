@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-08-11 21:25:35
 LastEditors: Radon
-LastEditTime: 2021-08-13 21:23:11
+LastEditTime: 2021-08-29 16:05:30
 Description: Hi, say something
 '''
 # -*- coding: utf-8 -*-
@@ -82,6 +82,7 @@ class serverExecThread(QThread):
 
     def run(self):
         print("ServerExecThread started")
+        # subprocess.check_output(self.program_loc)
         i = 0
         # TODO 这里的循环条件还得改
         while True:

@@ -74,7 +74,7 @@ def loadData(fileName):
     return weightedEdges
 
 
-def getDistance_shortest(graph, nodeSet, target):
+def getShortestDistance(graph, nodeSet, target):
     '''
     @description: 获取覆盖结点集合与目标结点之间的最短距离
     @param {*} graph 图, 需要根据图计算距离
@@ -96,7 +96,7 @@ def getDistance_shortest(graph, nodeSet, target):
     return shortest
 
 
-def getDistance_average(graph, nodeSet, target):
+def getAverageDistance(graph, nodeSet, target):
     '''
     @description: 获取结点集合与目标结点之间的平均距离
     @param {*} graph 图, 需要根据图计算距离
@@ -228,7 +228,7 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
     # 计算距离
     distance = 500
     for target in targetSet:
-        distance += getDistance_average(callGraph, coverNode, target)
+        distance += getAverageDistance(callGraph, coverNode, target)
     # 如果距离计算结果是0，或者这个测试用例触发了缺陷，就统一将距离设置为1
     # 因为测试用例触发了缺陷的话程序就崩溃了，导致无法获得覆盖信息
     if distance == 0 or isCrash:
@@ -263,55 +263,12 @@ def mutate(testcase, mutateSavePath, dllDict):
     mutateSavePath_backup = mutateSavePath
     txtSavePath = bytes(test_case_visualization_file_path, encoding="utf8")
     mutateSavePath = bytes(mutateSavePath, encoding="utf8")
-    r = random.randint(0, 255)
+    r = random.randint(0, 2**31-1)
     dllDict["mutate"].mutate(testcase, mutateSavePath, r)
     dllDict["mutate"].testcaseVisualization(testcase, txtSavePath)
     mutateTime = time.time() - mutateStartTime
 
-    # 校验
-    checkStartTime = time.time()
-    # structDict = json.load(open(test_case_visualization_file_path.split("out")[0] + "\\in\\input.json"))
-    # check_code_name, check_code_field = None, list()
-    # structName = None
-    # for struct_name in structDict.keys():
-    #     structName = struct_name
-    #     for var_type_name in structDict[struct_name].keys():
-    #         if structDict[struct_name][var_type_name]["checkCode"]:
-    #             check_code_name = var_type_name
-    #         elif structDict[struct_name][var_type_name]["checkField"]:
-    #             check_code_field.append(var_type_name)
-    # if check_code_name is None and len(check_code_field) == 0:
-    #     print("没有设置校验字段和校验码位置，跳过校验步骤")
-    #     checkTime = time.time() - checkStartTime
-    #     return (mutateTime, checkTime)
-    # elif check_code_name is None and len(check_code_field) != 0 or check_code_name is not None and len(
-    #         check_code_field) == 0:
-    #     print("校验字段或校验码有一个未设置，跳过校验步骤")
-    #     checkTime = time.time() - checkStartTime
-    #     return (mutateTime, checkTime)
-    # check_code_field_value_list = list()
-    # f = open(test_case_visualization_file_path, mode="r")
-    # testcase_file_str_list = f.readlines()
-    # f.close()
-    # for one_line in testcase_file_str_list:
-    #     var_name = one_line.split(":")[0]
-    #     var_value = one_line.split(":")[1].strip()
-    #     for one_check_code_field in check_code_field:
-    #         if var_name in one_check_code_field:
-    #             check_code_field_value_list.append(int(var_value))
-    # check_code_method = open(test_case_visualization_file_path.split("out")[0] + "\\in\\checkCodeMethod.txt",
-    #                          encoding="utf", mode="r").readline()
-    # check_code = calculate_check_code_from_dec(dec_data_list=check_code_field_value_list,
-    #                                            method=check_code_method.split("_")[0],
-    #                                            algorithm=check_code_method.split("_")[1])
-    # structDict[structName][check_code_name]["value"] = check_code
-    # header_loc = open(test_case_visualization_file_path.split("out")[0] + "\\in\\header_loc.txt", mode="r",
-    #                   encoding="utf").readlines()  # 读取头文件
-    # public.gen_test_case_from_structDict(header_loc, structName, structDict=structDict, path=mutateSavePath_backup)
-    # print("check code is:" + check_code)
-    checkTime = time.time() - checkStartTime
-
-    return (mutateTime, checkTime)
+    return (mutateTime, 0)
 
 
 def crossover(population):
@@ -347,7 +304,7 @@ def generateReport(header_loc_list, fuzzInfoDict):
     ----------
     header_loc_list : list
         存储了所有源文件的位置
-    fuzzInfoDict : [type]
+    fuzzInfoDict : dict
         存储了模糊测试相关信息的字典
 
     Notes
@@ -380,12 +337,6 @@ def generateReport(header_loc_list, fuzzInfoDict):
     reportContent += "整体覆盖率:" + fuzzInfoDict["整体覆盖率"] + "%\n"
     reportContent += "================================================================\n\n"
 
-    # testcases = getDirContent(basic_loc+"out/testcases")
-    # savedCrashes = getDirContent(basic_loc+"out/crash")
-    # for i in range(len(testcases)):
-    #     reportContent += "已保存的测试用例"+str(i+1)+": "+testcases[i]+"\n"
-    # for i in range(len(savedCrashes)):
-    #     reportContent += "已触发缺陷的测试用例"+str(i+1)+": "+savedCrashes[i]+"\n"
     reportContent += "已发现结点名称: " + str(allNode) + "\n"
     reportContent += "已覆盖结点名称: " + str(allCoveredNode) + "\n"
     reportContent += "\n当前位置: \t\t\t" + basic_loc + "out\n"
@@ -569,8 +520,17 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
                 if mutateNum - checkpoint >= maxMutateTC:
                     break
 
-        # 读取文件夹下的变异的测试用例, 赋值到testcase
         testcase.clear()
+        # 读取测试用例池中的测试用例
+        files = os.listdir(now_loc + "/out/testcases/")
+        for file in files:
+            if "." in file:
+                continue
+            f = open(now_loc + "/out/testcases/" + file, mode="rb")
+            testcase.append(f.read())
+            f.close()
+
+        # 读取文件夹下的变异的测试用例, 赋值到testcase
         mutateSavePath = now_loc + "/out/mutate/cycle" + str(cycle) + "/"
         files = os.listdir(mutateSavePath)
         for file in files:
