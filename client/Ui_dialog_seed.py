@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-08-13 11:47:57
+LastEditTime: 2021-09-03 15:05:00
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -93,36 +93,69 @@ structDict = {
 # 传入数据结构-end
 
 # 数据类型字典-start
-# 其中存储了数据类型和它对应的位
-dataBitsizeDict = {
-    "_Bool": 8,
-    "char": 8,
-    "int": 32,
-    "short": 16,
-    "unsigned char": 8,
-    "unsigned short": 16,
-    "unsigned int": 32,
-    "float": 32,
-    "double": 64
+# 存储数据类型的相关信息
+dataTypeDict = {
+    "bool": {
+        "bitsize": 8,
+        "lower": 0,
+        "upper": 1
+    },
+    "char": {
+        "bitsize": 8,
+        "lower": -128, "upper": 127
+    },
+    "short": {
+        "bitsize": 16,
+        "lower": 0 - (1 << 15),
+        "upper": (1 << 15) - 1
+    },
+    "int": {
+        "bitsize": 32,
+        "lower": 0 - (1 << 31),
+        "upper": (1 << 31) - 1
+    },
+    "long": {
+        "bitsize": 32,
+        "lower": 0 - (1 << 31),
+        "upper": (1 << 31) - 1
+    },
+    "long lone": {
+        "bitsize": 64,
+        "lower": 0 - (1 << 63),
+        "upper": (1 << 63) - 1
+    },
+    "unsigned char": {
+        "bitsize": 8,
+        "lower": 0,
+        "upper": (1 << 8) - 1
+    },
+    "unsigned short": {
+        "bitsize": 16,
+        "lower": 0,
+        "upper": (1 << 16) - 1
+    },
+    "unsigned int": {
+        "bitsize": 32,
+        "lower": 0,
+        "upper": (1 << 32) - 1
+    },
+    "unsigned long": {
+        "bitsize": 32,
+        "lower": 0,
+        "upper": (1 << 32) - 1
+    },
+    # TODO float和double的上下限太大了，看起来很长，所以暂时设置成了32位的上下限
+    "float": {
+        "bitsize": 32,
+        "lower": float(0 - (1 << 31)),
+        "upper": float((1 << 31) - 1)},
+    "double": {
+        "bitsize": 64,
+        "lower": float(0 - (1 << 31)),
+        "upper": float((1 << 31) - 1)
+    }
 }
 # 数据类型字典-end
-
-# 数据类型上下限字典-start
-dataRangeDict = {
-    "_Bool": {"lower": 0, "upper": 1},
-    "char": {"lower": -128, "upper": 127},
-    "int": {"lower": 0 - 2 ** 31, "upper": 2 ** 31 - 1},
-    "short": {"lower": 0 - 2 ** 15, "upper": 2 ** 15 - 1},
-    "unsigned char": {"lower": 0, "upper": 2 ** 8 - 1},
-    "unsigned short": {"lower": 0, "upper": 2 ** 16 - 1},
-    "unsigned int": {"lower": 0, "upper": 2 ** 32 - 1},
-    # TODO float和double的上下限太大了，看起来很长，所以暂时设置成了int的上下限
-    "float": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)},
-    "double": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)}
-}
-
-
-# 数据类型上下限字典-end
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -353,8 +386,8 @@ class Ui_Dialog(object):
                 dataType = memVal.split(" ")
                 dataType.pop(-1)
                 dataType = " ".join(dataType)
-                maxUpper = dataRangeDict[dataType]["upper"]
-                minLower = dataRangeDict[dataType]["lower"]
+                maxUpper = dataTypeDict[dataType]["upper"]
+                minLower = dataTypeDict[dataType]["lower"]
         except BaseException as e:
             print("获取上下限时出错:", e, "将默认为int的上下限\033[1;31m")
             traceback.print_exec()
@@ -460,9 +493,9 @@ class Ui_Dialog(object):
             variable = variable.split(" ")
             variable.pop(-1)
             dataType = " ".join(variable).rstrip()
-            for key, value in dataBitsizeDict.items():
+            for key, value in dataTypeDict.items():
                 if key == dataType:
-                    return value
+                    return value["bitsize"]
             return -1
 
     def initStructDict(self, header_loc_list, JSONPath, readJSON, ui, struct, allStruct):
@@ -506,13 +539,13 @@ class Ui_Dialog(object):
             self.struct = struct
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
             structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
+            typedefDict = sa.getTypedefDict(header_loc_list)
             # print(structInfo)
             tempDict = {}
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
-                tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "mutation": False, "bitsize": 8,
+                tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "mutation": False, "bitsize": -1,
                                               "checkCode": False, "checkField": False}
-                tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
                 tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
                 if ":" in structInfo[i][0]:
@@ -525,12 +558,19 @@ class Ui_Dialog(object):
                 else:
                     # 如果用户没指定位大小，自动获取
                     # dataType: 表示数据类型，从list变为str
+                    tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
                     dataType = structInfo[i][0].split(" ")
                     dataType.pop(-1)
                     dataType = " ".join(dataType)
                     try:
-                        tempDict[structInfo[i][0]]["upper"] = dataRangeDict[dataType]["upper"]
-                        tempDict[structInfo[i][0]]["lower"] = dataRangeDict[dataType]["lower"]
+                        if not dataType in dataTypeDict.keys():
+                            dataType = typedefDict[dataType]
+
+                        if tempDict[structInfo[i][0]]["bitsize"] == -1:
+                            tempDict[structInfo[i][0]
+                                     ]["bitsize"] = dataTypeDict[dataType]["bitsize"]
+                        tempDict[structInfo[i][0]]["upper"] = dataTypeDict[dataType]["upper"]
+                        tempDict[structInfo[i][0]]["lower"] = dataTypeDict[dataType]["lower"]
                     except BaseException as e:
                         print("分析" + dataType + "类型时出错:", e)
                         tempDict[structInfo[i][0]]["upper"] = 999
