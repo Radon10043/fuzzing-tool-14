@@ -107,6 +107,43 @@ def getAllStruct(header_loc_list):
     return result
 
 
+def getTypedefDict(header_loc_list):
+    """获取源程序中typedef的信息
+
+    Parameters
+    ----------
+    header_loc_list : list
+        头文件列表
+
+    Returns
+    -------
+    dict
+        typedef信息字典，key是别名，value是声明
+        即 typedef [value] [key]
+
+    Notes
+    -----
+    [description]
+    """
+    typedefDict = dict()
+
+    # 获取typedef相关信息
+    fake_lib_loc = os.path.dirname(
+        os.path.abspath(__file__)).replace("\\", "/")
+    fake_lib_loc += "/fake_lib/fake_libc_include"
+    for header in header_loc_list:
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=[
+                                   '-E', '-I' + fake_lib_loc])
+        for decl in ast:
+            try:
+                if isinstance(decl.type.type, pycparser.c_ast.IdentifierType):
+                    typedefDict[decl.name] = " ".join(decl.type.type.names)
+            except:
+                continue
+
+    return typedefDict
+
+
 def getOneStruct(header_loc_list, struct, prefix, allStruct):
     """获取一个结构体的数据内容
 

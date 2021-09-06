@@ -325,11 +325,19 @@ class Ui_MainWindow(object):
                 self.uiSelectStruct.setValues(self.header_loc_list, "input", self)
                 self.selectStructDialog.show()
             except BaseException as e:
+                analyzeStructErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
+                analyzeStructErrBox.exec_()
+
+                # 提示用户解决方案
+                analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" +
+                                                            "1.请确认代码无误\n" +
+                                                            "2.请给结构体定义别名，否则可能会导致显示不全\n" +
+                                                            "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
+                analyzeStructTipBox.exec_()
+
                 print("\033[1;31m")
                 traceback.print_exc()
                 print("\033[0m")
-                analyzeStructErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
-                analyzeStructErrBox.exec_()
 
 
     def popValidateDialog(self):

@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-08-27 13:09:54
+LastEditTime: 2021-09-03 15:06:24
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -42,7 +42,7 @@ structDict = {
             "upper": 200,
             "instrument": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
         "变量名12": {
             "value": None,
@@ -51,7 +51,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         }
     },
     "结构体名2": {
@@ -62,7 +62,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
         "变量名22": {
             "value": "var4",
@@ -71,7 +71,7 @@ structDict = {
             "instrument": False,
             "mutation": False,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
         "变量名23": {
             "value": "var5",
@@ -80,41 +80,76 @@ structDict = {
             "instrument": False,
             "mutation": True,
             "bitsize": 8,
-            "comment" : "占位"
+            "comment": "占位"
         },
     }
 }
 # 传入数据结构-end
 
 # 数据类型字典-start
-# 其中存储了数据类型和它对应的位
-dataBitsizeDict = {
-    "bool": 8,
-    "char": 8,
-    "int": 32,
-    "short": 16,
-    "unsigned char": 8,
-    "unsigned short": 16,
-    "unsigned int": 32,
-    "float": 32,
-    "double": 64
+# 存储数据类型得上下限与位
+dataTypeDict = {
+    "bool": {
+        "bitsize": 8,
+        "lower": 0,
+        "upper": 1
+    },
+    "char": {
+        "bitsize": 8,
+        "lower": -128, "upper": 127
+    },
+    "short": {
+        "bitsize": 16,
+        "lower": 0 - (1 << 15),
+        "upper": (1 << 15) - 1
+    },
+    "int": {
+        "bitsize": 32,
+        "lower": 0 - (1 << 31),
+        "upper": (1 << 31) - 1
+    },
+    "long": {
+        "bitsize": 32,
+        "lower": 0 - (1 << 31),
+        "upper": (1 << 31) - 1
+    },
+    "long lone": {
+        "bitsize": 64,
+        "lower": 0 - (1 << 63),
+        "upper": (1 << 63) - 1
+    },
+    "unsigned char": {
+        "bitsize": 8,
+        "lower": 0,
+        "upper": (1 << 8) - 1
+    },
+    "unsigned short": {
+        "bitsize": 16,
+        "lower": 0,
+        "upper": (1 << 16) - 1
+    },
+    "unsigned int": {
+        "bitsize": 32,
+        "lower": 0,
+        "upper": (1 << 32) - 1
+    },
+    "unsigned long": {
+        "bitsize": 32,
+        "lower": 0,
+        "upper": (1 << 32) - 1
+    },
+    # TODO float和double的上下限太大了，看起来很长，所以暂时设置成了32位的上下限
+    "float": {
+        "bitsize": 32,
+        "lower": float(0 - (1 << 31)),
+        "upper": float((1 << 31) - 1)},
+    "double": {
+        "bitsize": 64,
+        "lower": float(0 - (1 << 31)),
+        "upper": float((1 << 31) - 1)
+    }
 }
 # 数据类型字典-end
-
-# 数据类型上下限字典-start
-dataRangeDict = {
-    "bool": {"lower": 0, "upper": 1},
-    "char": {"lower": -128, "upper": 127},
-    "int": {"lower": 0 - 2 ** 31, "upper": 2 ** 31 - 1},
-    "short": {"lower": 0 - 2 ** 15, "upper": 2 ** 15 - 1},
-    "unsigned char": {"lower": 0, "upper": 2 ** 8 - 1},
-    "unsigned short": {"lower": 0, "upper": 2 ** 16 - 1},
-    "unsigned int": {"lower": 0, "upper": 2 ** 32 - 1},
-    # TODO float和double的上下限太大了，看起来很长，所以暂时设置成了int的上下限
-    "float": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)},
-    "double": {"lower": float(0 - 2 ** 31), "upper": float(2 ** 31 - 1)}
-}
-# 数据类型上下限字典-end
 
 
 class Ui_Dialog(object):
@@ -150,18 +185,18 @@ class Ui_Dialog(object):
         # 生成按钮-end
 
         structDict = {
-            "struct" : {
-                "var" : {
-                    "bitsize" : 8,
-                    "comment" : "注释",
-                    "instrument" : False
+            "struct": {
+                "var": {
+                    "bitsize": 8,
+                    "comment": "注释",
+                    "instrument": False
                 }
             }
         }
         self.setTableContent(structDict)
 
-
     # 发送一个新的dict，设置表格内容
+
     def setTableContent(self, newDict):
         # 获取变量数-start
         amountRows = 0
@@ -199,7 +234,6 @@ class Ui_Dialog(object):
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
         return enableeditItem
 
-
     # 表格插装-start
     def insCheckBoxItem(self, checkBool, struct, memVal):
         global structDict
@@ -209,7 +243,6 @@ class Ui_Dialog(object):
             lambda: self.insCheckChange(checkBox.isChecked(), struct, memVal))
         self.insCheckBoxItemDict[struct][memVal]['checkBox'] = checkBox
         return checkBox
-
 
     def insCheckChange(self, checkBool, struct, memVal):  # CheckBox修改函数
         global structDict
@@ -221,7 +254,6 @@ class Ui_Dialog(object):
         # print(structDict)
     # 表格插装-end
 
-
     def saveData(self):
         """将structDict保存为JSON文件
 
@@ -230,7 +262,8 @@ class Ui_Dialog(object):
         [description]
         """
         global structDict
-        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", "C:/Users/Radon/Desktop", "json file(*.json)")
+        savePath = QtWidgets.QFileDialog.getSaveFileName(
+            None, "save file", "C:/Users/Radon/Desktop", "json file(*.json)")
         # 如果savePath[0]是空字符串的话，表示用户按了右上角的X
         if savePath[0] == "":
             return
@@ -257,7 +290,6 @@ class Ui_Dialog(object):
                 if 'checkBox' in val.keys():
                     del val['checkBox']
 
-
     def getBitsize(self, variable):
         '''
         @description: 根据变量的名称获取它的位大小
@@ -272,9 +304,9 @@ class Ui_Dialog(object):
             variable = variable.split(" ")
             variable.pop(-1)
             dataType = " ".join(variable).rstrip()
-            for key, value in dataBitsizeDict.items():
+            for key, value in dataTypeDict.items():
                 if key == dataType:
-                    return value
+                    return value["bitsize"]
             return -1
 
     def initStructDict(self, header_loc_list, JSONPath, readJSON, ui, struct, allStruct):
@@ -316,31 +348,46 @@ class Ui_Dialog(object):
             f.close()
         else:
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
-            structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
+            structInfo = sa.getOneStruct(
+                header_loc_list, struct, "", allStruct)
+            typedefDict = sa.getTypedefDict(header_loc_list)
+
             tempDict = {}
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
                 tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "instrument": False,
-                                            "mutation": False, "bitsize": 8}
-                tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
+                                              "mutation": False, "bitsize": -1}
                 tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
                 if ":" in structInfo[i][0]:
                     if "unsigned" in structInfo[i][0]:
-                        tempDict[structInfo[i][0]]["upper"] = 2 ** tempDict[structInfo[i][0]]["bitsize"] - 1
+                        tempDict[structInfo[i][0]
+                                 ]["upper"] = 2 ** tempDict[structInfo[i][0]]["bitsize"] - 1
                         tempDict[structInfo[i][0]]["lower"] = 0
                     else:
-                        tempDict[structInfo[i][0]]["upper"] = 2 ** (tempDict[structInfo[i][0]]["bitsize"] - 1) - 1
-                        tempDict[structInfo[i][0]]["lower"] = 0 - (2 ** tempDict[structInfo[i][0]]["bitsize"] - 1)
+                        tempDict[structInfo[i][0]]["upper"] = 2 ** (
+                            tempDict[structInfo[i][0]]["bitsize"] - 1) - 1
+                        tempDict[structInfo[i][0]]["lower"] = 0 - \
+                            (2 ** tempDict[structInfo[i][0]]["bitsize"] - 1)
                 else:
                     # 如果用户没指定位大小，自动获取
                     # dataType: 表示数据类型，从list变为str
+                    tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(
+                        structInfo[i][0])
                     dataType = structInfo[i][0].split(" ")
                     dataType.pop(-1)
                     dataType = " ".join(dataType)
                     try:
-                        tempDict[structInfo[i][0]]["upper"] = dataRangeDict[dataType]["upper"]
-                        tempDict[structInfo[i][0]]["lower"] = dataRangeDict[dataType]["lower"]
+                        if not dataType in dataTypeDict.keys():
+                            dataType = typedefDict[dataType]
+
+                        if tempDict[structInfo[i][0]]["bitsize"] == -1:
+                            tempDict[structInfo[i][0]
+                                     ]["bitsize"] = dataTypeDict[dataType]["bitsize"]
+                        tempDict[structInfo[i][0]
+                                 ]["upper"] = dataTypeDict[dataType]["upper"]
+                        tempDict[structInfo[i][0]
+                                 ]["lower"] = dataTypeDict[dataType]["lower"]
                     except BaseException as e:
                         print("分析" + dataType + "类型时出错:", e)
                         tempDict[structInfo[i][0]]["upper"] = 999
@@ -360,12 +407,13 @@ class Ui_Dialog(object):
         outputStruct.txt: 记录了输出结构体的名称
         """
         # 1.生成instrument.txt
-        root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0]) + "in/"
+        root_loc = re.sub(self.header_loc_list[0].split(
+            "/")[-1], "", self.header_loc_list[0]) + "in/"
         if not os.path.exists(root_loc):
             os.mkdir(root_loc)
         f = open(root_loc + "instrument.txt", mode="w")
         instrumentFlag = False
-        for key,value in structDict[self.struct].items():
+        for key, value in structDict[self.struct].items():
             if value["instrument"]:
                 with open(root_loc + "instrument.txt", mode="w") as f:
                     f.write(key)
@@ -379,11 +427,13 @@ class Ui_Dialog(object):
 
         # 如果没选择插装变量则跳出警告
         if not instrumentFlag:
-            noInstrumentValueBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "没有选择插装变量!")
+            noInstrumentValueBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "没有选择插装变量!")
             noInstrumentValueBox.exec_()
             return
 
-        genSuccessBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "生成成功!\n")
+        genSuccessBox = QtWidgets.QMessageBox(
+            QtWidgets.QMessageBox.Information, "消息", "生成成功!\n")
         genSuccessBox.exec_()
     # 结束
 

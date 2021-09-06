@@ -1,3 +1,5 @@
+from PyQt5 import QtWidgets
+import sys
 import os
 import re
 import subprocess
@@ -51,7 +53,8 @@ def getSuspFunction(suspLoc, source_loc_list):
     for loc in suspLoc:
         for source in source_loc_list:
             if loc.split(":")[0] == source.split("/")[-1]:
-                suspFunction.append(findFunction(int(loc.split(":")[1]), source))
+                suspFunction.append(findFunction(
+                    int(loc.split(":")[1]), source))
     return suspFunction
 
 
@@ -70,7 +73,8 @@ def analyze(source_loc_str):
     suspLoc = []
     source = source_loc_list[0].split("/")[-1]
     path = re.sub(source, "", source_loc_list[0])  # 设定存储位置
-    cmd = "cppcheck --output-file=" + path + "in/AnalyzeResult.txt " + re.sub("\n", " ", source_loc_str)
+    cmd = "cppcheck --output-file=" + path + \
+        "in/AnalyzeResult.txt " + re.sub("\n", " ", source_loc_str)
     os.system(cmd)
     f = open(path + "in/AnalyzeResult.txt")
     lines = f.readlines()
@@ -119,7 +123,8 @@ def getAllStruct_clang(header_loc_list):
         tu = index.parse(header)
         headerstructTwoDimList = traverseASTToGetAllStruct(tu.cursor)
         # 去重
-        [structTwoDimList.append(struct) for struct in headerstructTwoDimList if not struct in structTwoDimList]
+        [structTwoDimList.append(
+            struct) for struct in headerstructTwoDimList if not struct in structTwoDimList]
 
     return structTwoDimList
 
@@ -164,12 +169,14 @@ def getAllStruct(header_loc_list):
     @return {*} 返回一个列表，列表里存储了所有结构体的名称
     '''
     allStruct = list()
-    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
+    fake_lib_loc = os.path.dirname(
+        os.path.abspath(__file__)).replace("\\", "/")
     fake_lib_loc += "/fake_lib/fake_libc_include"
 
     # 获取所有头文件中结构体的名称
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', '-I' + fake_lib_loc])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=[
+                                   '-E', '-I' + fake_lib_loc])
         for decl in ast:
             # 如果当前decl不是结构体，则跳过
             try:
@@ -180,6 +187,43 @@ def getAllStruct(header_loc_list):
     result = []
     [result.append(s) for s in allStruct if not s in result]
     return result
+
+
+def getTypedefDict(header_loc_list):
+    """获取源程序中typedef的信息
+
+    Parameters
+    ----------
+    header_loc_list : list
+        头文件列表
+
+    Returns
+    -------
+    dict
+        typedef信息字典，key是别名，value是声明
+        即 typedef [value] [key]
+
+    Notes
+    -----
+    [description]
+    """
+    typedefDict = dict()
+
+    # 获取typedef相关信息
+    fake_lib_loc = os.path.dirname(
+        os.path.abspath(__file__)).replace("\\", "/")
+    fake_lib_loc += "/fake_lib/fake_libc_include"
+    for header in header_loc_list:
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=[
+                                   '-E', '-I' + fake_lib_loc])
+        for decl in ast:
+            try:
+                if isinstance(decl.type.type, pycparser.c_ast.IdentifierType):
+                    typedefDict[decl.name] = " ".join(decl.type.type.names)
+            except:
+                continue
+
+    return typedefDict
 
 
 def getOneStruct(header_loc_list, struct, prefix, allStruct):
@@ -206,11 +250,13 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
     [description]
     """
     structInfo = list()
-    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
+    fake_lib_loc = os.path.dirname(
+        os.path.abspath(__file__)).replace("\\", "/")
     fake_lib_loc += "/fake_lib/fake_libc_include"
 
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', '-I' + fake_lib_loc])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=[
+                                   '-E', '-I' + fake_lib_loc])
         for decl in ast:
             # 如果不是结构体，则跳过
             try:
@@ -236,22 +282,26 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                             dataType = " ".join(data.type.type.type.type.names)
                             info = list()
                             for i in range(int(data.type.dim.value)):
-                                for j in range (int(data.type.type.dim.value)):
-                                    info.append((dataType + " " + prefix + data.name + "[" + str(i) + "][" + str(j) + "]", data.coord.file + "?" + str(data.coord.line)))
+                                for j in range(int(data.type.type.dim.value)):
+                                    info.append((dataType + " " + prefix + data.name + "[" + str(
+                                        i) + "][" + str(j) + "]", data.coord.file + "?" + str(data.coord.line)))
                         # 如果是一维数组
                         elif isinstance(data.type, pycparser.c_ast.ArrayDecl):
                             dataType = " ".join(data.type.type.type.names)
                             info = list()
                             for i in range(0, int(data.type.dim.value)):
-                                info.append((dataType + " " + prefix + data.name + "[" + str(i) + "]", data.coord.file + "?" + str(data.coord.line)))
+                                info.append((dataType + " " + prefix + data.name + "[" + str(
+                                    i) + "]", data.coord.file + "?" + str(data.coord.line)))
                         # 如果是结构体
                         elif isinstance(data.type.type, pycparser.c_ast.Struct):
-                            info = analyzeInternalStruct(data.type.type.decls, prefix + data.name)
+                            info = analyzeInternalStruct(
+                                data.type.type.decls, prefix + data.name)
                     # 如果数据类型是定义的某个结构体，则递归查看信息
                     if dataType in allStruct:
                         # TODO 如果结构体成员是二维数组
                         if isinstance(data.type.type, pycparser.c_ast.ArrayDecl):
-                            print("Need add code to analyze two-dimensional array...")
+                            print(
+                                "Need add code to analyze two-dimensional array...")
                         # 如果结构体成员是一维数组
                         elif isinstance(data.type, pycparser.c_ast.ArrayDecl):
                             print("Analyzing one-dimensional array...")
@@ -262,7 +312,8 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                                                  allStruct))
                         # 如果结构体成员不是数组
                         else:
-                            info = getOneStruct(header_loc_list, dataType, prefix + data.name + ".", allStruct)
+                            info = getOneStruct(
+                                header_loc_list, dataType, prefix + data.name + ".", allStruct)
                     # 如果指定了bitsize(:n),则获取bitsize
                     if data.bitsize:
                         info += ":" + data.bitsize.value
@@ -270,9 +321,11 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
                     # 加上变量所在的文件与行数
                     # 如果info内嵌结构体的返回信息，就不用再转换为元组了，因为已经是list(tuple(name, loc))
                     if data.coord is None:
-                        info = (info, data.bitsize.coord.file + "?" + str(data.bitsize.coord.line))
+                        info = (info, data.bitsize.coord.file +
+                                "?" + str(data.bitsize.coord.line))
                     elif isinstance(info, str):
-                        info = (info, data.coord.file + "?" + str(data.coord.line))
+                        info = (info, data.coord.file +
+                                "?" + str(data.coord.line))
 
                     if isinstance(info, tuple):
                         structInfo.append(info)
@@ -330,10 +383,12 @@ def analyzeInternalStruct(decls, struct):
                 # 这里作一下判断，因为内嵌结构体的时候有两种写法
                 # 第一个if适用的内嵌结构体的形式是 struct Test{ ... };
                 if isinstance(data.type, pycparser.c_ast.Struct):
-                    internalInfoList.extend(analyzeInternalStruct(data.type.decls, struct + "." + data.type.name))
+                    internalInfoList.extend(analyzeInternalStruct(
+                        data.type.decls, struct + "." + data.type.name))
                 # 第二个if适用的内嵌结构体的形式是 struct { ... }Test;
                 elif isinstance(data.type.type, pycparser.c_ast.Struct):
-                    internalInfoList.extend(analyzeInternalStruct(data.type.type.decls, struct + "." + data.name))
+                    internalInfoList.extend(analyzeInternalStruct(
+                        data.type.type.decls, struct + "." + data.name))
             except AttributeError:
                 print("error!")
     return internalInfoList
@@ -348,7 +403,8 @@ def analyzeHeader(header_loc_list):
     '''
     infoList = []
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=[
+                                   '-E', r'-Iutils/fake_libc_include'])
         # ast.show()
         info = ""
         for decl in ast:
@@ -369,14 +425,18 @@ def analyzeHeader(header_loc_list):
                     # 如果是二维数组
                     if isinstance(data.type.type, pycparser.c_ast.ArrayDecl):
                         dataType = " ".join(data.type.type.type.type.names)
-                        info = dataType + " " + data.name + "[" + data.type.dim.value + "]" + "[" + data.type.type.dim.value + "]"
+                        info = dataType + " " + data.name + \
+                            "[" + data.type.dim.value + "]" + \
+                            "[" + data.type.type.dim.value + "]"
                     # 如果是一维数组
                     elif isinstance(data.type, pycparser.c_ast.ArrayDecl):
                         dataType = " ".join(data.type.type.type.names)
-                        info = dataType + " " + data.name + "[" + data.type.dim.value + "]"
+                        info = dataType + " " + data.name + \
+                            "[" + data.type.dim.value + "]"
                     # 如果是结构体
                     elif isinstance(data.type.type, pycparser.c_ast.Struct):
-                        info = analyzeInternalStruct(data.type.type.decls, data.name)
+                        info = analyzeInternalStruct(
+                            data.type.type.decls, data.name)
                 # 如果指定了bitsize(:n),则获取bitsize
                 if data.bitsize:
                     info += ":" + data.bitsize.value
@@ -388,10 +448,8 @@ def analyzeHeader(header_loc_list):
     return infoList
 
 
-import sys
-from PyQt5 import QtWidgets
-
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox = QtWidgets.QMessageBox(
+        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
     headerNotExistBox.exec_()
