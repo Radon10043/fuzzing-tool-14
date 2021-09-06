@@ -69,10 +69,14 @@ def analyze(source_loc_str):
     for source in source_loc_list:
         if not os.path.exists(source):
             return "被测文件不存在!"
-    suspCode = []
-    suspLoc = []
+
     source = source_loc_list[0].split("/")[-1]
     path = re.sub(source, "", source_loc_list[0])  # 设定存储位置
+    if not os.path.exists(path + "in"):
+        os.mkdir(path + "in")
+
+    suspCode = []
+    suspLoc = []
     cmd = "cppcheck --output-file=" + path + \
         "in/AnalyzeResult.txt " + re.sub("\n", " ", source_loc_str)
     os.system(cmd)

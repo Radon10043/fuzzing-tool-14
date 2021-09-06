@@ -10,26 +10,30 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import sys, traceback, os, re
+import sys
+import traceback
+import os
+import re
 
 import Ui_dialog_seed as seedDialogPY
 import Ui_dialog_selectStruct as selectStructDialogPY
 import Ui_dialog_validation as validateDialogPY
 import Ui_dialog_prepareFuzz as prepareFuzzDialogPY
 
-import Ui_dialog_AICfg as  aicfgDialogPY
+import Ui_dialog_AICfg as aicfgDialogPY
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(714, 686)
+        MainWindow.resize(722, 764)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(290, 30, 161, 16))
         self.label.setObjectName("label")
         self.fileSelectGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.fileSelectGroupBox.setGeometry(QtCore.QRect(79, 70, 561, 141))
+        self.fileSelectGroupBox.setGeometry(QtCore.QRect(79, 70, 561, 231))
         self.fileSelectGroupBox.setObjectName("fileSelectGroupBox")
         self.HFileLoc = QtWidgets.QTextBrowser(self.fileSelectGroupBox)
         self.HFileLoc.setGeometry(QtCore.QRect(20, 20, 521, 71))
@@ -37,18 +41,28 @@ class Ui_MainWindow(object):
         self.chooseHFileBtn = QtWidgets.QPushButton(self.fileSelectGroupBox)
         self.chooseHFileBtn.setGeometry(QtCore.QRect(430, 100, 111, 28))
         self.chooseHFileBtn.setObjectName("chooseHFileBtn")
+        self.dataTypeDictLoc = QtWidgets.QTextBrowser(self.fileSelectGroupBox)
+        self.dataTypeDictLoc.setGeometry(QtCore.QRect(20, 135, 521, 51))
+        self.dataTypeDictLoc.setObjectName("dataTypeDictLoc")
+        self.chooseJSONFileBtn = QtWidgets.QPushButton(self.fileSelectGroupBox)
+        self.chooseJSONFileBtn.setGeometry(QtCore.QRect(270, 193, 111, 28))
+        self.chooseJSONFileBtn.setObjectName("chooseJSONFileBtn")
+        self.dataTypeInputBtn = QtWidgets.QPushButton(self.fileSelectGroupBox)
+        self.dataTypeInputBtn.setGeometry(QtCore.QRect(390, 193, 151, 28))
+        self.dataTypeInputBtn.setObjectName("dataTypeInputBtn")
         self.seedInputGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.seedInputGroupBox.setGeometry(QtCore.QRect(390, 220, 251, 111))
+        self.seedInputGroupBox.setGeometry(QtCore.QRect(390, 310, 251, 111))
         self.seedInputGroupBox.setObjectName("seedInputGroupBox")
         self.seedInputBtn = QtWidgets.QPushButton(self.seedInputGroupBox)
-        self.seedInputBtn.setGeometry(QtCore.QRect(50, 40, 151, 28))
+        self.seedInputBtn.setGeometry(QtCore.QRect(50, 35, 151, 28))
         self.seedInputBtn.setObjectName("seedInputBtn")
-        self.isMutateInRangeCheckBox = QtWidgets.QCheckBox(self.seedInputGroupBox)
+        self.isMutateInRangeCheckBox = QtWidgets.QCheckBox(
+            self.seedInputGroupBox)
         self.isMutateInRangeCheckBox.setGeometry(QtCore.QRect(60, 80, 131, 19))
         self.isMutateInRangeCheckBox.setChecked(True)
         self.isMutateInRangeCheckBox.setObjectName("isMutateInRangeCheckBox")
         self.validationGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.validationGroupBox.setGeometry(QtCore.QRect(80, 490, 291, 121))
+        self.validationGroupBox.setGeometry(QtCore.QRect(80, 580, 291, 121))
         self.validationGroupBox.setObjectName("validationGroupBox")
         self.startValidateBtn = QtWidgets.QPushButton(self.validationGroupBox)
         self.startValidateBtn.setGeometry(QtCore.QRect(100, 30, 93, 28))
@@ -58,7 +72,7 @@ class Ui_MainWindow(object):
         self.validateTipLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.validateTipLabel.setObjectName("validateTipLabel")
         self.addressSetGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.addressSetGroupBox.setGeometry(QtCore.QRect(80, 220, 291, 111))
+        self.addressSetGroupBox.setGeometry(QtCore.QRect(80, 310, 291, 111))
         self.addressSetGroupBox.setObjectName("addressSetGroupBox")
         self.senderIPLineEdit = QtWidgets.QLineEdit(self.addressSetGroupBox)
         self.senderIPLineEdit.setGeometry(QtCore.QRect(20, 30, 141, 21))
@@ -71,7 +85,8 @@ class Ui_MainWindow(object):
         self.senderPortLineEdit.setGeometry(QtCore.QRect(180, 30, 91, 21))
         self.senderPortLineEdit.setText("")
         self.senderPortLineEdit.setObjectName("senderPortLineEdit")
-        self.receiverPortLineEdit = QtWidgets.QLineEdit(self.addressSetGroupBox)
+        self.receiverPortLineEdit = QtWidgets.QLineEdit(
+            self.addressSetGroupBox)
         self.receiverPortLineEdit.setGeometry(QtCore.QRect(180, 70, 91, 21))
         self.receiverPortLineEdit.setText("")
         self.receiverPortLineEdit.setObjectName("receiverPortLineEdit")
@@ -82,10 +97,10 @@ class Ui_MainWindow(object):
         self.receiverColonLabel.setGeometry(QtCore.QRect(165, 70, 16, 16))
         self.receiverColonLabel.setObjectName("receiverColonLabel")
         self.startFuzzBtn = QtWidgets.QPushButton(self.centralwidget)
-        self.startFuzzBtn.setGeometry(QtCore.QRect(420, 510, 201, 81))
+        self.startFuzzBtn.setGeometry(QtCore.QRect(420, 600, 201, 81))
         self.startFuzzBtn.setObjectName("startFuzzBtn")
         self.stopOptionGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.stopOptionGroupBox.setGeometry(QtCore.QRect(79, 340, 291, 141))
+        self.stopOptionGroupBox.setGeometry(QtCore.QRect(79, 430, 291, 141))
         self.stopOptionGroupBox.setObjectName("stopOptionGroupBox")
         self.stopByCrash = QtWidgets.QRadioButton(self.stopOptionGroupBox)
         self.stopByCrash.setGeometry(QtCore.QRect(20, 30, 161, 19))
@@ -112,57 +127,48 @@ class Ui_MainWindow(object):
         self.amountLabel = QtWidgets.QLabel(self.stopOptionGroupBox)
         self.amountLabel.setGeometry(QtCore.QRect(255, 110, 21, 16))
         self.amountLabel.setObjectName("amountLabel")
-
-        self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(390, 340, 251, 141))
-        self.tabWidget.setStyleSheet("background-color:rgb(235, 235, 235)")
-        self.tabWidget.setTabPosition(QtWidgets.QTabWidget.North)
-        self.tabWidget.setObjectName("tabWidget")
-
-        self.AITab = QtWidgets.QWidget()
-        self.AITab.setObjectName("interfaceTab")
-        self.AICfgInfo = QtWidgets.QTextBrowser(self.AITab)
-        self.AICfgInfo.setStyleSheet("background-color:rgb(255, 255, 255)")
-        self.AICfgInfo.setGeometry(QtCore.QRect(20, 10, 201, 71))
-        # self.AIFuzz = QtWidgets.QRadioButton(self.AITab)
-        # self.AIFuzz.setGeometry(QtCore.QRect(230, 10, 93, 31))
-        self.AICfgBtn = QtWidgets.QPushButton(self.AITab)
-        self.AICfgBtn.setGeometry(QtCore.QRect(70, 85, 93, 30))
-        self.AICfgBtn.setObjectName("AICfgBtn")
-
-        # self.AICfgDialog = aicfgDialogPY.Ui_Dialog(self.AICfgInfo)
-
-
-        self.otherOptionGroupBox = QtWidgets.QGroupBox()
-        self.tabWidget.addTab(self.otherOptionGroupBox, "")
-        self.tabWidget.addTab(self.AITab, "")
-        #　self.otherOptionGroupBox.setGeometry(QtCore.QRect(390, 340, 251, 141))
-        self.otherOptionGroupBox.setObjectName("otherOptionGroupBox")
-        self.TCNumPerCyc = QtWidgets.QLineEdit(self.otherOptionGroupBox)
-        self.TCNumPerCyc.setStyleSheet("background-color:rgb(255, 255, 255)")
-        self.TCNumPerCyc.setGeometry(QtCore.QRect(137, 15, 71, 30))
-        self.TCNumPerCyc.setObjectName("TCNumPerCyc")
-        self.timeoutLEdit = QtWidgets.QLineEdit(self.otherOptionGroupBox)
-        self.timeoutLEdit.setGeometry(QtCore.QRect(137, 65, 71, 30))
-        self.timeoutLEdit.setObjectName("timeoutLEdit")
-        self.timeoutLEdit.setStyleSheet("background-color:rgb(255, 255, 255)")
-        self.TCNumPerCycLabel = QtWidgets.QLabel(self.otherOptionGroupBox)
+        self.optionTabWidget = QtWidgets.QTabWidget(self.centralwidget)
+        self.optionTabWidget.setGeometry(QtCore.QRect(390, 430, 251, 141))
+        self.optionTabWidget.setStyleSheet(
+            "background-color:rgb(235, 235, 235)")
+        self.optionTabWidget.setObjectName("optionTabWidget")
+        self.codeStructTab = QtWidgets.QWidget()
+        self.codeStructTab.setObjectName("codeStructTab")
+        self.TCNumPerCycLabel = QtWidgets.QLabel(self.codeStructTab)
         self.TCNumPerCycLabel.setGeometry(QtCore.QRect(10, 20, 121, 16))
         self.TCNumPerCycLabel.setObjectName("TCNumPerCycLabel")
-        self.TCTimeoutLabel = QtWidgets.QLabel(self.otherOptionGroupBox)
-        self.TCTimeoutLabel.setGeometry(QtCore.QRect(10, 70, 121, 16))
-        self.TCTimeoutLabel.setObjectName("TCTimeoutLabel")
-        self.secondLabel = QtWidgets.QLabel(self.otherOptionGroupBox)
-        self.secondLabel.setGeometry(QtCore.QRect(210, 70, 21, 16))
-        self.secondLabel.setObjectName("secondLabel")
-        self.pieceLabel = QtWidgets.QLabel(self.otherOptionGroupBox)
+        self.TCNumPerCyc = QtWidgets.QLineEdit(self.codeStructTab)
+        self.TCNumPerCyc.setGeometry(QtCore.QRect(137, 15, 71, 30))
+        self.TCNumPerCyc.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.TCNumPerCyc.setObjectName("TCNumPerCyc")
+        self.pieceLabel = QtWidgets.QLabel(self.codeStructTab)
         self.pieceLabel.setGeometry(QtCore.QRect(210, 20, 21, 16))
         self.pieceLabel.setObjectName("pieceLabel")
-
-
+        self.timeoutLEdit = QtWidgets.QLineEdit(self.codeStructTab)
+        self.timeoutLEdit.setGeometry(QtCore.QRect(137, 55, 71, 30))
+        self.timeoutLEdit.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.timeoutLEdit.setObjectName("timeoutLEdit")
+        self.TCTimeoutLabel = QtWidgets.QLabel(self.codeStructTab)
+        self.TCTimeoutLabel.setGeometry(QtCore.QRect(10, 60, 121, 16))
+        self.TCTimeoutLabel.setObjectName("TCTimeoutLabel")
+        self.secondLabel = QtWidgets.QLabel(self.codeStructTab)
+        self.secondLabel.setGeometry(QtCore.QRect(210, 60, 21, 16))
+        self.secondLabel.setObjectName("secondLabel")
+        self.optionTabWidget.addTab(self.codeStructTab, "")
+        self.AITab = QtWidgets.QWidget()
+        self.AITab.setObjectName("AITab")
+        self.AICfgInfo = QtWidgets.QTextBrowser(self.AITab)
+        self.AICfgInfo.setGeometry(QtCore.QRect(10, 10, 221, 61))
+        self.AICfgInfo.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.AICfgInfo.setObjectName("AICfgInfo")
+        self.AICfgBtn = QtWidgets.QPushButton(self.AITab)
+        self.AICfgBtn.setGeometry(QtCore.QRect(80, 77, 93, 28))
+        self.AICfgBtn.setCheckable(False)
+        self.AICfgBtn.setObjectName("AICfgBtn")
+        self.optionTabWidget.addTab(self.AITab, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 714, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 722, 26))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -174,10 +180,9 @@ class Ui_MainWindow(object):
         self.seedInputBtn.clicked.connect(self.popStructDialog)
         self.startValidateBtn.clicked.connect(self.popValidateDialog)
         self.startFuzzBtn.clicked.connect(self.popPrepareFuzzDialog)
+        self.chooseJSONFileBtn.clicked.connect(self.chooseJSONFile)
 
         self.AICfgBtn.clicked.connect(self.popAICfgDialog)
-
-
 
         # 每轮测试用例数量、超时时间上线为1000，测试用例总数量上线为1亿
         regExp1 = QtCore.QRegExp("^([1-9]\d{0,2}|1000)$")
@@ -194,6 +199,7 @@ class Ui_MainWindow(object):
         # =========================================================================
 
         self.retranslateUi(MainWindow)
+        self.optionTabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -203,19 +209,28 @@ class Ui_MainWindow(object):
         self.fileSelectGroupBox.setTitle(_translate("MainWindow", "文件选择"))
         self.HFileLoc.setPlaceholderText(_translate("MainWindow", "头文件位置"))
         self.chooseHFileBtn.setText(_translate("MainWindow", "选择头文件"))
+        self.dataTypeDictLoc.setPlaceholderText(
+            _translate("MainWindow", "数据类型文件位置(JSON)"))
+        self.chooseJSONFileBtn.setText(_translate("MainWindow", "选择JSON文件"))
+        self.dataTypeInputBtn.setText(_translate("MainWindow", "设置数据类型信息"))
         self.seedInputGroupBox.setTitle(_translate("MainWindow", "种子设置"))
         self.seedInputBtn.setText(_translate("MainWindow", "设置种子测试用例"))
-        self.isMutateInRangeCheckBox.setText(_translate("MainWindow", "变异体在范围内"))
+        self.isMutateInRangeCheckBox.setText(
+            _translate("MainWindow", "变异体在范围内"))
         self.validationGroupBox.setTitle(_translate("MainWindow", "完整性验证"))
         self.startValidateBtn.setText(_translate("MainWindow", "开始验证"))
         self.validateTipLabel.setText(_translate("MainWindow", "验证目前是否已持有进行\n"
-"模糊测试的必要文件"))
+                                                 "模糊测试的必要文件"))
         self.addressSetGroupBox.setTitle(_translate("MainWindow", "地址设置"))
         self.senderIPLineEdit.setToolTip(_translate("MainWindow", "通常为本机IP地址"))
-        self.senderIPLineEdit.setPlaceholderText(_translate("MainWindow", "发送方IP地址"))
-        self.receiverIPLineEdit.setPlaceholderText(_translate("MainWindow", "接收方IP地址"))
-        self.senderPortLineEdit.setPlaceholderText(_translate("MainWindow", "端口"))
-        self.receiverPortLineEdit.setPlaceholderText(_translate("MainWindow", "端口"))
+        self.senderIPLineEdit.setPlaceholderText(
+            _translate("MainWindow", "发送方IP地址"))
+        self.receiverIPLineEdit.setPlaceholderText(
+            _translate("MainWindow", "接收方IP地址"))
+        self.senderPortLineEdit.setPlaceholderText(
+            _translate("MainWindow", "端口"))
+        self.receiverPortLineEdit.setPlaceholderText(
+            _translate("MainWindow", "端口"))
         self.senderColonLabel.setText(_translate("MainWindow", ":"))
         self.receiverColonLabel.setText(_translate("MainWindow", ":"))
         self.startFuzzBtn.setText(_translate("MainWindow", "开始测试"))
@@ -227,22 +242,20 @@ class Ui_MainWindow(object):
         self.timeUnit.setItemText(1, _translate("MainWindow", "小时"))
         self.TCNumsLineEdit.setText(_translate("MainWindow", "2000"))
         self.amountLabel.setText(_translate("MainWindow", "个"))
-
-        # self.otherOptionGroupBox.setTitle(_translate("MainWindow", "其他设置"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.AITab), _translate("MainWindow", "基于交互接口规约"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.otherOptionGroupBox), _translate("MainWindow", "基于代码结构"))
-
-
-        self.TCNumPerCyc.setText(_translate("MainWindow", "5"))
-        self.timeoutLEdit.setText(_translate("MainWindow", "10"))
         self.TCNumPerCycLabel.setText(_translate("MainWindow", "每轮测试用例生成"))
+        self.TCNumPerCyc.setText(_translate("MainWindow", "5"))
+        self.pieceLabel.setText(_translate("MainWindow", "个"))
+        self.timeoutLEdit.setText(_translate("MainWindow", "10"))
         self.TCTimeoutLabel.setText(_translate("MainWindow", "测试用例超时时间"))
         self.secondLabel.setText(_translate("MainWindow", "秒"))
-        self.pieceLabel.setText(_translate("MainWindow", "个"))
+        self.optionTabWidget.setTabText(self.optionTabWidget.indexOf(
+            self.codeStructTab), _translate("MainWindow", "代码结构"))
         self.AICfgBtn.setText(_translate("MainWindow", "设置"))
-
+        self.optionTabWidget.setTabText(self.optionTabWidget.indexOf(
+            self.AITab), _translate("MainWindow", "交互接口规约"))
 
     # ==========定义功能================================================================
+
     def chooseHFile(self):
         """选择头文件
 
@@ -250,7 +263,8 @@ class Ui_MainWindow(object):
         -----
         [description]
         """
-        temp = QtWidgets.QFileDialog.getOpenFileNames(None, "choose file", "C:/Users/Radon/Desktop/", "h files (*.h)")
+        temp = QtWidgets.QFileDialog.getOpenFileNames(
+            None, "choose file", "C:/Users/Radon/Desktop/", "h files (*.h)")
         path = ""
         for i in range(len(temp[0])):
             path += temp[0][i] + "\n"
@@ -258,11 +272,21 @@ class Ui_MainWindow(object):
         self.HFileLoc.setText(path)
 
 
+    def chooseJSONFile(self):
+        """选择数据类型JSON文件
+
+        Notes
+        -----
+        [description]
+        """
+        path = QtWidgets.QFileDialog.getOpenFileName(
+            None, "choose file", "C:/Users/Radon/Desktop/", "json files (*.json)")
+        self.dataTypeDictLoc.setText(path[0])
+
 
     def popAICfgDialog(self):
         self.AICfgDialog = aicfgDialogPY.Ui_Dialog(self.AICfgInfo)
         self.AICfgDialog.show()
-
 
     def popStructDialog(self):
         """弹出选择结构体的界面
@@ -279,13 +303,15 @@ class Ui_MainWindow(object):
         self.header_loc_list = self.HFileLoc.toPlainText().split("\n")
         for header in self.header_loc_list:
             if not os.path.exists(header):
-                headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在!")
+                headerNotExistBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "头文件不存在!")
                 headerNotExistBox.exec_()
                 return
 
         # 询问用户是否读取JSON
         readJSON = False
-        whetherReadJSONBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, "读取文件", "是否读取现有JSON文件?")
+        whetherReadJSONBox = QtWidgets.QMessageBox(
+            QtWidgets.QMessageBox.Question, "读取文件", "是否读取现有JSON文件?")
         yes = whetherReadJSONBox.addButton("是", QtWidgets.QMessageBox.YesRole)
         no = whetherReadJSONBox.addButton("否", QtWidgets.QMessageBox.NoRole)
         whetherReadJSONBox.exec_()
@@ -294,7 +320,8 @@ class Ui_MainWindow(object):
 
         # 如果读取现有文件，就让用户选择JSON
         if readJSON:
-            selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
+            selectedFile = QtWidgets.QFileDialog.getOpenFileName(
+                None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
             JSONPath = selectedFile[0]
             try:
                 # 如果JSONPath是空字符串，表示用户点击了右上角的X
@@ -304,17 +331,20 @@ class Ui_MainWindow(object):
                 self.uiSeed = seedDialogPY.Ui_Dialog()
                 self.uiSeed.setupUi(self.seedDialog)
                 # 如果读取JSON的话，后两个参数其实是用不上的
-                self.uiSeed.initStructDict(self.header_loc_list, JSONPath, readJSON, self, struct="struct", allStruct=["all","struct"])
+                self.uiSeed.initStructDict(
+                    self.header_loc_list, JSONPath, readJSON, self, struct="struct", allStruct=["all", "struct"])
                 self.seedDialog.show()
             except BaseException as e:
                 traceback.print_exc()
-                loadJSONFailedBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败: " + str(e))
+                loadJSONFailedBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败: " + str(e))
                 loadJSONFailedBox.exec_()
         # 如果不读取现有文件，就让用户选择输入/输出变量格式
         else:
             # 检查clang是否安装正确
             if os.system("clang -v") != 0:
-                clangInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
+                clangInstallErrBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
                 clangInstallErrBox.exec_()
                 return
 
@@ -322,10 +352,12 @@ class Ui_MainWindow(object):
                 self.selectStructDialog = QtWidgets.QDialog()
                 self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
                 self.uiSelectStruct.setupUi(self.selectStructDialog)
-                self.uiSelectStruct.setValues(self.header_loc_list, "input", self)
+                self.uiSelectStruct.setValues(
+                    self.header_loc_list, "input", self)
                 self.selectStructDialog.show()
             except BaseException as e:
-                analyzeStructErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
+                analyzeStructErrBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
                 analyzeStructErrBox.exec_()
 
                 # 提示用户解决方案
@@ -339,7 +371,6 @@ class Ui_MainWindow(object):
                 traceback.print_exc()
                 print("\033[0m")
 
-
     def popValidateDialog(self):
         """弹出验证完整性的对话框
 
@@ -351,7 +382,8 @@ class Ui_MainWindow(object):
             header_loc_list = self.HFileLoc.toPlainText().split("\n")
             for header in header_loc_list:
                 if not os.path.exists(header):
-                    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在")
+                    headerNotExistBox = QtWidgets.QMessageBox(
+                        QtWidgets.QMessageBox.Warning, "警告", "头文件不存在")
                     headerNotExistBox.exec_()
                     return
             self.validateDialog = QtWidgets.QDialog()
@@ -360,25 +392,28 @@ class Ui_MainWindow(object):
             self.validateDialog.show()
             self.uiValidate.startValidate(header_loc_list)
         except BaseException as e:
-            validateErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "验证失败: " + str(e))
+            validateErrBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "验证失败: " + str(e))
             validateErrBox.exec_()
             print("\033[1;31m")
             traceback.print_exc()
             print("\033[0m]")
 
-
     def popPrepareFuzzDialog(self):
         header_loc_list = self.HFileLoc.toPlainText().split("\n")
         for header in header_loc_list:
             if not os.path.exists(header):
-                headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在")
+                headerNotExistBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "头文件不存在")
                 headerNotExistBox.exec_()
                 return
 
         # IPAddress列表中存储了发送方与接收方的IP，0是发送方，1是接收方
         IPAddressList = list()
-        IPAddressList.append(self.senderIPLineEdit.text() + ":" + self.senderPortLineEdit.text())
-        IPAddressList.append(self.receiverIPLineEdit.text() + ":" + self.receiverPortLineEdit.text())
+        IPAddressList.append(self.senderIPLineEdit.text() +
+                             ":" + self.senderPortLineEdit.text())
+        IPAddressList.append(self.receiverIPLineEdit.text() +
+                             ":" + self.receiverPortLineEdit.text())
 
         self.prepareFuzzDialog = QtWidgets.QDialog()
         self.uiPrepareFuzz = prepareFuzzDialogPY.Ui_Dialog()
@@ -386,6 +421,7 @@ class Ui_MainWindow(object):
         self.prepareFuzzDialog.show()
         self.uiPrepareFuzz.setValues(self, header_loc_list, IPAddressList)
     # ==================================================================================
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

@@ -149,7 +149,7 @@ def threadMonitor(senderAddress):
     returnUDPInfo = str(bytes(data))
 
 
-def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict, isMutateInRange):
+def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict):
     """根据南京大学徐安孜同学的例子重新写了一下获取适应度的函数
 
     Parameters
@@ -166,8 +166,6 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
         超时时间
     dllDict : dict
         编译好的dll文件存储在该dict中，key是str，value是CDLL
-    isMutateInRange : bool
-        变异体的值是否要在用户指定的范围内
 
     Returns
     -------
@@ -186,9 +184,6 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
 
     # 测试用例是bytes
     data = testcase
-    # 如果需要将变异体设置在用户指定的范围内的话，就调用相应的函数
-    if isMutateInRange:
-        dllDict["mutate"].setValueInRange(data)
 
     # 发送测试用例
     global isCrash
@@ -239,7 +234,7 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
     return (testcase, distance, fitness, coverNode, crashResult, timeout)
 
 
-def mutate(testcase, mutateSavePath, dllDict):
+def mutate(testcase, mutateSavePath, dllDict, isMutateInRange):
     """根据南京大学徐安孜同学写的例子对变异进行了改写，
     使用预先编译好的dll文件对测试用例进行变异
 
@@ -251,6 +246,8 @@ def mutate(testcase, mutateSavePath, dllDict):
         变异测试用例的保存路径, dll会将变异后的测试用例保存到指定位置
     dllDict : dict
         编译好的dll文件存储在该dict中，key是str，value是CDLL
+    isMutateInRange : bool
+        变异体的值是否要在用户指定的范围内
 
     Notes
     -----
@@ -263,8 +260,10 @@ def mutate(testcase, mutateSavePath, dllDict):
     mutateSavePath_backup = mutateSavePath
     txtSavePath = bytes(test_case_visualization_file_path, encoding="utf8")
     mutateSavePath = bytes(mutateSavePath, encoding="utf8")
-    r = random.randint(0, 2**31-1)
+    r = random.randint(0, 10**9 + 7)
     dllDict["mutate"].mutate(testcase, mutateSavePath, r)
+    if isMutateInRange:
+        dllDict["mutate"].setValueInRange(testcase)
     dllDict["mutate"].testcaseVisualization(testcase, txtSavePath)
     mutateTime = time.time() - mutateStartTime
 
@@ -454,7 +453,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     # Ready to start fuzz!
     global crashes
     while eval(condition):
-        # 运行.exe文件并向其中输入，根据插桩的内容获取覆盖信息
+        # 运行.exe文件并向其中输入，根据插装的内容获取覆盖信息
         executeStart = time.time()
         executeNum = len(testcase)
 
@@ -463,8 +462,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
             print()
             uiFuzz.textBrowser.append("正在执行第" + str(i + 1) + "个测试用例")
             returnData = getFitness(testcase[i], targetSet, senderAddress, receiverAddress, callGraph, maxTimeout,
-                                    dllDict,
-                                    isMutateInRange)
+                                    dllDict)
             distance = returnData[1]
             fitness = returnData[2]
             coverNode = returnData[3]
@@ -474,6 +472,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
                 crashFile = open(now_loc + "/out/crash/crash" + str(uniq_crash), mode="wb")
                 crashFile.write(crashTC)
                 crashFile.close()
+                dllDict["mutate"].testcaseVisualization(crashTC, bytes(now_loc + "/out/crash/crash" + str(uniq_crash) + ".txt", encoding="utf8"))
                 uniq_crash += 1
                 crashes += 1
             if timeout:
@@ -489,9 +488,11 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
             if coverage[1] > coverage[0]:
                 # 把能让覆盖率增加的测试用例保存到output\testcase文件夹中
                 coverage[0] = coverage[1]
-                testN = open(now_loc + "/out/testcases/test" + str(count_test).zfill(6), mode="wb")
+                testcaseSavePath = now_loc + "/out/testcases/test" + str(count_test).zfill(6)
+                testN = open(testcaseSavePath, mode="wb")
                 testN.write(testcase[i])
                 testN.close()
+                dllDict["mutate"].testcaseVisualization(testcase[i], bytes(testcaseSavePath + ".txt", encoding="utf-8"))
                 count_test += 1
             testcaseData.append([testcase[i], distance, fitness, coverNode])
 
@@ -514,7 +515,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
             for data in testcaseData:
                 if random.randint(0, 100) < pm:  # 小于阈值就进行下列变异操作
                     mutateSavePath = now_loc + "/out/mutate/cycle" + str(cycle) + "/mutate" + str(mutateNum).zfill(6)
-                    mutateAndCheckTime.append(mutate(data[0], mutateSavePath, dllDict))
+                    mutateAndCheckTime.append(mutate(data[0], mutateSavePath, dllDict, isMutateInRange))
                     mutateNum += 1
                 pTargetMutate -= (98.0 / maxMutateTC)
                 if mutateNum - checkpoint >= maxMutateTC:

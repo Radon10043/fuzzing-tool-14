@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-03 15:05:00
+LastEditTime: 2021-09-06 17:28:31
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -119,7 +119,7 @@ dataTypeDict = {
         "lower": 0 - (1 << 31),
         "upper": (1 << 31) - 1
     },
-    "long lone": {
+    "long long": {
         "bitsize": 64,
         "lower": 0 - (1 << 63),
         "upper": (1 << 63) - 1
@@ -143,6 +143,11 @@ dataTypeDict = {
         "bitsize": 32,
         "lower": 0,
         "upper": (1 << 32) - 1
+    },
+    "unsigned long long": {
+        "bitsize": 64,
+        "lower": 0,
+        "upper": (1 << 64) - 1
     },
     # TODO float和double的上下限太大了，看起来很长，所以暂时设置成了32位的上下限
     "float": {
@@ -390,7 +395,7 @@ class Ui_Dialog(object):
                 minLower = dataTypeDict[dataType]["lower"]
         except BaseException as e:
             print("获取上下限时出错:", e, "将默认为int的上下限\033[1;31m")
-            traceback.print_exec()
+            traceback.print_exc()
             print("\033[0m")
 
         dataType = memVal.split(" ")
@@ -549,6 +554,7 @@ class Ui_Dialog(object):
                 tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
                 if ":" in structInfo[i][0]:
+                    tempDict[structInfo[i][0]]["bitsize"] = int(structInfo[i][0].split(":")[1])
                     if "unsigned" in structInfo[i][0]:
                         tempDict[structInfo[i][0]]["upper"] = 2 ** tempDict[structInfo[i][0]]["bitsize"] - 1
                         tempDict[structInfo[i][0]]["lower"] = 0

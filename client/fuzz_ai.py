@@ -195,7 +195,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     while eval(condition):
         if uiFuzz.stop == True:
             break
-        # 运行.exe文件并向其中输入，根据插桩的内容获取覆盖信息
+        # 运行.exe文件并向其中输入，根据插装的内容获取覆盖信息
 """
     # 生成测试报告
     fuzzThread.execInfoSgn.emit(e.genFuzzInfo() + "\n测试完成！")

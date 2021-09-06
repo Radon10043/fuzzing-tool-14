@@ -51,7 +51,7 @@ def instrument(source_loc, instrument_loc, instrument_var):
             if "(" in lines[j] and brace == 0:
                 code = lines[j].split("(")[0]
                 code = re.sub("[^A-Za-z1-9_]", " ", code)
-                # 插桩语句，更换为改变结构体的值
+                # 插装语句，更换为改变结构体的值
                 funcName = code.split(" ")[-1]
                 if funcName == "main":
                     j += 1

@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-08-25 17:56:59
+LastEditTime: 2021-09-05 12:51:57
 Description: Hi, say something
 '''
 import os
@@ -67,6 +67,8 @@ def instrumentBaseOnAST(cursor, allFunc, source, instrTemplate):
             instrCode = instrTemplate +  str(idx) + ";"
             instr = True
             print(token.spelling, ",", token.location.file.name + "?" + str(token.location.line))
+        if token.spelling == ";":
+            instr = False
         if token.spelling == "{":
             if instr and brace == 0:
                 temp = codeList[token.location.line - 1].split("{")
@@ -106,7 +108,7 @@ def instrument(source_loc_list, instrTemplate):
 
     Notes
     -----
-    [description]
+    TODO 保留当前插装方式，新增一个插装方式：用户指定发回报文的代码位置，程序自动设计一个插装变量，然后发回报文前进行赋值
     """
     root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
 

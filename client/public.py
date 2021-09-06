@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-08-25 14:31:31
+LastEditTime: 2021-09-05 13:34:06
 Description: Some public function
 '''
 
@@ -248,13 +248,12 @@ def genMutate(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
     code += "}\n\n"
 
     # 写一个将结构体的值设定在用户指定范围内的方法
-    code += "void setValueInRange(" + struct + " data){\n"
-    code += "\t" + struct + "* temp = &data;\n"
+    code += "void setValueInRange(" + struct + "* data){\n"
     for key, value in structDict[struct].items():
         dataName = key.split(" ")[-1].split(":")[0]
         if "noName" in dataName:
             continue
-        code += "\ttemp->" + dataName + " = (temp->" + dataName + " % ((" + str(
+        code += "\tdata->" + dataName + " = (data->" + dataName + " % ((" + str(
             value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(value["lower"]) + ");\n"
     code += "}\n\n"
 
