@@ -97,7 +97,7 @@ def run_target(cmd, t=1):
 
 
 def write_to_testcase(fn, buf, dll):
-    dll['instrument'].setInstrValueToZero(buf)
+    # dll['instrument'].setInstrValueToZero(buf)
     fn = bytes(fn, encoding="utf8")
     dll["mutate"].mutate(buf, fn, 0xffffffff)
     # with open(fn, "wb") as f:
