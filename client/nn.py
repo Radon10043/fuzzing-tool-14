@@ -133,7 +133,7 @@ class NN():
                 tail = bytes(tail)
                 fn = os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx))
                 self.MAIdll["mutate"].setValueInRange(tail)
-                self.MAIdll['instrument'].setInstrValueToZero(tail)
+                # self.MAIdll['instrument'].setInstrValueToZero(tail)
                 fn = bytes(fn, encoding="utf8")
                 self.MAIdll["mutate"].mutate(tail, fn, 0xffffffff)
                 ret = 0

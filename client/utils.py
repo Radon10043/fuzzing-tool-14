@@ -7,11 +7,11 @@ import threading
 import time
 from subprocess import *
 
-isCrash = 0
+
 ROOT = "D:\\fuzzing-tool-14"
 returnUDPInfo = []
 allNode = []
-isCrash = 0  # 计算没有相应的测试用例数量
+isCrash = False  # 计算没有相应的测试用例数量
 crashTC = bytes()  # 存储触发缺陷的测试用例
 
 
@@ -131,7 +131,6 @@ def getCoverage(testcase, senderAddress, receiverAddress, maxTimeout, dllDict):
     return (testcase, coverNode, crashResult, crashTC)
 
 
-
 def mutate(a, add=True, delete=True):
     res = bytearray()
     for i in range(0, len(a)):
@@ -148,7 +147,6 @@ def mutate(a, add=True, delete=True):
         else:
             res.append(a[i])
     return bytes(res)
-
 
 
 def gen_training_data(PATH_PREFIX, seed_fn, num, dll):
@@ -170,7 +168,7 @@ def gen_training_data(PATH_PREFIX, seed_fn, num, dll):
 
         if i / num > 0.4:
             dll['mutate'].setValueInRange(tc)
-        dll['instrument'].setInstrValueToZero(tc)
+        # dll['instrument'].setInstrValueToZero(tc)
         input_fn = bytes(input_fn, encoding="utf8")
         dll["mutate"].mutate(tc, input_fn, 0xffffffff)
     return population
