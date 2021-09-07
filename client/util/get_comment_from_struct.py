@@ -3,17 +3,19 @@ Author: Radon
 Date: 2021-07-20 02:46:39
 LastEditors: Radon
 LastEditTime: 2021-07-22 17:28:40
-Description: Hi, say something
+Description: 根据源代码和行数信息，获取注释，添加到struct_dict中
 """
 import re
 import traceback
 
+from loguru import logger as urulog
+
 singe_comment_patten = '//.*'  # 标准匹配单行注释
 multi_comment_patten = '\/\*(?:[^\*]|\*+[^\/\*])*\*+\/'  # 标准匹配多行注释  可匹配跨行注释
-
+bracket_patten = '[[](.*?)[]]'  # 提取中括号之间的内容，用于提取数组的编号
 singe_comment_re = re.compile(singe_comment_patten)  # 单行注释
-
 multi_comment_re = re.compile(multi_comment_patten)  # 编译正则表达式
+bracket_re = re.compile(bracket_patten)  # 编译中括号正则表达式
 remove_keywords = ["char", "double", "enum", "float", "int", "long", "short", "unsigned", "struct", "union", "signed",
                    "void", ";"]
 
@@ -45,7 +47,6 @@ def handle_struct(struct_dict: dict):
         for var_type_name in struct_dict[struct_name].keys():
             loc_str = struct_dict[struct_name][var_type_name]["loc"]
             if ("noName" in var_type_name) and (loc_str in loc_set):
-                print(loc_str)
                 continue
             loc_set.add(loc_str)
             loc = loc_str.split("?")
@@ -59,22 +60,31 @@ def handle_struct(struct_dict: dict):
                 print("\033[1;31m")
                 traceback.print_exc()
                 print("\033[0m")
-
             match_result = singe_comment_re.findall(code_file_str)
             if len(match_result) == 0:
                 match_result = multi_comment_re.findall(code_file_str)
             if len(match_result) == 0:
                 struct_dict[struct_name][var_type_name]["comment"] = "该成员变量没有注释说明"
             else:
-                struct_dict[struct_name][var_type_name]["comment"] = match_result[0] \
+                comment = match_result[0] \
                     .replace("//", "") \
                     .replace("/*", "") \
-                    .replace(
-                    "*/", "") \
+                    .replace("*/", "") \
                     .strip("*")
+                token_list = var_type_name.split(".")
+                if "[" in token_list[-1] and "]" in token_list[-1]:
+                    urulog.info("该行是数组变量，注释需要重命名")
+                    num_list = bracket_re.findall(token_list[-1])
+                    if len(num_list) == 1:
+                        comment = comment + str(num_list[0])
+                    else:
+                        comment = comment + " " + ".".join(num_list)
+
+                struct_dict[struct_name][var_type_name]["comment"] = comment
             pattern = re.compile(r'(\?)(.*)(\?)')
             var_name_without_uuid = pattern.sub(r'', var_type_name)
             if var_name_without_uuid != var_type_name:
+                # 说明是无名变量
                 no_name_count += 1
                 parts = var_name_without_uuid.split(":")
                 part_1 = parts[0] + "_" + str(no_name_count) + ":"
