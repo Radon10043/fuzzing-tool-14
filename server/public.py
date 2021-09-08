@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-08-23 17:37:14
+LastEditTime: 2021-09-08 15:46:21
 Description: Some public function
 '''
 
@@ -69,12 +69,12 @@ def getAllFunctions(source_loc_list):
     for source in source_loc_list:
         index = clang.cindex.Index.create()
         tu = index.parse(source)
-        preorderTraverseToGetAllFunctions(tu.cursor, funcList)
+        preorderTraverseToGetAllFunctions(tu.cursor, funcList, source_loc_list)
     funcList = sorted(set(funcList))
     return funcList
 
 
-def preorderTraverseToGetAllFunctions(cursor, funcList):
+def preorderTraverseToGetAllFunctions(cursor, funcList, source_loc_list):
     """遍历获得所有函数
 
     Parameters
@@ -90,9 +90,9 @@ def preorderTraverseToGetAllFunctions(cursor, funcList):
     """
 
     for cur in cursor.get_children():
-        if cur.kind == clang.cindex.CursorKind.CXX_METHOD or cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
+        if (cur.kind == clang.cindex.CursorKind.CXX_METHOD or cur.kind == clang.cindex.CursorKind.FUNCTION_DECL) and cur.location.file.name in source_loc_list:
             funcList.append(cur.spelling)
-        preorderTraverseToGetAllFunctions(cur, funcList)
+        preorderTraverseToGetAllFunctions(cur, funcList, source_loc_list)
 
 
 def genSeed(header_loc, struct, structDict):

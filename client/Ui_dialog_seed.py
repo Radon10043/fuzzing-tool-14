@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-07 17:13:01
+LastEditTime: 2021-09-08 17:02:50
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -168,7 +168,7 @@ class Ui_Dialog(object):
         global structDict
         Dialog.setObjectName("Dialog")
         Dialog.setWindowTitle("自定义结构体成员变量值")
-        Dialog.resize(1110, 550)
+        Dialog.resize(1110, 510)
         self.setTable(Dialog)
 
     def setTable(self, Dialog):  # 界面函数
@@ -182,17 +182,44 @@ class Ui_Dialog(object):
 
         # 保存按钮-start
         self.determineBtn = QtWidgets.QPushButton(Dialog)
-        self.determineBtn.setGeometry(QtCore.QRect(10, 500, 435, 40))
+        self.determineBtn.setGeometry(QtCore.QRect(900, 76, 200, 35))
         self.determineBtn.setText("保存为JSON")
         self.determineBtn.clicked.connect(self.saveData)
         # 保存按钮-end
 
+        # 全变异按钮-start
+        self.allMutateBtn = QtWidgets.QPushButton(Dialog)
+        self.allMutateBtn.setGeometry(QtCore.QRect(900, 121, 200, 35))
+        self.allMutateBtn.setText("全部变异")
+        self.allMutateBtn.clicked.connect(self.setAllVariableMutate)
+        # 全变异按钮-end
+
+        # 全不变异按钮-start
+        self.allNotMutateBtn = QtWidgets.QPushButton(Dialog)
+        self.allNotMutateBtn.setGeometry(QtCore.QRect(900, 166, 200, 35))
+        self.allNotMutateBtn.setText("全部不变异")
+        self.allNotMutateBtn.clicked.connect(self.setAllVariableNotMutate)
+        # 全不变异按钮-end
+
+        # 全校验码按钮-start
+        self.allCheckCodeBtn = QtWidgets.QPushButton(Dialog)
+        self.allCheckCodeBtn.setGeometry(QtCore.QRect(900, 211, 200, 35))
+        self.allCheckCodeBtn.setText("全部设置为校验字段")
+        self.allCheckCodeBtn.clicked.connect(self.setAllVariableCheckField)
+        # 全校验码按钮-end
+
+        # 全不校验码按钮-start
+        self.allNotCheckCodeBtn = QtWidgets.QPushButton(Dialog)
+        self.allNotCheckCodeBtn.setGeometry(QtCore.QRect(900, 256, 200, 35))
+        self.allNotCheckCodeBtn.setText("全部不设置为校验字段")
+        self.allNotCheckCodeBtn.clicked.connect(self.setAllVariableNotCheckField)
+        # 全不校验码按钮-end
+
         # 生成按钮-start
         self.generateBtn = QtWidgets.QPushButton(Dialog)
-        self.generateBtn.setGeometry(QtCore.QRect(455, 500, 435, 40))
+        self.generateBtn.setGeometry(QtCore.QRect(900, 301, 200, 35))
         self.generateBtn.setText("生成种子文件")
         self.generateBtn.clicked.connect(self.genSeed)
-        # self.generateBtn.clicked.connect(Dialog.accept)
         # 生成按钮-end
 
         # 校验算法label-start
@@ -227,10 +254,10 @@ class Ui_Dialog(object):
                 }
             }
         }
-        self.setTableContent(structDict)
+        self.setTableContent()
 
     # 发送一个新的dict，设置表格内容
-    def setTableContent(self, newDict):
+    def setTableContent(self):
         # 获取变量数-start
         amountRows = 0
         for key, val in structDict.items():
@@ -293,7 +320,6 @@ class Ui_Dialog(object):
     def varCheckChange(self, checkBool, struct, memVal):  # CheckBox修改函数
         global structDict
         structDict[struct][memVal]["mutation"] = checkBool
-
     # 表格变异-CheckBox-end
 
     # 表格校验码变量-CheckBox-start
@@ -460,7 +486,7 @@ class Ui_Dialog(object):
             self.delCheckBox()
             json.dump(structDict, jsonFile)
             jsonFile.close()
-            self.setTableContent(structDict)
+            self.setTableContent()
             # 弹出保存成功的消息框
             saveMsgBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Information, "消息", "保存成功!")
@@ -588,7 +614,7 @@ class Ui_Dialog(object):
             print(v)
         structDict = handle_struct(struct_dict=structDict)
         # 设置Table
-        self.setTableContent(structDict)
+        self.setTableContent()
 
     def genMutate(self):
         '''
@@ -659,7 +685,7 @@ class Ui_Dialog(object):
             self.delCheckBox()
             json.dump(structDict, jsonFile)
             jsonFile.close()
-            self.setTableContent(structDict)
+            self.setTableContent()
             check_code_method_save_file_path = root_loc + "checkCodeMethod.txt"
             check_code_method_save_file = open(check_code_method_save_file_path, mode="w", encoding="utf")
             check_code_method_save_file.write(self.checkCodeComboBox.currentText())
@@ -697,6 +723,39 @@ class Ui_Dialog(object):
         f = open(typeJSONPath)
         dataTypeDict = json.load(f)
         f.close()
+
+
+    def setAllVariableMutate(self):
+        global structDict
+        for struct, vars in structDict.items():
+            for key, val in vars.items():
+                structDict[struct][key]["mutation"] = True
+        self.setTableContent()
+
+
+    def setAllVariableNotMutate(self):
+        global structDict
+        for struct, vars in structDict.items():
+            for key, val in vars.items():
+                structDict[struct][key]["mutation"] = False
+        self.setTableContent()
+
+
+    def setAllVariableCheckField(self):
+        global structDict
+        for struct, vars in structDict.items():
+            for key, val in vars.items():
+                structDict[struct][key]["checkField"] = True
+                structDict[struct][key]["checkCode"] = False
+        self.setTableContent()
+
+
+    def setAllVariableNotCheckField(self):
+        global structDict
+        for struct, vars in structDict.items():
+            for key, val in vars.items():
+                structDict[struct][key]["checkField"] = False
+        self.setTableContent()
     # 结束
 
 
