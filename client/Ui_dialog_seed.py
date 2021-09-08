@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-06 17:28:31
+LastEditTime: 2021-09-07 17:13:01
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -20,6 +20,7 @@ import json
 import random
 import re
 import traceback
+import os
 
 from PyQt5 import QtCore
 # from PyQt5.QtWidgets import *
@@ -176,7 +177,7 @@ class Ui_Dialog(object):
         # 表格-start
         self.structTable = QtWidgets.QTableWidget(Dialog)
         self.structTable.setGeometry(QtCore.QRect(10, 10, 880, 480))
-        self.structTable.setColumnCount(10)
+        self.structTable.setColumnCount(11)
         # 表格-end
 
         # 保存按钮-start
@@ -238,7 +239,7 @@ class Ui_Dialog(object):
         self.structTable.setRowCount(amountRows)
         self.structTable.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         self.structTable.setHorizontalHeaderLabels(
-            ["结构体", "成员变量", "当前值", "范围下限", "范围上限", "位", "注释", "是否变异", "校验码", "校验字段"])
+            ["结构体", "成员变量", "当前值", "范围下限", "范围上限", "位", "注释", "是否变异", "校验码", "校验字段", "是否大小端转换"])
 
         i = 0  # 行
         j = 0  # 列
@@ -503,14 +504,14 @@ class Ui_Dialog(object):
                     return value["bitsize"]
             return -1
 
-    def initStructDict(self, header_loc_list, JSONPath, readJSON, ui, struct, allStruct):
+    def initStructDict(self, header_loc_list, seedJSONPath, readJSON, ui, struct, allStruct):
         """根据传入的路径分析头文件，或直接读取现有的json文件
         Parameters
         ----------
         header_loc_list : list
             列表，其中存储了所有头文件的位置
-        JSONPath : str
-            JSON文件的存储路径
+        seedJSONPath : str
+            seed的JSON文件的存储路径
         readJSON : Bool
             是否读取已有的json
         ui : Ui_Dialog
@@ -533,10 +534,10 @@ class Ui_Dialog(object):
         global structDict
         structDict.clear()
         if readJSON:
-            # 如果JSONPath是空字符串，表示用户没有选择JSON就按了右上角的X
-            if JSONPath == "":
+            # 如果seedJSONPath是空字符串，表示用户没有选择JSON就按了右上角的X
+            if seedJSONPath == "":
                 return
-            f = open(JSONPath, "r")
+            f = open(seedJSONPath, "r")
             structDict = json.load(f)
             f.close()
             self.struct = list(structDict.keys())[0]
@@ -671,6 +672,31 @@ class Ui_Dialog(object):
                 QtWidgets.QMessageBox.Warning, "警告", "种子文件生成失败: " + str(e))
             genSeedMsgBox.exec_()
             traceback.print_exc()
+
+
+    def setDataTypeDict(self, typeJSONPath):
+        global dataTypeDict
+        if not os.path.exists(typeJSONPath):
+            dataTypeDict = {    # dataTypeDict默认值
+                "bool": {"bitsize": 8, "lower": 0, "upper": 1},
+                "char": {"bitsize": 8, "lower": -128, "upper": 127},
+                "short": {"bitsize": 16, "lower": 0 - (1 << 15), "upper": (1 << 15) - 1},
+                "int": {"bitsize": 32, "lower": 0 - (1 << 31), "upper": (1 << 31) - 1},
+                "long": {"bitsize": 32, "lower": 0 - (1 << 31), "upper": (1 << 31) - 1},
+                "long long": {"bitsize": 64, "lower": 0 - (1 << 63), "upper": (1 << 63) - 1},
+                "unsigned char": {"bitsize": 8, "lower": 0, "upper": (1 << 8) - 1},
+                "unsigned short": {"bitsize": 16, "lower": 0, "upper": (1 << 16) - 1},
+                "unsigned int": {"bitsize": 32, "lower": 0, "upper": (1 << 32) - 1},
+                "unsigned long": {"bitsize": 32, "lower": 0, "upper": (1 << 32) - 1},
+                "unsigned long long": {"bitsize": 64, "lower": 0, "upper": (1 << 64) - 1},
+                "float": {"bitsize": 32, "lower": float(0 - (1 << 31)), "upper": float((1 << 31) - 1)},
+                "double": {"bitsize": 64, "lower": float(0 - (1 << 31)), "upper": float((1 << 31) - 1)}
+            }
+            return
+
+        f = open(typeJSONPath)
+        dataTypeDict = json.load(f)
+        f.close()
     # 结束
 
 

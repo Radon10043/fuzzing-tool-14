@@ -99,15 +99,15 @@ class Ui_Dialog(object):
 
     # =======================================================================================
 
-    def setValues(self, header_loc_list, choice, uiClient):
+    def setValues(self, header_loc_list, typeJSONPath, uiClient):
         """设置界面的初始值
 
         Parameters
         ----------
         header_loc_list : list
             列表中存储了所有头文件的路径
-        choice : str
-            表示用户要选择输入结构体的格式还是输出结构体的格式
+        typeJSONPath : str
+            数据类型字典JSON文件位置
 
         Notes
         -----
@@ -116,7 +116,7 @@ class Ui_Dialog(object):
         self.header_loc_list = header_loc_list
         self.structList = staticAnalysis.getAllStruct(header_loc_list)
         self.structTableWidget.setRowCount(len(self.structList))
-        self.choice = choice
+        self.typeJSONPath = typeJSONPath
         self.uiClient = uiClient
 
         s_cbx = "{"
@@ -188,12 +188,11 @@ class Ui_Dialog(object):
         try:
             if self.selectedStruct == "":
                 raise ValueError("没有选择结构体")
-            # 设置选择输入输出界面结构体的label的值
-            print(self.choice)
             self.seedDialog = QtWidgets.QDialog()
             self.uiSeed = seedDialogPY.Ui_Dialog()
             self.uiSeed.setupUi(self.seedDialog)
             # 如果读取JSON的话，JSONPath和readJSON就用不上了，占个位置
+            self.uiSeed.setDataTypeDict(self.typeJSONPath)
             self.uiSeed.initStructDict(
                 self.header_loc_list, "JSONPath", False, self.uiClient, self.selectedStruct, self.structList)
             self.seedDialog.show()

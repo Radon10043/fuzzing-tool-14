@@ -1,3 +1,10 @@
+'''
+Author: Radon
+Date: 2021-09-06 14:44:13
+LastEditors: Radon
+LastEditTime: 2021-09-08 11:17:03
+Description: Hi, say something
+'''
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'd:\Project_VSCode\python\fuzzProject\client\window_client.ui'
@@ -10,17 +17,30 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from loguru import logger
+
 import sys
 import traceback
 import os
 import re
+import time
 
+import Ui_dialog_dataType as dataTypeDialogPY
 import Ui_dialog_seed as seedDialogPY
 import Ui_dialog_selectStruct as selectStructDialogPY
 import Ui_dialog_validation as validateDialogPY
 import Ui_dialog_prepareFuzz as prepareFuzzDialogPY
 
 import Ui_dialog_AICfg as aicfgDialogPY
+
+
+# 初始化logger
+logDir = os.path.join(os.path.dirname(__file__), "logs")
+if not os.path.exists(logDir):
+    os.mkdir(logDir)
+logger.add(os.path.join(logDir, "runtime_{time}.log"))
+logger.info("Start running...\n")
+# ============
 
 
 class Ui_MainWindow(object):
@@ -181,6 +201,8 @@ class Ui_MainWindow(object):
         self.startValidateBtn.clicked.connect(self.popValidateDialog)
         self.startFuzzBtn.clicked.connect(self.popPrepareFuzzDialog)
         self.chooseJSONFileBtn.clicked.connect(self.chooseJSONFile)
+        self.dataTypeInputBtn.clicked.connect(self.popDataTypeDialog)
+        self.mainWindow = MainWindow
 
         self.AICfgBtn.clicked.connect(self.popAICfgDialog)
 
@@ -288,6 +310,34 @@ class Ui_MainWindow(object):
         self.AICfgDialog = aicfgDialogPY.Ui_Dialog(self.AICfgInfo)
         self.AICfgDialog.show()
 
+
+    def popDataTypeDialog(self):
+        typeJSONPath = self.dataTypeDictLoc.toPlainText()
+
+        # 如果JSON文件不存在
+        if not os.path.exists(typeJSONPath):
+            JSONNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, "消息", "JSON文件不存在，是否使用默认值?")
+            yes = JSONNotExistBox.addButton("是", QtWidgets.QMessageBox.YesRole)
+            no = JSONNotExistBox.addButton("否", QtWidgets.QMessageBox.NoRole)
+            JSONNotExistBox.exec_()
+            if JSONNotExistBox.clickedButton() == no:
+                return  # 如果使用默认值则继续，否则就结束
+
+        try:
+            dataTypeDialog = QtWidgets.QDialog()
+            uiDataType = dataTypeDialogPY.Ui_Dialog()
+            uiDataType.setupUi(dataTypeDialog)
+            uiDataType.initDataTypeDict(typeJSONPath)
+            dataTypeDialog.show()
+        except BaseException as e:
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
+            logger.exception("Exception in " + os.path.basename(__file__) + ", popDataType func")
+            errBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "出错:" + str(e))
+            errBox.exec_()
+
+
     def popStructDialog(self):
         """弹出选择结构体的界面
 
@@ -300,76 +350,109 @@ class Ui_MainWindow(object):
         -----
         [description]
         """
+
+        methods = ("读取测试用例JSON文件",
+                "读取测试用例二进制文件并使用默认数据类型字典", "读取测试用例二进制文件并使用数据类型字典JSON文件",
+                "手动设置测试用例并使用默认数据类型字典", "手动设置测试用例并使用数据类型字典JSON文件")
+        item, okPressed = QtWidgets.QInputDialog.getItem(self.mainWindow, "选择输入方式", "选择输入方式", methods, 0, False)
+        if not okPressed:
+            return
+
         self.header_loc_list = self.HFileLoc.toPlainText().split("\n")
-        for header in self.header_loc_list:
+        typeJSONPath = self.dataTypeDictLoc.toPlainText()
+        for header in self.header_loc_list:     # 检测头文件是否存在
             if not os.path.exists(header):
                 headerNotExistBox = QtWidgets.QMessageBox(
                     QtWidgets.QMessageBox.Warning, "警告", "头文件不存在!")
                 headerNotExistBox.exec_()
                 return
 
-        # 询问用户是否读取JSON
-        readJSON = False
-        whetherReadJSONBox = QtWidgets.QMessageBox(
-            QtWidgets.QMessageBox.Question, "读取文件", "是否读取现有JSON文件?")
-        yes = whetherReadJSONBox.addButton("是", QtWidgets.QMessageBox.YesRole)
-        no = whetherReadJSONBox.addButton("否", QtWidgets.QMessageBox.NoRole)
-        whetherReadJSONBox.exec_()
-        if whetherReadJSONBox.clickedButton() == yes:
-            readJSON = True
-
-        # 如果读取现有文件，就让用户选择JSON
-        if readJSON:
+        if item == "读取测试用例JSON文件":
             selectedFile = QtWidgets.QFileDialog.getOpenFileName(
                 None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
-            JSONPath = selectedFile[0]
+            seedJSONPath = selectedFile[0]
             try:
-                # 如果JSONPath是空字符串，表示用户点击了右上角的X
-                if JSONPath == "":
+                # 如果seedJSONPath是空字符串，表示用户点击了右上角的X
+                if seedJSONPath == "":
                     return
                 self.seedDialog = QtWidgets.QDialog()
                 self.uiSeed = seedDialogPY.Ui_Dialog()
                 self.uiSeed.setupUi(self.seedDialog)
                 # 如果读取JSON的话，后两个参数其实是用不上的
                 self.uiSeed.initStructDict(
-                    self.header_loc_list, JSONPath, readJSON, self, struct="struct", allStruct=["all", "struct"])
+                    self.header_loc_list, seedJSONPath, True, self, struct="struct", allStruct=["all", "struct"])
                 self.seedDialog.show()
             except BaseException as e:
                 traceback.print_exc()
                 loadJSONFailedBox = QtWidgets.QMessageBox(
                     QtWidgets.QMessageBox.Warning, "读取失败", "JSON文件读取失败: " + str(e))
                 loadJSONFailedBox.exec_()
-        # 如果不读取现有文件，就让用户选择输入/输出变量格式
-        else:
+        elif item == "手动设置测试用例并使用默认数据类型字典":
             # 检查clang是否安装正确
             if os.system("clang -v") != 0:
                 clangInstallErrBox = QtWidgets.QMessageBox(
                     QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
                 clangInstallErrBox.exec_()
                 return
-
             try:
                 self.selectStructDialog = QtWidgets.QDialog()
                 self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
                 self.uiSelectStruct.setupUi(self.selectStructDialog)
                 self.uiSelectStruct.setValues(
-                    self.header_loc_list, "input", self)
+                    self.header_loc_list, "", self)
                 self.selectStructDialog.show()
             except BaseException as e:
                 analyzeStructErrBox = QtWidgets.QMessageBox(
                     QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
                 analyzeStructErrBox.exec_()
-
                 # 提示用户解决方案
                 analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" +
                                                             "1.请确认代码无误\n" +
                                                             "2.请给结构体定义别名，否则可能会导致显示不全\n" +
                                                             "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
                 analyzeStructTipBox.exec_()
-
                 print("\033[1;31m")
                 traceback.print_exc()
                 print("\033[0m")
+        elif item == "手动设置测试用例并使用数据类型字典JSON文件":
+            # 检查clang是否安装正确
+            if os.system("clang -v") != 0:
+                clangInstallErrBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")
+                clangInstallErrBox.exec_()
+                return
+            # 检查数据类型JSON文件是否存在
+            if not os.path.exists(typeJSONPath):
+                whetherUseDefaultTypeDictBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, "提示", "未检测到数据类型JSON文件，是否使用默认数据类型字典?")
+                yes = whetherUseDefaultTypeDictBox.addButton("是", QtWidgets.QMessageBox.YesRole)
+                no = whetherUseDefaultTypeDictBox.addButton("否", QtWidgets.QMessageBox.NoRole)
+                whetherUseDefaultTypeDictBox.exec_()
+                if whetherUseDefaultTypeDictBox.clickedButton() == no:
+                    return
+            try:
+                self.selectStructDialog = QtWidgets.QDialog()
+                self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
+                self.uiSelectStruct.setupUi(self.selectStructDialog)
+                self.uiSelectStruct.setValues(
+                    self.header_loc_list, typeJSONPath, self)
+                self.selectStructDialog.show()
+            except BaseException as e:
+                analyzeStructErrBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
+                analyzeStructErrBox.exec_()
+                # 提示用户解决方案
+                analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" +
+                                                            "1.请确认代码无误\n" +
+                                                            "2.请给结构体定义别名，否则可能会导致显示不全\n" +
+                                                            "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
+                analyzeStructTipBox.exec_()
+                print("\033[1;31m")
+                traceback.print_exc()
+                print("\033[0m")
+        else:
+            workingBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "施工中...")
+            workingBox.exec_()
+
 
     def popValidateDialog(self):
         """弹出验证完整性的对话框

@@ -11,3 +11,4 @@ client/util/checkCodeLibDir/checkCodeLib/main.c
 *.exe
 temp.py
 requirements.txt
+logs
