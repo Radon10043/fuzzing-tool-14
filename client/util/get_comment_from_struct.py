@@ -12,7 +12,7 @@ from loguru import logger as urulog
 
 singe_comment_patten = '//.*'  # 标准匹配单行注释
 multi_comment_patten = '\/\*(?:[^\*]|\*+[^\/\*])*\*+\/'  # 标准匹配多行注释  可匹配跨行注释
-bracket_patten = '[[](.*?)[]]'  # 提取中括号之间的内容，用于提取数组的编号
+bracket_patten = '\\[(.*?)]'  # 提取中括号之间的内容，用于提取数组的编号
 singe_comment_re = re.compile(singe_comment_patten)  # 单行注释
 multi_comment_re = re.compile(multi_comment_patten)  # 编译正则表达式
 bracket_re = re.compile(bracket_patten)  # 编译中括号正则表达式
