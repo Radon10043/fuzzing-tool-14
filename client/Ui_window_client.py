@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-09-06 14:44:13
 LastEditors: Radon
-LastEditTime: 2021-09-08 11:17:03
+LastEditTime: 2021-09-10 15:18:47
 Description: Hi, say something
 '''
 # -*- coding: utf-8 -*-
@@ -293,7 +293,6 @@ class Ui_MainWindow(object):
         path = path.rstrip("\n")
         self.HFileLoc.setText(path)
 
-
     def chooseJSONFile(self):
         """选择数据类型JSON文件
 
@@ -305,18 +304,17 @@ class Ui_MainWindow(object):
             None, "choose file", "C:/Users/Radon/Desktop/", "json files (*.json)")
         self.dataTypeDictLoc.setText(path[0])
 
-
     def popAICfgDialog(self):
         self.AICfgDialog = aicfgDialogPY.Ui_Dialog(self.AICfgInfo)
         self.AICfgDialog.show()
-
 
     def popDataTypeDialog(self):
         typeJSONPath = self.dataTypeDictLoc.toPlainText()
 
         # 如果JSON文件不存在
         if not os.path.exists(typeJSONPath):
-            JSONNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, "消息", "JSON文件不存在，是否使用默认值?")
+            JSONNotExistBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Question, "消息", "JSON文件不存在，是否使用默认值?")
             yes = JSONNotExistBox.addButton("是", QtWidgets.QMessageBox.YesRole)
             no = JSONNotExistBox.addButton("否", QtWidgets.QMessageBox.NoRole)
             JSONNotExistBox.exec_()
@@ -333,10 +331,11 @@ class Ui_MainWindow(object):
             print("\033[1;31m")
             traceback.print_exc()
             print("\033[0m")
-            logger.exception("Exception in " + os.path.basename(__file__) + ", popDataType func")
-            errBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "出错:" + str(e))
+            logger.exception("Exception in " +
+                             os.path.basename(__file__) + ", popDataType func")
+            errBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning, "警告", "出错:" + str(e))
             errBox.exec_()
-
 
     def popStructDialog(self):
         """弹出选择结构体的界面
@@ -352,9 +351,10 @@ class Ui_MainWindow(object):
         """
 
         methods = ("读取测试用例JSON文件",
-                "读取测试用例二进制文件并使用默认数据类型字典", "读取测试用例二进制文件并使用数据类型字典JSON文件",
-                "手动设置测试用例并使用默认数据类型字典", "手动设置测试用例并使用数据类型字典JSON文件")
-        item, okPressed = QtWidgets.QInputDialog.getItem(self.mainWindow, "选择输入方式", "选择输入方式", methods, 0, False)
+                   "读取测试用例二进制文件并使用默认数据类型字典", "读取测试用例二进制文件并使用数据类型字典JSON文件",
+                   "手动设置测试用例并使用默认数据类型字典", "手动设置测试用例并使用数据类型字典JSON文件")
+        item, okPressed = QtWidgets.QInputDialog.getItem(
+            self.mainWindow, "选择输入方式", "选择输入方式", methods, 0, False)
         if not okPressed:
             return
 
@@ -423,9 +423,12 @@ class Ui_MainWindow(object):
                 return
             # 检查数据类型JSON文件是否存在
             if not os.path.exists(typeJSONPath):
-                whetherUseDefaultTypeDictBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, "提示", "未检测到数据类型JSON文件，是否使用默认数据类型字典?")
-                yes = whetherUseDefaultTypeDictBox.addButton("是", QtWidgets.QMessageBox.YesRole)
-                no = whetherUseDefaultTypeDictBox.addButton("否", QtWidgets.QMessageBox.NoRole)
+                whetherUseDefaultTypeDictBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Question, "提示", "未检测到数据类型JSON文件，是否使用默认数据类型字典?")
+                yes = whetherUseDefaultTypeDictBox.addButton(
+                    "是", QtWidgets.QMessageBox.YesRole)
+                no = whetherUseDefaultTypeDictBox.addButton(
+                    "否", QtWidgets.QMessageBox.NoRole)
                 whetherUseDefaultTypeDictBox.exec_()
                 if whetherUseDefaultTypeDictBox.clickedButton() == no:
                     return
@@ -449,10 +452,102 @@ class Ui_MainWindow(object):
                 print("\033[1;31m")
                 traceback.print_exc()
                 print("\033[0m")
+        elif item == "读取测试用例二进制文件并使用默认数据类型字典":
+            # 获得测试用例二进制文件路径
+            # 弹出结构体选择界面，选择测试用例对应的结构体
+            # 显示测试用例中每个变量的内容
+            helpBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information,
+                                            "消息", "读取测试用例二进制文件并使用默认数据类型字典, 流程如下:\n" +
+                                            "1.选择无扩展名的二进制文件作为读取对象\n" +
+                                            "2.选择测试用例对应的结构体\n" +
+                                            "3.等待读取结果")
+            helpBox.exec_()
+            selectedFile = QtWidgets.QFileDialog.getOpenFileName(
+                None, "选择种子文件", "C:/Users/Radon/Desktop/", filter="All file (*)")
+            seedBinaryPath = selectedFile[0]
+            if len(seedBinaryPath) == 0:
+                return
+            elif len(os.path.splitext(seedBinaryPath)[-1]) > 0:
+                notBinFileBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Information, "消息", "请选择无扩展名的二进制文件")
+                notBinFileBox.exec_()
+            else:
+                try:
+                    self.selectStructDialog = QtWidgets.QDialog()
+                    self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
+                    self.uiSelectStruct.setupUi(self.selectStructDialog)
+                    self.uiSelectStruct.setSeedBinaryPath(seedBinaryPath)
+                    self.uiSelectStruct.setValues(
+                        self.header_loc_list, "", self)
+                    self.selectStructDialog.show()
+                except BaseException as e:
+                    analyzeStructErrBox = QtWidgets.QMessageBox(
+                        QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
+                    analyzeStructErrBox.exec_()
+                    # 提示用户解决方案
+                    analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" +
+                                                                "1.请确认代码无误\n" +
+                                                                "2.请给结构体定义别名，否则可能会导致显示不全\n" +
+                                                                "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
+                    analyzeStructTipBox.exec_()
+                    print("\033[1;31m")
+                    traceback.print_exc()
+                    print("\033[0m")
+        elif item == "读取测试用例二进制文件并使用数据类型字典JSON文件":
+            # 获得测试用例二进制文件路径，数据类型字典JSON文件路径
+            # 弹出结构体选择界面，选择测试用例对应的结构体
+            # 显示测试用例中每个变量的内容
+            helpBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information,
+                                            "消息", "读取测试用例二进制文件并使用数据类型字典JSON文件, 流程如下:\n" +
+                                            "1.选择无扩展名的二进制文件作为读取对象\n" +
+                                            "2.选择测试用例对应的结构体\n" +
+                                            "3.等待读取结果")
+            helpBox.exec_()
+            if not os.path.exists(typeJSONPath):
+                typeJSONNotExistBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Question, "消息", "未检测到数据类型JSON文件，是否使用默认设置?")
+                yes = typeJSONNotExistBox.addButton(
+                    "是", QtWidgets.QMessageBox.YesRole)
+                no = typeJSONNotExistBox.addButton(
+                    "否", QtWidgets.QMessageBox.NoRole)
+                typeJSONNotExistBox.exec_()
+                if typeJSONNotExistBox.clickedButton() == no:
+                    return
+            selectedFile = QtWidgets.QFileDialog.getOpenFileName(
+                None, "选择种子二进制文件", "C:/Users/Radon/Desktop/", filter="All file (*)")
+            seedBinaryPath = selectedFile[0]
+            if len(seedBinaryPath) == 0:
+                return
+            elif len(os.path.splitext(seedBinaryPath)[-1]) > 0:
+                notBinFileBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Information, "消息", "请选择无扩展名的二进制文件")
+                notBinFileBox.exec_()
+            else:
+                try:
+                    self.selectStructDialog = QtWidgets.QDialog()
+                    self.uiSelectStruct = selectStructDialogPY.Ui_Dialog()
+                    self.uiSelectStruct.setupUi(self.selectStructDialog)
+                    self.uiSelectStruct.setSeedBinaryPath(seedBinaryPath)
+                    self.uiSelectStruct.setValues(
+                        self.header_loc_list, typeJSONPath, self)
+                    self.selectStructDialog.show()
+                except BaseException as e:
+                    analyzeStructErrBox = QtWidgets.QMessageBox(
+                        QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
+                    analyzeStructErrBox.exec_()
+                    # 提示用户解决方案
+                    analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" +
+                                                                "1.请确认代码无误\n" +
+                                                                "2.请给结构体定义别名，否则可能会导致显示不全\n" +
+                                                                "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
+                    analyzeStructTipBox.exec_()
+                    print("\033[1;31m")
+                    traceback.print_exc()
+                    print("\033[0m")
         else:
-            workingBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "施工中...")
+            workingBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Information, "警告", "选择了列表中没有的内容")
             workingBox.exec_()
-
 
     def popValidateDialog(self):
         """弹出验证完整性的对话框

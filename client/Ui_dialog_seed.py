@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-08 17:02:50
+LastEditTime: 2021-09-10 15:26:42
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -21,6 +21,7 @@ import random
 import re
 import traceback
 import os
+import ctypes, _ctypes
 
 from PyQt5 import QtCore
 # from PyQt5.QtWidgets import *
@@ -110,6 +111,11 @@ dataTypeDict = {
         "lower": 0 - (1 << 15),
         "upper": (1 << 15) - 1
     },
+    "short int": {
+        "bitsize": 16,
+        "lower": 0 - (1 << 15),
+        "upper": (1 << 15) - 1
+    },
     "int": {
         "bitsize": 32,
         "lower": 0 - (1 << 31),
@@ -131,6 +137,11 @@ dataTypeDict = {
         "upper": (1 << 8) - 1
     },
     "unsigned short": {
+        "bitsize": 16,
+        "lower": 0,
+        "upper": (1 << 16) - 1
+    },
+    "unsigned short int": {
         "bitsize": 16,
         "lower": 0,
         "upper": (1 << 16) - 1
@@ -616,6 +627,101 @@ class Ui_Dialog(object):
         # 设置Table
         self.setTableContent()
 
+    def initStructDictBySeedBinary(self, header_loc_list, seedBinaryPath, ui, struct, allStruct):
+        """根据结构体格式与种子二进制的内容设置界面
+
+        Parameters
+        ----------
+        header_loc_list : list
+            头文件列表
+        seedBinaryPath : str
+            测试用例二进制文件路径
+        ui : Ui_MainWindow
+            主界面的ui
+        struct : str
+            所选结构体的名称
+        allStruct : list
+            全部结构体
+
+        Notes
+        -----
+        [description]
+        """
+        self.header_loc_list = header_loc_list
+        self.ui = ui
+        global structDict
+        structDict.clear()
+
+        self.struct = struct
+        # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
+        structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
+        typedefDict = sa.getTypedefDict(header_loc_list)
+        root_loc = os.path.dirname(header_loc_list[0])
+        seedBinaryName = os.path.basename(seedBinaryPath)
+        seedVisualPath = os.path.join(root_loc, "in", seedBinaryName + "Visual.txt")  # 测试用例可视化路径
+
+        tempDict = dict()
+        # 分析并设置structDict的上下限与位
+        for i in range(0, len(structInfo)):
+            tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "mutation": False, "bitsize": -1,
+                                            "checkCode": False, "checkField": False}
+            tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
+            # 如果用户指定了位大小
+            if ":" in structInfo[i][0]:
+                tempDict[structInfo[i][0]]["bitsize"] = int(structInfo[i][0].split(":")[1])
+                if "unsigned" in structInfo[i][0]:
+                    tempDict[structInfo[i][0]]["upper"] = 2 ** tempDict[structInfo[i][0]]["bitsize"] - 1
+                    tempDict[structInfo[i][0]]["lower"] = 0
+                else:
+                    tempDict[structInfo[i][0]]["upper"] = 2 ** (tempDict[structInfo[i][0]]["bitsize"] - 1) - 1
+                    tempDict[structInfo[i][0]]["lower"] = 0 - 2 ** (tempDict[structInfo[i][0]]["bitsize"] - 1)
+            else:
+                # 如果用户没指定位大小，自动获取
+                # dataType: 表示数据类型，从list变为str
+                tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
+                dataType = structInfo[i][0].split(" ")
+                dataType.pop(-1)
+                dataType = " ".join(dataType)
+                try:
+                    if not dataType in dataTypeDict.keys():
+                        dataType = typedefDict[dataType]
+
+                    if tempDict[structInfo[i][0]]["bitsize"] == -1:
+                        tempDict[structInfo[i][0]
+                                    ]["bitsize"] = dataTypeDict[dataType]["bitsize"]
+                    tempDict[structInfo[i][0]]["upper"] = dataTypeDict[dataType]["upper"]
+                    tempDict[structInfo[i][0]]["lower"] = dataTypeDict[dataType]["lower"]
+                except BaseException as e:
+                    print("分析" + dataType + "类型时出错:", e)
+                    tempDict[structInfo[i][0]]["upper"] = 999
+                    tempDict[structInfo[i][0]]["lower"] = -999
+        structDict[struct] = tempDict
+
+        # 生成C文件并编译为dll，然后调用
+        public.genTestcaseVisual(header_loc_list, struct, structDict)
+        cmd = "gcc -shared -o " + os.path.join(root_loc, "in", "testcaseVisual.dll ") + os.path.join(root_loc, "in", "testcaseVisual.c")
+        os.system(cmd)
+        visualDll = ctypes.cdll.LoadLibrary(os.path.join(root_loc, "in", "testcaseVisual.dll "))
+        visualDll.testcaseVisualization(open(seedBinaryPath, mode="rb").read(), bytes(seedVisualPath, encoding="utf8"))
+        seedValueDict = dict()
+        with open(seedVisualPath) as f:
+            lines = f.readlines()
+            for line in lines:
+                seedValueDict[line.split(":")[0]] = int(line.split(":")[1])
+        for k, v in structDict[self.struct].items():
+            v["value"] = 0  # 默认值是0
+            dataName = k.split(" ")[-1].split(":")[0]
+            if not dataName in seedValueDict:
+                print("Not found")
+            else:
+                v["value"] = seedValueDict[dataName]
+        _ctypes.FreeLibrary(visualDll._handle)      # 释放dll资源
+
+        structDict = handle_struct(struct_dict=structDict)
+
+        # 设置Table
+        self.setTableContent()
+
     def genMutate(self):
         '''
         @description: 生成一个c文件，里面有变异的方法和将值设置在指定范围内的方法
@@ -707,11 +813,13 @@ class Ui_Dialog(object):
                 "bool": {"bitsize": 8, "lower": 0, "upper": 1},
                 "char": {"bitsize": 8, "lower": -128, "upper": 127},
                 "short": {"bitsize": 16, "lower": 0 - (1 << 15), "upper": (1 << 15) - 1},
+                "short int": {"bitsize": 16, "lower": 0 - (1 << 15), "upper": (1 << 15) - 1},
                 "int": {"bitsize": 32, "lower": 0 - (1 << 31), "upper": (1 << 31) - 1},
                 "long": {"bitsize": 32, "lower": 0 - (1 << 31), "upper": (1 << 31) - 1},
                 "long long": {"bitsize": 64, "lower": 0 - (1 << 63), "upper": (1 << 63) - 1},
                 "unsigned char": {"bitsize": 8, "lower": 0, "upper": (1 << 8) - 1},
                 "unsigned short": {"bitsize": 16, "lower": 0, "upper": (1 << 16) - 1},
+                "unsigned short int": {"bitsize": 16, "lower": 0, "upper": (1 << 16) - 1},
                 "unsigned int": {"bitsize": 32, "lower": 0, "upper": (1 << 32) - 1},
                 "unsigned long": {"bitsize": 32, "lower": 0, "upper": (1 << 32) - 1},
                 "unsigned long long": {"bitsize": 64, "lower": 0, "upper": (1 << 64) - 1},

@@ -50,6 +50,11 @@ dataTypeDict = {
         "lower": 0 - (1 << 15),
         "upper": (1 << 15) - 1
     },
+    "short int": {
+        "bitsize": 16,
+        "lower": 0 - (1 << 15),
+        "upper": (1 << 15) - 1
+    },
     "int": {
         "bitsize": 32,
         "lower": 0 - (1 << 31),
@@ -71,6 +76,11 @@ dataTypeDict = {
         "upper": (1 << 8) - 1
     },
     "unsigned short": {
+        "bitsize": 16,
+        "lower": 0,
+        "upper": (1 << 16) - 1
+    },
+    "unsigned short int": {
         "bitsize": 16,
         "lower": 0,
         "upper": (1 << 16) - 1
@@ -365,15 +375,17 @@ class Ui_Dialog(object):
 
     def setDefaultDataTypeDict(self):
         global dataTypeDict
-        dataTypeDict = {
+        dataTypeDict = {    # dataTypeDict默认值
             "bool": {"bitsize": 8, "lower": 0, "upper": 1},
             "char": {"bitsize": 8, "lower": -128, "upper": 127},
             "short": {"bitsize": 16, "lower": 0 - (1 << 15), "upper": (1 << 15) - 1},
+            "short int": {"bitsize": 16, "lower": 0 - (1 << 15), "upper": (1 << 15) - 1},
             "int": {"bitsize": 32, "lower": 0 - (1 << 31), "upper": (1 << 31) - 1},
             "long": {"bitsize": 32, "lower": 0 - (1 << 31), "upper": (1 << 31) - 1},
             "long long": {"bitsize": 64, "lower": 0 - (1 << 63), "upper": (1 << 63) - 1},
             "unsigned char": {"bitsize": 8, "lower": 0, "upper": (1 << 8) - 1},
             "unsigned short": {"bitsize": 16, "lower": 0, "upper": (1 << 16) - 1},
+            "unsigned short int": {"bitsize": 16, "lower": 0, "upper": (1 << 16) - 1},
             "unsigned int": {"bitsize": 32, "lower": 0, "upper": (1 << 32) - 1},
             "unsigned long": {"bitsize": 32, "lower": 0, "upper": (1 << 32) - 1},
             "unsigned long long": {"bitsize": 64, "lower": 0, "upper": (1 << 64) - 1},

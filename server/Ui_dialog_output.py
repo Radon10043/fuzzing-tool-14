@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-03 15:06:24
+LastEditTime: 2021-09-10 15:28:58
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -103,6 +103,11 @@ dataTypeDict = {
         "lower": 0 - (1 << 15),
         "upper": (1 << 15) - 1
     },
+    "short int": {
+        "bitsize": 16,
+        "lower": 0 - (1 << 15),
+        "upper": (1 << 15) - 1
+    },
     "int": {
         "bitsize": 32,
         "lower": 0 - (1 << 31),
@@ -113,7 +118,7 @@ dataTypeDict = {
         "lower": 0 - (1 << 31),
         "upper": (1 << 31) - 1
     },
-    "long lone": {
+    "long long": {
         "bitsize": 64,
         "lower": 0 - (1 << 63),
         "upper": (1 << 63) - 1
@@ -128,6 +133,11 @@ dataTypeDict = {
         "lower": 0,
         "upper": (1 << 16) - 1
     },
+    "unsigned short int": {
+        "bitsize": 16,
+        "lower": 0,
+        "upper": (1 << 16) - 1
+    },
     "unsigned int": {
         "bitsize": 32,
         "lower": 0,
@@ -137,6 +147,11 @@ dataTypeDict = {
         "bitsize": 32,
         "lower": 0,
         "upper": (1 << 32) - 1
+    },
+    "unsigned long long": {
+        "bitsize": 64,
+        "lower": 0,
+        "upper": (1 << 64) - 1
     },
     # TODO float和double的上下限太大了，看起来很长，所以暂时设置成了32位的上下限
     "float": {

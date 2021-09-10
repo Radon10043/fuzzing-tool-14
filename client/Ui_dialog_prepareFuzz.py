@@ -128,8 +128,8 @@ class Ui_Dialog(object):
             return
         self.textBrowser.append("<font color='green'>√ 头文件根目录下存在in文件夹</font>")
 
-        # 查看in文件夹中是否有mutate.c, input.json, checkCodeMethod.txt, header_loc.txt, seed, callgraph.txt, insFunc.dll, nodes.txt
-        filesForNoTarget = ["mutate.c", "mutate.dll", "input.json", "checkCodeMethod.txt", "header_loc.txt", "seed", "callgraph.txt", "insFunc.dll", "nodes.txt"]
+        # 查看in文件夹中是否有mutate.c, input.json, checkCodeMethod.txt, header_loc_list.txt, seed, callgraph.txt, insFunc.dll, nodes.txt
+        filesForNoTarget = ["mutate.c", "mutate.dll", "input.json", "checkCodeMethod.txt", "header_loc_list.txt", "seed", "callgraph.txt", "insFunc.dll", "nodes.txt"]
         noTargetFilesValidation = True
         for file in filesForNoTarget:
             if os.path.exists(root_loc + file):

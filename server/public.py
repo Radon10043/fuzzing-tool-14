@@ -139,7 +139,7 @@ def genSeed(header_loc, struct, structDict):
     os.chdir(root)
     for cmd in cmds:
         os.system(cmd)
-    header_loc_save_file_path = root + "header_loc.txt"
+    header_loc_save_file_path = root + "header_loc_list.txt"
     header_loc_save_file_file = open(
         header_loc_save_file_path, mode="w", encoding="utf")
     for one_header in header_loc:

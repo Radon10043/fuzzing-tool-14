@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-09-05 13:34:06
+LastEditTime: 2021-09-10 14:28:09
 Description: Some public function
 '''
 
@@ -72,10 +72,10 @@ def getAllFunctions(source_loc_list):
     return funcList
 
 
-def genSeed(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
+def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
     '''
     @description: 写一个生成初始种子的cpp文件，并编译和执行它
-    @param {*} header_loc 列表，里面存储了所有头文件的路径
+    @param {*} header_loc_list 列表，里面存储了所有头文件的路径
     @param {*} struct 用户所选择的结构体名称
     @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
     @return {*}
@@ -83,7 +83,7 @@ def genSeed(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
     check_code = CheckCode()
     check_code.init4str(checkCodeMethod)
     # 先设置好相关的位置信息
-    root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
+    root = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "/in/"
     if not os.path.exists(root):
         os.mkdir(root)
     genSeedPath = root + "genSeed.cpp"
@@ -91,7 +91,7 @@ def genSeed(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
     code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
     code += "#include \"" + check_code.header_file_path + "\"\n"
     # 把用户选择的头文件位置也include
-    for header in header_loc:
+    for header in header_loc_list:
         code += "#include \"" + header + "\"\n"
     code += "using namespace std;\n\n"
     code += "int main(){\n"
@@ -135,18 +135,18 @@ def genSeed(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
     os.chdir(root)
     for cmd in cmds:
         os.system(cmd)
-    header_loc_save_file_path = root + "header_loc.txt"
-    header_loc_save_file_file = open(header_loc_save_file_path, mode="w", encoding="utf")
-    for one_header in header_loc:
-        header_loc_save_file_file.write(one_header)
-        header_loc_save_file_file.write("\n")
-    header_loc_save_file_file.close()
+    header_loc_list_save_file_path = root + "header_loc_list.txt"
+    header_loc_list_save_file_file = open(header_loc_list_save_file_path, mode="w", encoding="utf")
+    for one_header in header_loc_list:
+        header_loc_list_save_file_file.write(one_header)
+        header_loc_list_save_file_file.write("\n")
+    header_loc_list_save_file_file.close()
 
 
-def gen_test_case_from_structDict(header_loc, struct, structDict, path):
+def gen_test_case_from_structDict(header_loc_list, struct, structDict, path):
     """
     @description: 根据structDict中的value，生成指定测试用例，目前用于生成经过校验码后的测试用例
-    @param {*} header_loc 列表，里面存储了所有头文件的路径
+    @param {*} header_loc_list 列表，里面存储了所有头文件的路径
     @param {*} struct 用户所选择的结构体名称
     @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
     @return {*}
@@ -157,7 +157,7 @@ def gen_test_case_from_structDict(header_loc, struct, structDict, path):
     # 开始写代码，先include相关内容
     code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
     # 把用户选择的头文件位置也include
-    for header in header_loc:
+    for header in header_loc_list:
         code += "#include \"" + header.strip() + "\"\n"
     code += "using namespace std;\n\n"
     code += "int main(){\n"
@@ -188,10 +188,10 @@ def gen_test_case_from_structDict(header_loc, struct, structDict, path):
     os.chdir(in_path)
 
 
-def genMutate(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
+def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
     '''
     @description: 写一个mutate.c, 以便测试时进行变异操作
-    @param {*} header_loc 列表, 里面存储了所有头文件得位置
+    @param {*} header_loc_list 列表, 里面存储了所有头文件得位置
     @param {*} struct 用户所选择得结构体名称
     @param {*} structDict 结构体字典
     @return {*}
@@ -200,7 +200,7 @@ def genMutate(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
     check_code.init4str(checkCodeMethod)
 
     # 先设置好相关的位置信息
-    root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
+    root = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "/in/"
     if not os.path.exists(root):
         os.mkdir(root)
     genMutatePath = root + "mutate.c"
@@ -209,7 +209,7 @@ def genMutate(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
     code = "#include <stdio.h>\n#include <stdbool.h>\n" \
            "#include \"" + check_code.header_file_path + "\"\n"
     # 把用户选择的头文件位置也include
-    for header in header_loc:
+    for header in header_loc_list:
         code += "#include \"" + header + "\"\n"
     # 计算校验码，这部分生成了一个calculateCheckCode函数，应该在主代码中调用这个函数
     checkPartCode = ""
@@ -273,6 +273,41 @@ def genMutate(header_loc, struct, structDict, checkCodeMethod, hasCheckCode):
 
     # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window.py生成
     # command: gcc -shared -o mutate_instru.dll mutate_instru.c
+
+
+def genTestcaseVisual(header_loc_list, struct, structDict):
+    """测试用例可视化C文件生成
+
+    Parameters
+    ----------
+    header_loc_list : list
+        头文件
+    struct : str
+        选择的结构体
+    structDict : dict
+        结构体信息字典
+
+    Notes
+    -----
+    [description]
+    """
+    code = ""
+    f = open(os.path.join(os.path.dirname(header_loc_list[0]), "in", "testcaseVisual.c"), mode="w")
+    # 写一个将结构体可视化的方法，savePath需要以.txt结尾
+    code += "#include <stdio.h>\n#include <stdbool.h>\n"
+    for header in header_loc_list:
+        code += "#include \"" + header + "\"\n"
+    code += "void testcaseVisualization(" + struct + " data, char* savePath){\n"
+    code += "\tFILE* f = fopen(savePath, \"w\");\n"
+    for key, value in structDict[struct].items():
+        dataName = key.split(" ")[-1].split(":")[0]
+        if "noName" in dataName:
+            continue
+        code += "\tfprintf(f, \"" + dataName + ": %u\\n\", data." + dataName + ");\n"
+    code += "\tfclose(f);\n"
+    code += "}\n"
+    f.write(code)
+    f.close()
 
 
 if __name__ == "__main__":
