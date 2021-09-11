@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>770</height>
+    <height>853</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -173,76 +173,19 @@
      </attribute>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="selectInsVarGroupBox">
+   <widget class="QGroupBox" name="selectInstrVarGroupBox">
     <property name="geometry">
      <rect>
       <x>70</x>
       <y>310</y>
       <width>291</width>
-      <height>131</height>
+      <height>81</height>
      </rect>
     </property>
     <property name="title">
      <string>选择插装变量</string>
     </property>
-    <widget class="QLineEdit" name="structParameterName">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>80</y>
-       <width>113</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="cursor">
-      <cursorShape>IBeamCursor</cursorShape>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-     <property name="text">
-      <string>dtg</string>
-     </property>
-     <property name="cursorPosition">
-      <number>3</number>
-     </property>
-     <property name="placeholderText">
-      <string>结构体实参名</string>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="pointerStyleRadioBtn">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>70</y>
-       <width>115</width>
-       <height>19</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>方式1</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="pointStyleRadioBtn">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>100</y>
-       <width>115</width>
-       <height>19</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>方式2</string>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="selectInsVarBtn">
+    <widget class="QPushButton" name="selectInstrVarBtn">
      <property name="geometry">
       <rect>
        <x>80</x>
@@ -255,26 +198,13 @@
       <string>选择插装变量</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="autoGenInsCodeConfirmBtn">
-     <property name="geometry">
-      <rect>
-       <x>230</x>
-       <y>80</y>
-       <width>51</width>
-       <height>28</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>确定</string>
-     </property>
-    </widget>
    </widget>
    <widget class="QPushButton" name="startServerBtn">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>610</y>
-      <width>321</width>
+      <x>70</x>
+      <y>740</y>
+      <width>651</width>
       <height>71</height>
      </rect>
     </property>
@@ -286,7 +216,7 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>500</y>
+      <y>480</y>
       <width>321</width>
       <height>80</height>
      </rect>
@@ -308,95 +238,13 @@
      </property>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="manualInputInsCodeGroupBox">
+   <widget class="QGroupBox" name="instrCodePreviewGroupBox">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>460</y>
-      <width>291</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>手动输入插装语句</string>
-    </property>
-    <widget class="QLineEdit" name="manualInputInsVarType">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>30</y>
-       <width>201</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="cursor">
-      <cursorShape>IBeamCursor</cursorShape>
-     </property>
-     <property name="toolTip">
-      <string>手动输入插装变量类型</string>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="cursorPosition">
-      <number>0</number>
-     </property>
-     <property name="placeholderText">
-      <string>手动输入插装变量类型</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="manualInputInsCodeConfirmBtn">
-     <property name="geometry">
-      <rect>
-       <x>230</x>
-       <y>70</y>
-       <width>51</width>
-       <height>28</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>确定</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="manualInputInsCode">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>70</y>
-       <width>201</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="cursor">
-      <cursorShape>IBeamCursor</cursorShape>
-     </property>
-     <property name="toolTip">
-      <string>手动输入插装语句，输入等号前的内容即可</string>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="cursorPosition">
-      <number>0</number>
-     </property>
-     <property name="placeholderText">
-      <string>手动输入插装语句</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="insCodePreviewGroupBox">
-    <property name="geometry">
-     <rect>
-      <x>70</x>
-      <y>600</y>
-      <width>291</width>
-      <height>121</height>
+      <x>400</x>
+      <y>570</y>
+      <width>321</width>
+      <height>151</height>
      </rect>
     </property>
     <property name="title">
@@ -405,10 +253,10 @@
     <widget class="QLabel" name="instrumentCodeLabel">
      <property name="geometry">
       <rect>
-       <x>20</x>
-       <y>20</y>
-       <width>271</width>
-       <height>20</height>
+       <x>10</x>
+       <y>30</y>
+       <width>301</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="layoutDirection">
@@ -433,24 +281,11 @@
       <number>-1</number>
      </property>
     </widget>
-    <widget class="QPushButton" name="instrumentBtn">
+    <widget class="QLabel" name="instrVarTypeLabelTip">
      <property name="geometry">
       <rect>
-       <x>80</x>
-       <y>80</y>
-       <width>141</width>
-       <height>28</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>插装</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="insVarTypeLabelTip">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>45</y>
+       <x>40</x>
+       <y>70</y>
        <width>101</width>
        <height>20</height>
       </rect>
@@ -477,13 +312,13 @@
       <number>-1</number>
      </property>
     </widget>
-    <widget class="QLabel" name="insVarTypeLabel">
+    <widget class="QLabel" name="instrVarTypeLabel">
      <property name="geometry">
       <rect>
-       <x>130</x>
-       <y>45</y>
-       <width>151</width>
-       <height>20</height>
+       <x>10</x>
+       <y>90</y>
+       <width>301</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="layoutDirection">
@@ -496,7 +331,7 @@
       <enum>Qt::AutoText</enum>
      </property>
      <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      <set>Qt::AlignCenter</set>
      </property>
      <property name="wordWrap">
       <bool>false</bool>
@@ -507,6 +342,530 @@
      <property name="indent">
       <number>-1</number>
      </property>
+    </widget>
+   </widget>
+   <widget class="QTabWidget" name="instrTabWidget">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>400</y>
+      <width>291</width>
+      <height>321</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:rgb(235, 235, 235)</string>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="method1Tab">
+     <attribute name="title">
+      <string>方式1</string>
+     </attribute>
+     <widget class="QPushButton" name="autoGenInsCodeConfirmBtn">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>130</y>
+        <width>51</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>确定</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="pointerStyleRadioBtn">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>120</y>
+        <width>61</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>-&gt;</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="structParameterName">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>130</y>
+        <width>113</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>IBeamCursor</cursorShape>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(255, 255, 255)</string>
+      </property>
+      <property name="text">
+       <string>dtg</string>
+      </property>
+      <property name="cursorPosition">
+       <number>3</number>
+      </property>
+      <property name="placeholderText">
+       <string>结构体实参名</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="pointStyleRadioBtn">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>150</y>
+        <width>61</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>.</string>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="method1TipLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>261</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>方式1: 源代码中已存在输出结构体的
+全局变量, 使用系统自动生成的插装语
+句进行插装</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="instrumentMethod1Btn">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>210</y>
+        <width>121</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>插装</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="compileMethod1Btn">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>210</y>
+        <width>121</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>编译</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="method2Tab">
+     <attribute name="title">
+      <string>方式2</string>
+     </attribute>
+     <widget class="QPushButton" name="manualInputInsCodeConfirmBtn">
+      <property name="geometry">
+       <rect>
+        <x>225</x>
+        <y>150</y>
+        <width>51</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>确定</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="manualInputInsCode">
+      <property name="geometry">
+       <rect>
+        <x>17</x>
+        <y>148</y>
+        <width>201</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>IBeamCursor</cursorShape>
+      </property>
+      <property name="toolTip">
+       <string>手动输入插装语句，输入等号前的内容即可</string>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(255, 255, 255)</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="cursorPosition">
+       <number>0</number>
+      </property>
+      <property name="placeholderText">
+       <string>手动输入插装语句</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="method2TipLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>48</y>
+        <width>251</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>方式2: 源码中已存在输出结构体的
+全局变量, 手动输入插装语句进行插
+装</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="instrVarTypeComboBox">
+      <property name="geometry">
+       <rect>
+        <x>17</x>
+        <y>108</y>
+        <width>201</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>插装变量类型</string>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(255, 255, 255)</string>
+      </property>
+      <property name="currentIndex">
+       <number>3</number>
+      </property>
+      <item>
+       <property name="text">
+        <string>char</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>short</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>short int</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>int</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>long</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>long long</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned char</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned short</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned short int</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned int</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned long</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned long long</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QPushButton" name="instrumentMethod2Btn">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>210</y>
+        <width>121</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>插装</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="compileMethod2Btn">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>210</y>
+        <width>121</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>编译</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="method3Tab">
+     <attribute name="title">
+      <string>方式3</string>
+     </attribute>
+     <widget class="QLabel" name="method3TipLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>251</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>方式3: 源码中没有全局变量, 系统
+生成全局变量并插装, 用户需要指定
+发回报文所在位置</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="sendBackCodeFileComboBox">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>80</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(255, 255, 255)</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="sendBackCodeLocLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>120</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(255, 255, 255)</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="instrGlobalVarNameLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>210</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(255, 255, 255)</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="sendBackCodeFileTipLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>78</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>发挥报文代
+码所在文件</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="sendBackCodeLocTipLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>120</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>发挥报文代
+码所在行</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="instrGlobalVarTypeComboBox">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>170</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>插装变量类型</string>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(255, 255, 255)</string>
+      </property>
+      <property name="currentIndex">
+       <number>9</number>
+      </property>
+      <item>
+       <property name="text">
+        <string>char</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>short</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>short int</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>int</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>long</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>long long</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned char</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned short</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned short int</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned int</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned long</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>unsigned long long</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="instrGlobalVarTypeTipLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>170</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>插装全局变
+量类型</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="instrGlobalVarNameTipLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>210</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>插装全局变
+量名称</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="instrumentMethod3Btn">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>250</y>
+        <width>121</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>插装</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="compileMethod3Btn">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>250</y>
+        <width>121</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>编译</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>

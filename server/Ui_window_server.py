@@ -27,7 +27,7 @@ import callgraph as cg
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 770)
+        MainWindow.resize(800, 853)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.title = QtWidgets.QLabel(self.centralwidget)
@@ -68,111 +68,176 @@ class Ui_MainWindow(object):
         self.SAResultGenBtn.setGeometry(QtCore.QRect(210, 105, 93, 31))
         self.SAResultGenBtn.setObjectName("SAResultGenBtn")
         self.tabWidget.addTab(self.codeStructTab, "")
-
-        # self.interfaceTab = QtWidgets.QWidget()
-        # self.interfaceTab.setObjectName("interfaceTab")
-        # self.tabWidget.addTab(self.interfaceTab, "")
-
-        self.selectInsVarGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.selectInsVarGroupBox.setGeometry(QtCore.QRect(70, 310, 291, 131))
-        self.selectInsVarGroupBox.setObjectName("selectInsVarGroupBox")
-        self.structParameterName = QtWidgets.QLineEdit(
-            self.selectInsVarGroupBox)
-        self.structParameterName.setGeometry(QtCore.QRect(20, 80, 113, 31))
-        self.structParameterName.setCursor(
-            QtGui.QCursor(QtCore.Qt.IBeamCursor))
-        self.structParameterName.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.structParameterName.setCursorPosition(3)
-        self.structParameterName.setObjectName("structParameterName")
-        self.pointerStyleRadioBtn = QtWidgets.QRadioButton(
-            self.selectInsVarGroupBox)
-        self.pointerStyleRadioBtn.setGeometry(QtCore.QRect(160, 70, 115, 19))
-        self.pointerStyleRadioBtn.setChecked(True)
-        self.pointerStyleRadioBtn.setObjectName("pointerStyleRadioBtn")
-        self.pointStyleRadioBtn = QtWidgets.QRadioButton(
-            self.selectInsVarGroupBox)
-        self.pointStyleRadioBtn.setGeometry(QtCore.QRect(160, 100, 115, 19))
-        self.pointStyleRadioBtn.setChecked(False)
-        self.pointStyleRadioBtn.setObjectName("pointStyleRadioBtn")
-        self.selectInsVarBtn = QtWidgets.QPushButton(self.selectInsVarGroupBox)
-        self.selectInsVarBtn.setGeometry(QtCore.QRect(80, 30, 141, 28))
-        self.selectInsVarBtn.setObjectName("selectInsVarBtn")
-        self.autoGenInsCodeConfirmBtn = QtWidgets.QPushButton(
-            self.selectInsVarGroupBox)
-        self.autoGenInsCodeConfirmBtn.setGeometry(
-            QtCore.QRect(230, 80, 51, 28))
-        self.autoGenInsCodeConfirmBtn.setObjectName("autoGenInsCodeConfirmBtn")
+        self.interfaceTab = QtWidgets.QWidget()
+        self.interfaceTab.setObjectName("interfaceTab")
+        self.tabWidget.addTab(self.interfaceTab, "")
+        self.selectInstrVarGroupBox = QtWidgets.QGroupBox(self.centralwidget)
+        self.selectInstrVarGroupBox.setGeometry(QtCore.QRect(70, 310, 291, 81))
+        self.selectInstrVarGroupBox.setObjectName("selectInstrVarGroupBox")
+        self.selectInstrVarBtn = QtWidgets.QPushButton(self.selectInstrVarGroupBox)
+        self.selectInstrVarBtn.setGeometry(QtCore.QRect(80, 30, 141, 28))
+        self.selectInstrVarBtn.setObjectName("selectInstrVarBtn")
         self.startServerBtn = QtWidgets.QPushButton(self.centralwidget)
-        self.startServerBtn.setGeometry(QtCore.QRect(400, 610, 321, 71))
+        self.startServerBtn.setGeometry(QtCore.QRect(70, 740, 651, 71))
         self.startServerBtn.setObjectName("startServerBtn")
         self.callGraphGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.callGraphGroupBox.setGeometry(QtCore.QRect(400, 500, 321, 80))
+        self.callGraphGroupBox.setGeometry(QtCore.QRect(400, 480, 321, 80))
         self.callGraphGroupBox.setObjectName("callGraphGroupBox")
         self.genCallGraphBtn = QtWidgets.QPushButton(self.callGraphGroupBox)
         self.genCallGraphBtn.setGeometry(QtCore.QRect(90, 30, 151, 28))
         self.genCallGraphBtn.setObjectName("genCallGraphBtn")
-        self.manualInputInsCodeGroupBox = QtWidgets.QGroupBox(
-            self.centralwidget)
-        self.manualInputInsCodeGroupBox.setGeometry(
-            QtCore.QRect(70, 460, 291, 121))
-        self.manualInputInsCodeGroupBox.setObjectName(
-            "manualInputInsCodeGroupBox")
-        self.manualInputInsVarType = QtWidgets.QLineEdit(
-            self.manualInputInsCodeGroupBox)
-        self.manualInputInsVarType.setGeometry(QtCore.QRect(20, 30, 201, 31))
-        self.manualInputInsVarType.setCursor(
-            QtGui.QCursor(QtCore.Qt.IBeamCursor))
-        self.manualInputInsVarType.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.manualInputInsVarType.setText("")
-        self.manualInputInsVarType.setCursorPosition(0)
-        self.manualInputInsVarType.setObjectName("manualInputInsVarType")
-        self.manualInputInsCodeConfirmBtn = QtWidgets.QPushButton(
-            self.manualInputInsCodeGroupBox)
-        self.manualInputInsCodeConfirmBtn.setGeometry(
-            QtCore.QRect(230, 70, 51, 28))
-        self.manualInputInsCodeConfirmBtn.setObjectName(
-            "manualInputInsCodeConfirmBtn")
-        self.manualInputInsCode = QtWidgets.QLineEdit(
-            self.manualInputInsCodeGroupBox)
-        self.manualInputInsCode.setGeometry(QtCore.QRect(20, 70, 201, 31))
-        self.manualInputInsCode.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
-        self.manualInputInsCode.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.manualInputInsCode.setText("")
-        self.manualInputInsCode.setCursorPosition(0)
-        self.manualInputInsCode.setObjectName("manualInputInsCode")
-        self.insCodePreviewGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.insCodePreviewGroupBox.setGeometry(
-            QtCore.QRect(70, 600, 291, 121))
-        self.insCodePreviewGroupBox.setObjectName("insCodePreviewGroupBox")
-        self.instrumentCodeLabel = QtWidgets.QLabel(
-            self.insCodePreviewGroupBox)
-        self.instrumentCodeLabel.setGeometry(QtCore.QRect(20, 20, 271, 20))
+        self.instrCodePreviewGroupBox = QtWidgets.QGroupBox(self.centralwidget)
+        self.instrCodePreviewGroupBox.setGeometry(QtCore.QRect(400, 570, 321, 151))
+        self.instrCodePreviewGroupBox.setObjectName("instrCodePreviewGroupBox")
+        self.instrumentCodeLabel = QtWidgets.QLabel(self.instrCodePreviewGroupBox)
+        self.instrumentCodeLabel.setGeometry(QtCore.QRect(10, 30, 301, 31))
         self.instrumentCodeLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.instrumentCodeLabel.setTextFormat(QtCore.Qt.AutoText)
         self.instrumentCodeLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.instrumentCodeLabel.setWordWrap(False)
         self.instrumentCodeLabel.setIndent(-1)
         self.instrumentCodeLabel.setObjectName("instrumentCodeLabel")
-        self.instrumentBtn = QtWidgets.QPushButton(self.insCodePreviewGroupBox)
-        self.instrumentBtn.setGeometry(QtCore.QRect(80, 80, 141, 28))
-        self.instrumentBtn.setObjectName("instrumentBtn")
-        self.insVarTypeLabelTip = QtWidgets.QLabel(self.insCodePreviewGroupBox)
-        self.insVarTypeLabelTip.setGeometry(QtCore.QRect(20, 45, 101, 20))
-        self.insVarTypeLabelTip.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.insVarTypeLabelTip.setTextFormat(QtCore.Qt.AutoText)
-        self.insVarTypeLabelTip.setAlignment(QtCore.Qt.AlignCenter)
-        self.insVarTypeLabelTip.setWordWrap(False)
-        self.insVarTypeLabelTip.setIndent(-1)
-        self.insVarTypeLabelTip.setObjectName("insVarTypeLabelTip")
-        self.insVarTypeLabel = QtWidgets.QLabel(self.insCodePreviewGroupBox)
-        self.insVarTypeLabel.setGeometry(QtCore.QRect(130, 45, 151, 20))
-        self.insVarTypeLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.insVarTypeLabel.setTextFormat(QtCore.Qt.AutoText)
-        self.insVarTypeLabel.setAlignment(
-            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        self.insVarTypeLabel.setWordWrap(False)
-        self.insVarTypeLabel.setIndent(-1)
-        self.insVarTypeLabel.setObjectName("insVarTypeLabel")
+        self.instrVarTypeLabelTip = QtWidgets.QLabel(self.instrCodePreviewGroupBox)
+        self.instrVarTypeLabelTip.setGeometry(QtCore.QRect(40, 70, 101, 20))
+        self.instrVarTypeLabelTip.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.instrVarTypeLabelTip.setTextFormat(QtCore.Qt.AutoText)
+        self.instrVarTypeLabelTip.setAlignment(QtCore.Qt.AlignCenter)
+        self.instrVarTypeLabelTip.setWordWrap(False)
+        self.instrVarTypeLabelTip.setIndent(-1)
+        self.instrVarTypeLabelTip.setObjectName("instrVarTypeLabelTip")
+        self.instrVarTypeLabel = QtWidgets.QLabel(self.instrCodePreviewGroupBox)
+        self.instrVarTypeLabel.setGeometry(QtCore.QRect(10, 90, 301, 31))
+        self.instrVarTypeLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.instrVarTypeLabel.setTextFormat(QtCore.Qt.AutoText)
+        self.instrVarTypeLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.instrVarTypeLabel.setWordWrap(False)
+        self.instrVarTypeLabel.setIndent(-1)
+        self.instrVarTypeLabel.setObjectName("instrVarTypeLabel")
+        self.instrTabWidget = QtWidgets.QTabWidget(self.centralwidget)
+        self.instrTabWidget.setGeometry(QtCore.QRect(70, 400, 291, 321))
+        self.instrTabWidget.setStyleSheet("background-color:rgb(235, 235, 235)")
+        self.instrTabWidget.setObjectName("instrTabWidget")
+        self.method1Tab = QtWidgets.QWidget()
+        self.method1Tab.setObjectName("method1Tab")
+        self.autoGenInsCodeConfirmBtn = QtWidgets.QPushButton(self.method1Tab)
+        self.autoGenInsCodeConfirmBtn.setGeometry(QtCore.QRect(220, 130, 51, 28))
+        self.autoGenInsCodeConfirmBtn.setObjectName("autoGenInsCodeConfirmBtn")
+        self.pointerStyleRadioBtn = QtWidgets.QRadioButton(self.method1Tab)
+        self.pointerStyleRadioBtn.setGeometry(QtCore.QRect(150, 120, 61, 19))
+        self.pointerStyleRadioBtn.setChecked(True)
+        self.pointerStyleRadioBtn.setObjectName("pointerStyleRadioBtn")
+        self.structParameterName = QtWidgets.QLineEdit(self.method1Tab)
+        self.structParameterName.setGeometry(QtCore.QRect(10, 130, 113, 31))
+        self.structParameterName.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
+        self.structParameterName.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.structParameterName.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.structParameterName.setCursorPosition(3)
+        self.structParameterName.setObjectName("structParameterName")
+        self.pointStyleRadioBtn = QtWidgets.QRadioButton(self.method1Tab)
+        self.pointStyleRadioBtn.setGeometry(QtCore.QRect(150, 150, 61, 19))
+        self.pointStyleRadioBtn.setChecked(False)
+        self.pointStyleRadioBtn.setObjectName("pointStyleRadioBtn")
+        self.method1TipLabel = QtWidgets.QLabel(self.method1Tab)
+        self.method1TipLabel.setGeometry(QtCore.QRect(10, 40, 261, 61))
+        self.method1TipLabel.setObjectName("method1TipLabel")
+        self.instrumentMethod1Btn = QtWidgets.QPushButton(self.method1Tab)
+        self.instrumentMethod1Btn.setGeometry(QtCore.QRect(10, 210, 121, 28))
+        self.instrumentMethod1Btn.setObjectName("instrumentMethod1Btn")
+        self.compileMethod1Btn = QtWidgets.QPushButton(self.method1Tab)
+        self.compileMethod1Btn.setGeometry(QtCore.QRect(150, 210, 121, 28))
+        self.compileMethod1Btn.setObjectName("compileMethod1Btn")
+        self.instrTabWidget.addTab(self.method1Tab, "")
+        self.method2Tab = QtWidgets.QWidget()
+        self.method2Tab.setObjectName("method2Tab")
+        self.manualInputInsCodeConfirmBtn = QtWidgets.QPushButton(self.method2Tab)
+        self.manualInputInsCodeConfirmBtn.setGeometry(QtCore.QRect(225, 150, 51, 28))
+        self.manualInputInsCodeConfirmBtn.setObjectName("manualInputInsCodeConfirmBtn")
+        self.manualInputInsCode = QtWidgets.QLineEdit(self.method2Tab)
+        self.manualInputInsCode.setGeometry(QtCore.QRect(17, 148, 201, 31))
+        self.manualInputInsCode.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
+        self.manualInputInsCode.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.manualInputInsCode.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.manualInputInsCode.setText("")
+        self.manualInputInsCode.setCursorPosition(0)
+        self.manualInputInsCode.setObjectName("manualInputInsCode")
+        self.method2TipLabel = QtWidgets.QLabel(self.method2Tab)
+        self.method2TipLabel.setGeometry(QtCore.QRect(10, 48, 251, 51))
+        self.method2TipLabel.setObjectName("method2TipLabel")
+        self.instrVarTypeComboBox = QtWidgets.QComboBox(self.method2Tab)
+        self.instrVarTypeComboBox.setGeometry(QtCore.QRect(17, 108, 201, 31))
+        self.instrVarTypeComboBox.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.instrVarTypeComboBox.setObjectName("instrVarTypeComboBox")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrVarTypeComboBox.addItem("")
+        self.instrumentMethod2Btn = QtWidgets.QPushButton(self.method2Tab)
+        self.instrumentMethod2Btn.setGeometry(QtCore.QRect(10, 210, 121, 28))
+        self.instrumentMethod2Btn.setObjectName("instrumentMethod2Btn")
+        self.compileMethod2Btn = QtWidgets.QPushButton(self.method2Tab)
+        self.compileMethod2Btn.setGeometry(QtCore.QRect(150, 210, 121, 28))
+        self.compileMethod2Btn.setObjectName("compileMethod2Btn")
+        self.instrTabWidget.addTab(self.method2Tab, "")
+        self.method3Tab = QtWidgets.QWidget()
+        self.method3Tab.setObjectName("method3Tab")
+        self.method3TipLabel = QtWidgets.QLabel(self.method3Tab)
+        self.method3TipLabel.setGeometry(QtCore.QRect(10, 10, 251, 51))
+        self.method3TipLabel.setObjectName("method3TipLabel")
+        self.sendBackCodeFileComboBox = QtWidgets.QComboBox(self.method3Tab)
+        self.sendBackCodeFileComboBox.setGeometry(QtCore.QRect(100, 80, 171, 31))
+        self.sendBackCodeFileComboBox.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.sendBackCodeFileComboBox.setObjectName("sendBackCodeFileComboBox")
+        self.sendBackCodeLocLineEdit = QtWidgets.QLineEdit(self.method3Tab)
+        self.sendBackCodeLocLineEdit.setGeometry(QtCore.QRect(100, 120, 171, 31))
+        self.sendBackCodeLocLineEdit.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.sendBackCodeLocLineEdit.setObjectName("sendBackCodeLocLineEdit")
+        self.instrGlobalVarNameLineEdit = QtWidgets.QLineEdit(self.method3Tab)
+        self.instrGlobalVarNameLineEdit.setGeometry(QtCore.QRect(100, 210, 171, 31))
+        self.instrGlobalVarNameLineEdit.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.instrGlobalVarNameLineEdit.setObjectName("instrGlobalVarNameLineEdit")
+        self.sendBackCodeFileTipLabel = QtWidgets.QLabel(self.method3Tab)
+        self.sendBackCodeFileTipLabel.setGeometry(QtCore.QRect(10, 78, 81, 31))
+        self.sendBackCodeFileTipLabel.setObjectName("sendBackCodeFileTipLabel")
+        self.sendBackCodeLocTipLabel = QtWidgets.QLabel(self.method3Tab)
+        self.sendBackCodeLocTipLabel.setGeometry(QtCore.QRect(10, 120, 81, 31))
+        self.sendBackCodeLocTipLabel.setObjectName("sendBackCodeLocTipLabel")
+        self.instrGlobalVarTypeComboBox = QtWidgets.QComboBox(self.method3Tab)
+        self.instrGlobalVarTypeComboBox.setGeometry(QtCore.QRect(100, 170, 171, 31))
+        self.instrGlobalVarTypeComboBox.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.instrGlobalVarTypeComboBox.setObjectName("instrGlobalVarTypeComboBox")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeComboBox.addItem("")
+        self.instrGlobalVarTypeTipLabel = QtWidgets.QLabel(self.method3Tab)
+        self.instrGlobalVarTypeTipLabel.setGeometry(QtCore.QRect(10, 170, 81, 31))
+        self.instrGlobalVarTypeTipLabel.setObjectName("instrGlobalVarTypeTipLabel")
+        self.instrGlobalVarNameTipLabel = QtWidgets.QLabel(self.method3Tab)
+        self.instrGlobalVarNameTipLabel.setGeometry(QtCore.QRect(10, 210, 81, 31))
+        self.instrGlobalVarNameTipLabel.setObjectName("instrGlobalVarNameTipLabel")
+        self.instrumentMethod3Btn = QtWidgets.QPushButton(self.method3Tab)
+        self.instrumentMethod3Btn.setGeometry(QtCore.QRect(10, 250, 121, 28))
+        self.instrumentMethod3Btn.setObjectName("instrumentMethod3Btn")
+        self.compileMethod3Btn = QtWidgets.QPushButton(self.method3Tab)
+        self.compileMethod3Btn.setGeometry(QtCore.QRect(150, 250, 121, 28))
+        self.compileMethod3Btn.setObjectName("compileMethod3Btn")
+        self.instrTabWidget.addTab(self.method3Tab, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 26))
@@ -185,7 +250,7 @@ class Ui_MainWindow(object):
         # ==========connect================================================
         self.chooseCBtn.clicked.connect(self.chooseCFile)
         self.chooseHBtn.clicked.connect(self.chooseHFile)
-        self.selectInsVarBtn.clicked.connect(self.popStructDialog)
+        self.selectInstrVarBtn.clicked.connect(self.popStructDialog)
         self.autoGenInsCodeConfirmBtn.clicked.connect(self.setInstrumentCode)
         self.pointerStyleRadioBtn.clicked.connect(self.setInstrumentCode)
         self.pointStyleRadioBtn.clicked.connect(self.setInstrumentCode)
@@ -194,13 +259,23 @@ class Ui_MainWindow(object):
         self.SAByCppcheckBtn.clicked.connect(self.SAByCppcheck)
         self.SAByManBtn.clicked.connect(self.popTargetDialog)
         self.SAResultGenBtn.clicked.connect(self.genSAResult)
-        self.instrumentBtn.clicked.connect(self.instrumentSource)
+        self.instrumentMethod1Btn.clicked.connect(self.instrumentSource)
+        self.instrumentMethod3Btn.clicked.connect(self.instrumentM3)
         self.genCallGraphBtn.clicked.connect(self.genCallGraph)
         self.startServerBtn.clicked.connect(self.startServer)
+
+        self.instrGlobalVarNameLineEdit.textChanged.connect(self.changeInstrCodeFromMethod3)
+        self.instrGlobalVarTypeComboBox.currentIndexChanged.connect(self.changeInstrTypeFromMethod3)
+
+        regExp1 = QtCore.QRegExp("[a-zA-Z0-9_]{1,23}")
+        self.instrGlobalVarNameLineEdit.setValidator(QtGui.QRegExpValidator(regExp1))
         # =================================================================
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
+        self.instrTabWidget.setCurrentIndex(1)
+        self.instrVarTypeComboBox.setCurrentIndex(3)
+        self.instrGlobalVarTypeComboBox.setCurrentIndex(9)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -214,44 +289,80 @@ class Ui_MainWindow(object):
         self.chooseHBtn.setText(_translate("MainWindow", "选择头文件"))
         self.SAByCppcheckBtn.setText(_translate("MainWindow", "cppcheck"))
         self.SAByManBtn.setText(_translate("MainWindow", "手动选择"))
-        self.targetSetInfo.setPlaceholderText(
-            _translate("MainWindow", "目标集信息"))
+        self.targetSetInfo.setPlaceholderText(_translate("MainWindow", "目标集信息"))
         self.SAResultGenBtn.setText(_translate("MainWindow", "结果生成"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(
-            self.codeStructTab), _translate("MainWindow", "基于代码结构"))
-
-        # self.tabWidget.setTabText(self.tabWidget.indexOf(self.interfaceTab), _translate("MainWindow", "基于交互接口故规约"))
-
-        self.selectInsVarGroupBox.setTitle(_translate("MainWindow", "选择插装变量"))
-        self.structParameterName.setText(_translate("MainWindow", "dtg"))
-        self.structParameterName.setPlaceholderText(
-            _translate("MainWindow", "结构体实参名"))
-        self.pointerStyleRadioBtn.setText(_translate("MainWindow", "方式1"))
-        self.pointStyleRadioBtn.setText(_translate("MainWindow", "方式2"))
-        self.selectInsVarBtn.setText(_translate("MainWindow", "选择插装变量"))
-        self.autoGenInsCodeConfirmBtn.setText(_translate("MainWindow", "确定"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.codeStructTab), _translate("MainWindow", "基于代码结构"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.interfaceTab), _translate("MainWindow", "基于交互接口故规约"))
+        self.selectInstrVarGroupBox.setTitle(_translate("MainWindow", "选择插装变量"))
+        self.selectInstrVarBtn.setText(_translate("MainWindow", "选择插装变量"))
         self.startServerBtn.setText(_translate("MainWindow", "启动服务端程序"))
         self.callGraphGroupBox.setTitle(_translate("MainWindow", "调用图"))
         self.genCallGraphBtn.setText(_translate("MainWindow", "生成函数调用图"))
-        self.manualInputInsCodeGroupBox.setTitle(
-            _translate("MainWindow", "手动输入插装语句"))
-        self.manualInputInsVarType.setToolTip(
-            _translate("MainWindow", "手动输入插装变量类型"))
-        self.manualInputInsVarType.setPlaceholderText(
-            _translate("MainWindow", "手动输入插装变量类型"))
-        self.manualInputInsCodeConfirmBtn.setText(
-            _translate("MainWindow", "确定"))
-        self.manualInputInsCode.setToolTip(
-            _translate("MainWindow", "手动输入插装语句，输入等号前的内容即可"))
-        self.manualInputInsCode.setPlaceholderText(
-            _translate("MainWindow", "手动输入插装语句"))
-        self.insCodePreviewGroupBox.setTitle(
-            _translate("MainWindow", "插装语句预览"))
-        self.instrumentCodeLabel.setText(_translate(
-            "MainWindow", "dtg->variable = 1 << x;"))
-        self.instrumentBtn.setText(_translate("MainWindow", "插装"))
-        self.insVarTypeLabelTip.setText(_translate("MainWindow", "插装变量类型:"))
-        self.insVarTypeLabel.setText(_translate("MainWindow", "暂无"))
+        self.instrCodePreviewGroupBox.setTitle(_translate("MainWindow", "插装语句预览"))
+        self.instrumentCodeLabel.setText(_translate("MainWindow", "dtg->variable = 1 << x;"))
+        self.instrVarTypeLabelTip.setText(_translate("MainWindow", "插装变量类型:"))
+        self.instrVarTypeLabel.setText(_translate("MainWindow", "暂无"))
+        self.autoGenInsCodeConfirmBtn.setText(_translate("MainWindow", "确定"))
+        self.pointerStyleRadioBtn.setText(_translate("MainWindow", "->"))
+        self.structParameterName.setText(_translate("MainWindow", "dtg"))
+        self.structParameterName.setPlaceholderText(_translate("MainWindow", "结构体实参名"))
+        self.pointStyleRadioBtn.setText(_translate("MainWindow", "."))
+        self.method1TipLabel.setText(_translate("MainWindow", "方式1: 源代码中已存在输出结构体的\n"
+"全局变量, 使用系统自动生成的插装语\n"
+"句进行插装"))
+        self.instrumentMethod1Btn.setText(_translate("MainWindow", "插装"))
+        self.compileMethod1Btn.setText(_translate("MainWindow", "编译"))
+        self.instrTabWidget.setTabText(self.instrTabWidget.indexOf(self.method1Tab), _translate("MainWindow", "方式1"))
+        self.manualInputInsCodeConfirmBtn.setText(_translate("MainWindow", "确定"))
+        self.manualInputInsCode.setToolTip(_translate("MainWindow", "手动输入插装语句，输入等号前的内容即可"))
+        self.manualInputInsCode.setPlaceholderText(_translate("MainWindow", "手动输入插装语句"))
+        self.method2TipLabel.setText(_translate("MainWindow", "方式2: 源码中已存在输出结构体的\n"
+"全局变量, 手动输入插装语句进行插\n"
+"装"))
+        self.instrVarTypeComboBox.setToolTip(_translate("MainWindow", "插装变量类型"))
+        self.instrVarTypeComboBox.setItemText(0, _translate("MainWindow", "char"))
+        self.instrVarTypeComboBox.setItemText(1, _translate("MainWindow", "short"))
+        self.instrVarTypeComboBox.setItemText(2, _translate("MainWindow", "short int"))
+        self.instrVarTypeComboBox.setItemText(3, _translate("MainWindow", "int"))
+        self.instrVarTypeComboBox.setItemText(4, _translate("MainWindow", "long"))
+        self.instrVarTypeComboBox.setItemText(5, _translate("MainWindow", "long long"))
+        self.instrVarTypeComboBox.setItemText(6, _translate("MainWindow", "unsigned char"))
+        self.instrVarTypeComboBox.setItemText(7, _translate("MainWindow", "unsigned short"))
+        self.instrVarTypeComboBox.setItemText(8, _translate("MainWindow", "unsigned short int"))
+        self.instrVarTypeComboBox.setItemText(9, _translate("MainWindow", "unsigned int"))
+        self.instrVarTypeComboBox.setItemText(10, _translate("MainWindow", "unsigned long"))
+        self.instrVarTypeComboBox.setItemText(11, _translate("MainWindow", "unsigned long long"))
+        self.instrumentMethod2Btn.setText(_translate("MainWindow", "插装"))
+        self.compileMethod2Btn.setText(_translate("MainWindow", "编译"))
+        self.instrTabWidget.setTabText(self.instrTabWidget.indexOf(self.method2Tab), _translate("MainWindow", "方式2"))
+        self.method3TipLabel.setText(_translate("MainWindow", "方式3: 源码中没有全局变量, 系统\n"
+"生成全局变量并插装, 用户需要指定\n"
+"发回报文所在位置"))
+        self.sendBackCodeFileTipLabel.setText(_translate("MainWindow", "发挥报文代\n"
+"码所在文件"))
+        self.sendBackCodeLocTipLabel.setText(_translate("MainWindow", "发挥报文代\n"
+"码所在行"))
+        self.instrGlobalVarTypeComboBox.setToolTip(_translate("MainWindow", "插装变量类型"))
+        self.instrGlobalVarTypeComboBox.setItemText(0, _translate("MainWindow", "char"))
+        self.instrGlobalVarTypeComboBox.setItemText(1, _translate("MainWindow", "short"))
+        self.instrGlobalVarTypeComboBox.setItemText(2, _translate("MainWindow", "short int"))
+        self.instrGlobalVarTypeComboBox.setItemText(3, _translate("MainWindow", "int"))
+        self.instrGlobalVarTypeComboBox.setItemText(4, _translate("MainWindow", "long"))
+        self.instrGlobalVarTypeComboBox.setItemText(5, _translate("MainWindow", "long long"))
+        self.instrGlobalVarTypeComboBox.setItemText(6, _translate("MainWindow", "unsigned char"))
+        self.instrGlobalVarTypeComboBox.setItemText(7, _translate("MainWindow", "unsigned short"))
+        self.instrGlobalVarTypeComboBox.setItemText(8, _translate("MainWindow", "unsigned short int"))
+        self.instrGlobalVarTypeComboBox.setItemText(9, _translate("MainWindow", "unsigned int"))
+        self.instrGlobalVarTypeComboBox.setItemText(10, _translate("MainWindow", "unsigned long"))
+        self.instrGlobalVarTypeComboBox.setItemText(11, _translate("MainWindow", "unsigned long long"))
+        self.instrGlobalVarTypeTipLabel.setText(_translate("MainWindow", "插装全局变\n"
+"量类型"))
+        self.instrGlobalVarNameTipLabel.setText(_translate("MainWindow", "插装全局变\n"
+"量名称"))
+        self.instrumentMethod3Btn.setText(_translate("MainWindow", "插装"))
+        self.compileMethod3Btn.setText(_translate("MainWindow", "编译"))
+        self.instrTabWidget.setTabText(self.instrTabWidget.indexOf(self.method3Tab), _translate("MainWindow", "方式3"))
+
 
     # ==========定义功能================================================================
 
@@ -271,6 +382,12 @@ class Ui_MainWindow(object):
             path += temp[0][i] + "\n"
         path = path.rstrip("\n")
         self.CFileLoc.setText(path)
+
+        # 设置插装方式3中的comboBox
+        self.sendBackCodeFileComboBox.clear()
+        files = list()
+        files = [os.path.basename(file) for file in self.CFileLoc.toPlainText().split("\n")]
+        self.sendBackCodeFileComboBox.addItems(files)
 
     def chooseHFile(self):
         """选择头文件
@@ -485,14 +602,14 @@ class Ui_MainWindow(object):
         if os.path.exists(root_loc + "/in/instrument.txt"):
             f = open(root_loc + "/in/instrument.txt")
             content = f.read()
-            insVarName = content.split(" ")[-1].split(":")[0]
-            insVarType = content.split(":")[0].split(" ")   # list
-            insVarType.pop(-1)
-            insVarType = " ".join(insVarType)  # str
+            instrVarName = content.split(" ")[-1].split(":")[0]
+            instrVarType = content.split(":")[0].split(" ")   # list
+            instrVarType.pop(-1)
+            instrVarType = " ".join(instrVarType)  # str
             f.close()
         else:
-            insVarName = "还未生成插装文件"
-            insVarType = "暂无"
+            instrVarName = "还未生成插装文件"
+            instrVarType = "暂无"
 
         # 设置连接符
         if self.pointerStyleRadioBtn.isChecked():
@@ -502,8 +619,8 @@ class Ui_MainWindow(object):
 
         # 设置预览文本
         self.instrumentCodeLabel.setText(
-            self.structParameterName.text() + connectStr + insVarName + " |= 1<<x;")
-        self.insVarTypeLabel.setText(insVarType)
+            self.structParameterName.text() + connectStr + instrVarName + " |= 1<<x;")
+        self.instrVarTypeLabel.setText(instrVarType)
 
     def setInstrumentCodeManually(self):
         """手动设置插装语句
@@ -514,10 +631,15 @@ class Ui_MainWindow(object):
         """
         self.instrumentCodeLabel.setText(
             self.manualInputInsCode.text() + " |= 1<<x;")
-        if self.manualInputInsVarType.text() == "":
-            self.insVarTypeLabel.setText("暂无")
-        else:
-            self.insVarTypeLabel.setText(self.manualInputInsVarType.text())
+        self.instrVarTypeLabel.setText(self.instrVarTypeComboBox.currentText())
+
+    def changeInstrCodeFromMethod3(self):
+        instrCode = self.instrGlobalVarNameLineEdit.text() + " = 1 << x;"
+        self.instrumentCodeLabel.setText(instrCode)
+        self.instrVarTypeLabel.setText(self.instrGlobalVarTypeComboBox.currentText())
+
+    def changeInstrTypeFromMethod3(self):
+        self.instrVarTypeLabel.setText(self.instrGlobalVarTypeComboBox.currentText())
 
     def instrumentSource(self):
         """对文件进行插装与编译，在源文件同目录下生成instrument.exe文件
@@ -560,27 +682,27 @@ class Ui_MainWindow(object):
                 0].rstrip()
 
             # 生成insFunc.c与insFunc.dll
-            # insVarName是插装变量的名字, instrTemplate是插装语句等号左边的东西
-            insVarName = instrTemplate.replace("->", " ").replace(".", " ")
-            insVarName = re.sub(insVarName.split(" ")[0], "", instrTemplate)
-            insVarName = insVarName.lstrip("[->.]")
-            # insVarType是插装变量的类型
-            insVarType = self.insVarTypeLabel.text()
+            # instrVarName是插装变量的名字, instrTemplate是插装语句等号左边的东西
+            instrVarName = instrTemplate.replace("->", " ").replace(".", " ")
+            instrVarName = re.sub(instrVarName.split(" ")[0], "", instrTemplate)
+            instrVarName = instrVarName.lstrip("[->.]")
+            # instrVarType是插装变量的类型
+            instrVarType = self.instrVarTypeLabel.text()
             # 生成获取插装值的instrument.dll
             f = open(root_loc + "in/insFunc.c", mode="w")
 
             code = "#include <stdio.h>\n#include <stdbool.h>\n"
             for header in header_loc_list:
                 code += "#include \"" + header + "\"\n"
-            code += "\n\n" + insVarType + \
+            code += "\n\n" + instrVarType + \
                 " getInstrumentValue(" + open(root_loc +
                                               "in/outputStruct.txt").read() + "* data) {\n"
-            code += "\treturn data->" + insVarName + ";\n}"
+            code += "\treturn data->" + instrVarName + ";\n}"
 
             # XXX TEMP 插装值置0
             code += "\n\nvoid setInstrValueToZero(" + open(
                 root_loc + "in/outputStruct.txt").read() + "* data) {\n"
-            code += "\tdata->" + insVarName + " = 0;\n}"
+            code += "\tdata->" + instrVarName + " = 0;\n}"
 
             f.write(code)
             f.close()
@@ -601,6 +723,25 @@ class Ui_MainWindow(object):
             instrErrBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Warning, "警告", "插装失败: " + str(e))
             instrErrBox.exec_()
+
+    def instrumentM3(self):
+        """插装方式3
+
+        Notes
+        -----
+        [description]
+        """
+        obj = instr.instrumentMethod3()
+        source_loc_list = self.CFileLoc.toPlainText().split("\n")
+        dataType = self.instrGlobalVarTypeComboBox.currentText()
+        dataName = self.instrGlobalVarNameLineEdit.text()
+        try:
+            obj.instrument(source_loc_list, dataType, dataName)
+        except:
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
+        del obj
 
     def genCallGraph(self):
         """在源文件根目录的in文件夹下生成调用图callgraph.txt
