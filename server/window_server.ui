@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>788</width>
     <height>853</height>
    </rect>
   </property>
@@ -244,7 +244,7 @@
       <x>400</x>
       <y>570</y>
       <width>321</width>
-      <height>151</height>
+      <height>161</height>
      </rect>
     </property>
     <property name="title">
@@ -285,7 +285,7 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>70</y>
+       <y>60</y>
        <width>101</width>
        <height>20</height>
       </rect>
@@ -316,9 +316,9 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>90</y>
+       <y>80</y>
        <width>301</width>
-       <height>31</height>
+       <height>21</height>
       </rect>
      </property>
      <property name="layoutDirection">
@@ -343,6 +343,68 @@
       <number>-1</number>
      </property>
     </widget>
+    <widget class="QLabel" name="assignCodePreviewLabel">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>100</y>
+       <width>101</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>赋值代码预览:</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::AutoText</enum>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="indent">
+      <number>-1</number>
+     </property>
+    </widget>
+    <widget class="QLabel" name="assignCodeLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>301</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>仅支持方式3</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::AutoText</enum>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="indent">
+      <number>-1</number>
+     </property>
+    </widget>
    </widget>
    <widget class="QTabWidget" name="instrTabWidget">
     <property name="geometry">
@@ -350,14 +412,14 @@
       <x>70</x>
       <y>400</y>
       <width>291</width>
-      <height>321</height>
+      <height>331</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">background-color:rgb(235, 235, 235)</string>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="method1Tab">
      <attribute name="title">
@@ -670,7 +732,7 @@
       <property name="geometry">
        <rect>
         <x>100</x>
-        <y>80</y>
+        <y>150</y>
         <width>171</width>
         <height>31</height>
        </rect>
@@ -683,20 +745,7 @@
       <property name="geometry">
        <rect>
         <x>100</x>
-        <y>120</y>
-        <width>171</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color:rgb(255, 255, 255)</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="instrGlobalVarNameLineEdit">
-      <property name="geometry">
-       <rect>
-        <x>100</x>
-        <y>210</y>
+        <y>190</y>
         <width>171</width>
         <height>31</height>
        </rect>
@@ -709,13 +758,13 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>78</y>
+        <y>148</y>
         <width>81</width>
         <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>发挥报文代
+       <string>发回报文代
 码所在文件</string>
       </property>
      </widget>
@@ -723,21 +772,60 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>120</y>
+        <y>190</y>
         <width>81</width>
         <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>发挥报文代
+       <string>发回报文代
 码所在行</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="instrumentMethod3Btn">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>270</y>
+        <width>121</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>插装</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="compileMethod3Btn">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>270</y>
+        <width>121</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>编译</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="instrGlobalVarNameLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>110</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(255, 255, 255)</string>
       </property>
      </widget>
      <widget class="QComboBox" name="instrGlobalVarTypeComboBox">
       <property name="geometry">
        <rect>
         <x>100</x>
-        <y>170</y>
+        <y>70</y>
         <width>171</width>
         <height>31</height>
        </rect>
@@ -812,25 +900,11 @@
        </property>
       </item>
      </widget>
-     <widget class="QLabel" name="instrGlobalVarTypeTipLabel">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>170</y>
-        <width>81</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>插装全局变
-量类型</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="instrGlobalVarNameTipLabel">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>210</y>
+        <y>110</y>
         <width>81</width>
         <height>31</height>
        </rect>
@@ -840,30 +914,44 @@
 量名称</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="instrumentMethod3Btn">
+     <widget class="QLabel" name="instrGlobalVarTypeTipLabel">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>250</y>
-        <width>121</width>
-        <height>28</height>
+        <y>70</y>
+        <width>81</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>插装</string>
+       <string>插装全局变
+量类型</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="compileMethod3Btn">
+     <widget class="QLineEdit" name="assignCodeLineEdit">
       <property name="geometry">
        <rect>
-        <x>150</x>
-        <y>250</y>
-        <width>121</width>
-        <height>28</height>
+        <x>100</x>
+        <y>230</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(255, 255, 255)</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="assignCodeTipLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>230</y>
+        <width>81</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>编译</string>
+       <string>赋值代码</string>
       </property>
      </widget>
     </widget>
@@ -874,7 +962,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>788</width>
      <height>26</height>
     </rect>
    </property>
