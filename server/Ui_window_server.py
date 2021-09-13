@@ -67,9 +67,6 @@ class Ui_MainWindow(object):
         self.SAResultGenBtn.setGeometry(QtCore.QRect(210, 105, 93, 31))
         self.SAResultGenBtn.setObjectName("SAResultGenBtn")
         self.tabWidget.addTab(self.codeStructTab, "")
-        self.interfaceTab = QtWidgets.QWidget()
-        self.interfaceTab.setObjectName("interfaceTab")
-        self.tabWidget.addTab(self.interfaceTab, "")
         self.selectInstrVarGroupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.selectInstrVarGroupBox.setGeometry(QtCore.QRect(70, 310, 291, 81))
         self.selectInstrVarGroupBox.setObjectName("selectInstrVarGroupBox")
@@ -112,44 +109,42 @@ class Ui_MainWindow(object):
         self.instrVarTypeLabel.setWordWrap(False)
         self.instrVarTypeLabel.setIndent(-1)
         self.instrVarTypeLabel.setObjectName("instrVarTypeLabel")
+        self.assignCodePreviewTipLabel = QtWidgets.QLabel(self.instrCodePreviewGroupBox)
+        self.assignCodePreviewTipLabel.setGeometry(QtCore.QRect(40, 100, 101, 20))
+        self.assignCodePreviewTipLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.assignCodePreviewTipLabel.setTextFormat(QtCore.Qt.AutoText)
+        self.assignCodePreviewTipLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.assignCodePreviewTipLabel.setWordWrap(False)
+        self.assignCodePreviewTipLabel.setIndent(-1)
+        self.assignCodePreviewTipLabel.setObjectName("assignCodePreviewTipLabel")
         self.assignCodePreviewLabel = QtWidgets.QLabel(self.instrCodePreviewGroupBox)
-        self.assignCodePreviewLabel.setGeometry(QtCore.QRect(40, 100, 101, 20))
+        self.assignCodePreviewLabel.setGeometry(QtCore.QRect(10, 120, 301, 21))
         self.assignCodePreviewLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.assignCodePreviewLabel.setTextFormat(QtCore.Qt.AutoText)
         self.assignCodePreviewLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.assignCodePreviewLabel.setWordWrap(False)
         self.assignCodePreviewLabel.setIndent(-1)
         self.assignCodePreviewLabel.setObjectName("assignCodePreviewLabel")
-        self.assignCodeLabel = QtWidgets.QLabel(self.instrCodePreviewGroupBox)
-        self.assignCodeLabel.setGeometry(QtCore.QRect(10, 120, 301, 21))
-        self.assignCodeLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.assignCodeLabel.setTextFormat(QtCore.Qt.AutoText)
-        self.assignCodeLabel.setAlignment(QtCore.Qt.AlignCenter)
-        self.assignCodeLabel.setWordWrap(False)
-        self.assignCodeLabel.setIndent(-1)
-        self.assignCodeLabel.setObjectName("assignCodeLabel")
         self.instrTabWidget = QtWidgets.QTabWidget(self.centralwidget)
         self.instrTabWidget.setGeometry(QtCore.QRect(70, 400, 291, 331))
         self.instrTabWidget.setStyleSheet("background-color:rgb(235, 235, 235)")
         self.instrTabWidget.setObjectName("instrTabWidget")
         self.method1Tab = QtWidgets.QWidget()
         self.method1Tab.setObjectName("method1Tab")
-        self.autoGenInsCodeConfirmBtn = QtWidgets.QPushButton(self.method1Tab)
-        self.autoGenInsCodeConfirmBtn.setGeometry(QtCore.QRect(220, 130, 51, 28))
-        self.autoGenInsCodeConfirmBtn.setObjectName("autoGenInsCodeConfirmBtn")
         self.pointerStyleRadioBtn = QtWidgets.QRadioButton(self.method1Tab)
-        self.pointerStyleRadioBtn.setGeometry(QtCore.QRect(150, 120, 61, 19))
+        self.pointerStyleRadioBtn.setGeometry(QtCore.QRect(210, 120, 61, 19))
         self.pointerStyleRadioBtn.setChecked(True)
         self.pointerStyleRadioBtn.setObjectName("pointerStyleRadioBtn")
         self.structParameterName = QtWidgets.QLineEdit(self.method1Tab)
-        self.structParameterName.setGeometry(QtCore.QRect(10, 130, 113, 31))
+        self.structParameterName.setGeometry(QtCore.QRect(10, 130, 181, 31))
         self.structParameterName.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
         self.structParameterName.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.structParameterName.setStyleSheet("background-color:rgb(255, 255, 255)")
-        self.structParameterName.setCursorPosition(3)
+        self.structParameterName.setCursorPosition(10)
+        self.structParameterName.setAlignment(QtCore.Qt.AlignCenter)
         self.structParameterName.setObjectName("structParameterName")
         self.pointStyleRadioBtn = QtWidgets.QRadioButton(self.method1Tab)
-        self.pointStyleRadioBtn.setGeometry(QtCore.QRect(150, 150, 61, 19))
+        self.pointStyleRadioBtn.setGeometry(QtCore.QRect(210, 150, 61, 19))
         self.pointStyleRadioBtn.setChecked(False)
         self.pointStyleRadioBtn.setObjectName("pointStyleRadioBtn")
         self.method1TipLabel = QtWidgets.QLabel(self.method1Tab)
@@ -164,22 +159,19 @@ class Ui_MainWindow(object):
         self.instrTabWidget.addTab(self.method1Tab, "")
         self.method2Tab = QtWidgets.QWidget()
         self.method2Tab.setObjectName("method2Tab")
-        self.manualInputInsCodeConfirmBtn = QtWidgets.QPushButton(self.method2Tab)
-        self.manualInputInsCodeConfirmBtn.setGeometry(QtCore.QRect(225, 150, 51, 28))
-        self.manualInputInsCodeConfirmBtn.setObjectName("manualInputInsCodeConfirmBtn")
-        self.manualInputInsCode = QtWidgets.QLineEdit(self.method2Tab)
-        self.manualInputInsCode.setGeometry(QtCore.QRect(17, 148, 201, 31))
-        self.manualInputInsCode.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
-        self.manualInputInsCode.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.manualInputInsCode.setStyleSheet("background-color:rgb(255, 255, 255)")
-        self.manualInputInsCode.setText("")
-        self.manualInputInsCode.setCursorPosition(0)
-        self.manualInputInsCode.setObjectName("manualInputInsCode")
+        self.manualInputInstrCodeLineEdit = QtWidgets.QLineEdit(self.method2Tab)
+        self.manualInputInstrCodeLineEdit.setGeometry(QtCore.QRect(17, 148, 251, 31))
+        self.manualInputInstrCodeLineEdit.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
+        self.manualInputInstrCodeLineEdit.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.manualInputInstrCodeLineEdit.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.manualInputInstrCodeLineEdit.setCursorPosition(15)
+        self.manualInputInstrCodeLineEdit.setAlignment(QtCore.Qt.AlignCenter)
+        self.manualInputInstrCodeLineEdit.setObjectName("manualInputInstrCodeLineEdit")
         self.method2TipLabel = QtWidgets.QLabel(self.method2Tab)
         self.method2TipLabel.setGeometry(QtCore.QRect(10, 48, 251, 51))
         self.method2TipLabel.setObjectName("method2TipLabel")
         self.instrVarTypeComboBox = QtWidgets.QComboBox(self.method2Tab)
-        self.instrVarTypeComboBox.setGeometry(QtCore.QRect(17, 108, 201, 31))
+        self.instrVarTypeComboBox.setGeometry(QtCore.QRect(17, 108, 251, 31))
         self.instrVarTypeComboBox.setStyleSheet("background-color:rgb(255, 255, 255)")
         self.instrVarTypeComboBox.setObjectName("instrVarTypeComboBox")
         self.instrVarTypeComboBox.addItem("")
@@ -273,21 +265,26 @@ class Ui_MainWindow(object):
         self.chooseCBtn.clicked.connect(self.chooseCFile)
         self.chooseHBtn.clicked.connect(self.chooseHFile)
         self.selectInstrVarBtn.clicked.connect(self.popStructDialog)
-        self.autoGenInsCodeConfirmBtn.clicked.connect(self.setInstrumentCode)
         self.pointerStyleRadioBtn.clicked.connect(self.setInstrumentCode)
         self.pointStyleRadioBtn.clicked.connect(self.setInstrumentCode)
-        self.manualInputInsCodeConfirmBtn.clicked.connect(self.setInstrumentCodeManually)
         self.SAByCppcheckBtn.clicked.connect(self.SAByCppcheck)
         self.SAByManBtn.clicked.connect(self.popTargetDialog)
         self.SAResultGenBtn.clicked.connect(self.genSAResult)
-        self.instrumentMethod1Btn.clicked.connect(self.instrumentSource)
+        self.instrumentMethod1Btn.clicked.connect(self.instrumentM2)
         self.instrumentMethod3Btn.clicked.connect(self.instrumentM3)
+        self.compileMethod1Btn.clicked.connect(self.compileInstrFiles)
+        self.compileMethod2Btn.clicked.connect(self.compileInstrFiles)
         self.compileMethod3Btn.clicked.connect(self.compileInstrFiles)
         self.genCallGraphBtn.clicked.connect(self.genCallGraph)
         self.startServerBtn.clicked.connect(self.startServer)
 
         self.instrGlobalVarNameLineEdit.textChanged.connect(self.changeInstrCodeFromMethod3)
         self.instrGlobalVarTypeComboBox.currentIndexChanged.connect(self.changeInstrTypeFromMethod3)
+        self.assignCodeLineEdit.textChanged.connect(self.updateAssignCodPreview)
+        self.instrTabWidget.currentChanged.connect(self.updateInstrPreviewContent)
+        self.structParameterName.textChanged.connect(self.updateInstrPreviewContent)
+        self.manualInputInstrCodeLineEdit.textChanged.connect(self.updateInstrPreviewContent)
+        self.instrVarTypeComboBox.currentIndexChanged.connect(self.updateInstrPreviewContent)
 
         regExp1 = QtCore.QRegExp("[a-zA-Z0-9_]{1,23}")
         self.instrGlobalVarNameLineEdit.setValidator(QtGui.QRegExpValidator(regExp1))
@@ -295,7 +292,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
-        self.instrTabWidget.setCurrentIndex(2)
+        self.instrTabWidget.setCurrentIndex(0)
         self.instrVarTypeComboBox.setCurrentIndex(3)
         self.instrGlobalVarTypeComboBox.setCurrentIndex(9)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -314,30 +311,28 @@ class Ui_MainWindow(object):
         self.targetSetInfo.setPlaceholderText(_translate("MainWindow", "目标集信息"))
         self.SAResultGenBtn.setText(_translate("MainWindow", "结果生成"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.codeStructTab), _translate("MainWindow", "基于代码结构"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.interfaceTab), _translate("MainWindow", "基于交互接口故规约"))
         self.selectInstrVarGroupBox.setTitle(_translate("MainWindow", "选择插装变量"))
         self.selectInstrVarBtn.setText(_translate("MainWindow", "选择插装变量"))
         self.startServerBtn.setText(_translate("MainWindow", "启动服务端程序"))
         self.callGraphGroupBox.setTitle(_translate("MainWindow", "调用图"))
         self.genCallGraphBtn.setText(_translate("MainWindow", "生成函数调用图"))
         self.instrCodePreviewGroupBox.setTitle(_translate("MainWindow", "插装语句预览"))
-        self.instrumentCodeLabel.setText(_translate("MainWindow", "dtg->variable = 1 << x;"))
+        self.instrumentCodeLabel.setText(_translate("MainWindow", "out_global->variable = 1 << x;"))
         self.instrVarTypeLabelTip.setText(_translate("MainWindow", "插装变量类型:"))
         self.instrVarTypeLabel.setText(_translate("MainWindow", "暂无"))
-        self.assignCodePreviewLabel.setText(_translate("MainWindow", "赋值代码预览:"))
-        self.assignCodeLabel.setText(_translate("MainWindow", "仅支持方式3"))
-        self.autoGenInsCodeConfirmBtn.setText(_translate("MainWindow", "确定"))
+        self.assignCodePreviewTipLabel.setText(_translate("MainWindow", "赋值代码预览:"))
+        self.assignCodePreviewLabel.setText(_translate("MainWindow", "仅支持方式3"))
         self.pointerStyleRadioBtn.setText(_translate("MainWindow", "->"))
-        self.structParameterName.setText(_translate("MainWindow", "dtg"))
+        self.structParameterName.setText(_translate("MainWindow", "out_global"))
         self.structParameterName.setPlaceholderText(_translate("MainWindow", "结构体实参名"))
         self.pointStyleRadioBtn.setText(_translate("MainWindow", "."))
         self.method1TipLabel.setText(_translate("MainWindow", "方式1: 源代码中已存在输出结构体的\n" "全局变量, 使用系统自动生成的插装语\n" "句进行插装"))
         self.instrumentMethod1Btn.setText(_translate("MainWindow", "插装"))
         self.compileMethod1Btn.setText(_translate("MainWindow", "编译"))
         self.instrTabWidget.setTabText(self.instrTabWidget.indexOf(self.method1Tab), _translate("MainWindow", "方式1"))
-        self.manualInputInsCodeConfirmBtn.setText(_translate("MainWindow", "确定"))
-        self.manualInputInsCode.setToolTip(_translate("MainWindow", "手动输入插装语句，输入等号前的内容即可"))
-        self.manualInputInsCode.setPlaceholderText(_translate("MainWindow", "手动输入插装语句"))
+        self.manualInputInstrCodeLineEdit.setToolTip(_translate("MainWindow", "手动输入插装语句，输入等号前的内容即可"))
+        self.manualInputInstrCodeLineEdit.setText(_translate("MainWindow", "struct->example"))
+        self.manualInputInstrCodeLineEdit.setPlaceholderText(_translate("MainWindow", "手动输入插装语句"))
         self.method2TipLabel.setText(_translate("MainWindow", "方式2: 源码中已存在输出结构体的\n" "全局变量, 手动输入插装语句进行插\n" "装"))
         self.instrVarTypeComboBox.setToolTip(_translate("MainWindow", "插装变量类型"))
         self.instrVarTypeComboBox.setItemText(0, _translate("MainWindow", "char"))
@@ -379,6 +374,50 @@ class Ui_MainWindow(object):
         self.instrTabWidget.setTabText(self.instrTabWidget.indexOf(self.method3Tab), _translate("MainWindow", "方式3"))
 
     # ==========定义功能================================================================
+
+    def updateInstrPreviewContent(self):
+        """改变tabwidget时改变插装预览的内容
+
+        Notes
+        -----
+        [description]
+        """
+        if self.instrTabWidget.currentIndex() == 0:  # 方式1
+            self.assignCodePreviewLabel.setText("仅支持方式3")
+            root_loc = os.path.dirname(self.CFileLoc.toPlainText().split("\n")[0])
+            instrTxtLoc = os.path.join(root_loc, "in", "instrument.txt")
+            if os.path.exists(instrTxtLoc):
+                f = open(instrTxtLoc)
+                content = f.read()
+                instrVarName = content.split(" ")[-1].split(":")[0]
+                instrVarType = content.split(":")[0].split(" ")  # list
+                instrVarType.pop(-1)
+                instrVarType = " ".join(instrVarType)  # str
+                f.close()
+            else:
+                instrVarName = "还未生成插装文件"
+                instrVarType = "暂无"
+            if self.pointerStyleRadioBtn.isChecked():  # 设置连接符
+                connectStr = "->"
+            else:
+                connectStr = "."
+            # 设置预览文本
+            self.instrumentCodeLabel.setText(self.structParameterName.text() + connectStr + instrVarName + " |= 1<<x;")
+            self.instrVarTypeLabel.setText(instrVarType)
+        elif self.instrTabWidget.currentIndex() == 1:  # 方式2
+            self.assignCodePreviewLabel.setText("仅支持方式3")
+            self.instrVarTypeLabel.setText(self.instrVarTypeComboBox.currentText())
+            if len(self.manualInputInstrCodeLineEdit.text()) > 0:
+                self.instrumentCodeLabel.setText(self.manualInputInstrCodeLineEdit.text() + " |= 1<<x;")
+            else:
+                self.instrumentCodeLabel.setText("请输入 |= 1<<x;")
+        elif self.instrTabWidget.currentIndex() == 2:  # 方式3
+            self.instrumentCodeLabel.setText(self.instrGlobalVarNameLineEdit.text() + " |= 1<<x;")
+            self.instrVarTypeLabel.setText(self.instrGlobalVarTypeComboBox.currentText())
+            if len(self.assignCodeLineEdit.text()) < 1:
+                self.assignCodePreviewLabel.setText("暂无")
+            else:
+                self.assignCodePreviewLabel.setText(self.assignCodeLineEdit.text())
 
     def chooseCFile(self):
         """选择C文件
@@ -590,10 +629,10 @@ class Ui_MainWindow(object):
         [description]
         """
         # 读取插装变量
-        root_loc = self.CFileLoc.toPlainText().split("\n")[0]
-        root_loc = re.sub(root_loc.split("/")[-1], "", root_loc)
-        if os.path.exists(root_loc + "/in/instrument.txt"):
-            f = open(root_loc + "/in/instrument.txt")
+        root_loc = os.path.dirname(self.CFileLoc.toPlainText().split("\n")[0])
+        instrTxtLoc = os.path.join(root_loc, "in", "instrument.txt")
+        if os.path.exists(instrTxtLoc):
+            f = open(instrTxtLoc)
             content = f.read()
             instrVarName = content.split(" ")[-1].split(":")[0]
             instrVarType = content.split(":")[0].split(" ")  # list
@@ -603,13 +642,10 @@ class Ui_MainWindow(object):
         else:
             instrVarName = "还未生成插装文件"
             instrVarType = "暂无"
-
-        # 设置连接符
-        if self.pointerStyleRadioBtn.isChecked():
+        if self.pointerStyleRadioBtn.isChecked():  # 设置连接符
             connectStr = "->"
         else:
             connectStr = "."
-
         # 设置预览文本
         self.instrumentCodeLabel.setText(self.structParameterName.text() + connectStr + instrVarName + " |= 1<<x;")
         self.instrVarTypeLabel.setText(instrVarType)
@@ -625,14 +661,26 @@ class Ui_MainWindow(object):
         self.instrVarTypeLabel.setText(self.instrVarTypeComboBox.currentText())
 
     def changeInstrCodeFromMethod3(self):
-        instrCode = self.instrGlobalVarNameLineEdit.text() + " = 1 << x;"
+        """根据方式3输入框中的内容改变插装语句预览内容
+
+        Notes
+        -----
+        [description]
+        """
+        instrCode = self.instrGlobalVarNameLineEdit.text() + " = 1<<x;"
         self.instrumentCodeLabel.setText(instrCode)
         self.instrVarTypeLabel.setText(self.instrGlobalVarTypeComboBox.currentText())
 
     def changeInstrTypeFromMethod3(self):
+        """将插装全局变量类型变为comboBox中所选类型
+
+        Notes
+        -----
+        [description]
+        """
         self.instrVarTypeLabel.setText(self.instrGlobalVarTypeComboBox.currentText())
 
-    def instrumentSource(self):
+    def instrumentM2(self):
         """对文件进行插装与编译，在源文件同目录下生成instrument.exe文件
 
         Notes
@@ -641,8 +689,7 @@ class Ui_MainWindow(object):
         """
         source_loc_list = self.CFileLoc.toPlainText().split("\n")
         header_loc_list = self.HFileLoc.toPlainText().split("\n")
-        root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
-
+        root_loc = os.path.dirname(source_loc_list[0])
         for source in source_loc_list:
             if not os.path.exists(source):
                 sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
@@ -653,7 +700,6 @@ class Ui_MainWindow(object):
                 headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "头文件不存在!")
                 headerNotExistBox.exec_()
                 return
-
         # 检查mingw是否安装正确
         if os.system("gcc --version") != 0:
             gccInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到mingw")
@@ -661,12 +707,9 @@ class Ui_MainWindow(object):
             return
 
         try:
-            # 移除旧的instrument.exe
-            if os.path.exists(root_loc + "instrument.exe"):
-                os.remove(root_loc + "instrument.exe")
-
+            if os.path.exists(os.path.join(root_loc, "instrument.exe")):  # 移除旧的instrument.exe
+                os.remove(os.path.join(root_loc, "instrument.exe"))
             instrTemplate = self.instrumentCodeLabel.text().split("|=")[0].rstrip()
-
             # 生成insFunc.c与insFunc.dll
             # instrVarName是插装变量的名字, instrTemplate是插装语句等号左边的东西
             instrVarName = instrTemplate.replace("->", " ").replace(".", " ")
@@ -674,28 +717,12 @@ class Ui_MainWindow(object):
             instrVarName = instrVarName.lstrip("[->.]")
             # instrVarType是插装变量的类型
             instrVarType = self.instrVarTypeLabel.text()
-            # 生成获取插装值的instrument.dll
-            f = open(root_loc + "in/insFunc.c", mode="w")
-
-            code = "#include <stdio.h>\n#include <stdbool.h>\n"
-            for header in header_loc_list:
-                code += "#include \"" + header + "\"\n"
-            code += "\n\n" + instrVarType + \
-                " getInstrumentValue(" + open(root_loc + "in/outputStruct.txt").read() + "* data) {\n"
-            code += "\treturn data->" + instrVarName + ";\n}"
-
-            # XXX TEMP 插装值置0
-            code += "\n\nvoid setInstrValueToZero(" + open(root_loc + "in/outputStruct.txt").read() + "* data) {\n"
-            code += "\tdata->" + instrVarName + " = 0;\n}"
-
-            f.write(code)
-            f.close()
-
-            os.system("gcc -shared -o " + root_loc + "in/insFunc.dll " + root_loc + "in/insFunc.c")
-
-            # 插装
-            instr.instrument(source_loc_list, instrTemplate)
-
+            # 插装与生成dll
+            obj = instr.instrumentMethod2()
+            obj.instrument(source_loc_list, instrTemplate)
+            obj.genInstrCFile(header_loc_list, source_loc_list, instrVarType, instrVarName)
+            del obj
+            os.system("gcc -shared -o " + os.path.join(root_loc, "in", "insFunc.dll") + " " + os.path.join(root_loc, "in", "insFunc.c"))
             instrSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "插装成功!")
             instrSuccBox.exec_()
         except BaseException as e:
@@ -714,7 +741,7 @@ class Ui_MainWindow(object):
         """
         source_loc_list = self.CFileLoc.toPlainText().split("\n")
         header_loc_list = self.HFileLoc.toPlainText().split("\n")
-        root_loc = os.path.dirname(header_loc_list[0])
+        root_loc = os.path.dirname(source_loc_list[0])
         for source in source_loc_list:
             if not os.path.exists(source):
                 sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
@@ -742,7 +769,7 @@ class Ui_MainWindow(object):
             instrVarName = instrText.split(" ")[-1].split(":")[0]
             obj.instrument(source_loc_list, dataType, dataName)
             obj.insertAssignCode(source_loc_list, "ins_" + targetSource, nthLine, assignCode)
-            obj.genInstrCFile(header_loc_list, instrVarType, instrVarName)
+            obj.genInstrCFile(header_loc_list, source_loc_list, instrVarType, instrVarName)
             os.system("gcc -shared -o " + os.path.join(root_loc, "in", "insFunc.dll") + " " + os.path.join(root_loc, "in", "insFunc.c"))
             del obj
             instrSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "插装成功!")
@@ -754,8 +781,11 @@ class Ui_MainWindow(object):
             traceback.print_exc()
             print("\033[0m")
 
+    def updateAssignCodPreview(self):
+        self.assignCodePreviewLabel.setText(self.assignCodeLineEdit.text())
+
     def compileInstrFiles(self):
-        if os.system("g++ --version"):
+        if os.system("g++ --version"):  #检测mingw
             mingwNotDetectedBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到mingw")
             mingwNotDetectedBox.exec_()
             return
@@ -786,13 +816,11 @@ class Ui_MainWindow(object):
         """
         source_loc_list = self.CFileLoc.toPlainText().split("\n")
         root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
-
         for source in source_loc_list:
             if not os.path.exists(source):
                 sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
                 sourceNotExistBox.exec_()
                 return
-
         # 获取函数调用图需要用clang，检测是否安装clang
         if os.system("clang -v") != 0:
             clangInstallErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "未检测到clang")

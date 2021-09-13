@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-09-12 15:10:46
+LastEditTime: 2021-09-13 10:07:51
 Description: Hi, say something
 '''
 from PyQt5 import QtWidgets
@@ -17,44 +17,6 @@ import public
 
 
 class instrumentMethod(object):
-    def instrument(self):
-        print("instrument...")
-
-    def genInstrCFile(self, header_loc_list, instrVarType, instrVarName):
-        """生成获取插装变量的C文件
-
-        Parameters
-        ----------
-        header_loc_list : list
-            头文件列表
-        instrVarType : str
-            插装变量类型
-        instrVarName : str
-            插装变量名称
-
-        Returns
-        -------
-        [type]
-            [description]
-
-        Notes
-        -----
-        [description]
-        """
-        in_loc = os.path.join(os.path.dirname(header_loc_list[0]), "in")
-        outputStructName = open(os.path.join(in_loc, "outputStruct.txt")).read()
-        code = "#include <stdio.h>\n#include <stdbool.h>\n"
-        for header in header_loc_list:
-            code += "#include \"" + header + "\"\n"
-        code += "\n\n" + instrVarType + " getInstrumentValue(" + outputStructName + "* data) {\n"
-        code += "\treturn data->" + instrVarName + ";\n}"
-
-        f = open(os.path.join(in_loc, "insFunc.c"), mode="w")
-        f.write(code)
-        f.close()
-
-
-class instrumentMethod3(instrumentMethod):
     def __init__(self):
         """构造函数，加载dll
 
@@ -70,6 +32,146 @@ class instrumentMethod3(instrumentMethod):
             clang.cindex.Config.set_library_file(libclangPath)
             print("install path")
 
+    def instrument(self):
+        print("instrument...")
+
+    def genInstrCFile(self, header_loc_list, source_loc_list, instrVarType, instrVarName):
+        """生成获取插装变量的C文件
+
+        Parameters
+        ----------
+        header_loc_list : list
+            头文件列表
+        source_loc_list : list
+            源文件列表
+        instrVarType : str
+            插装变量类型
+        instrVarName : str
+            插装变量名称
+
+        Returns
+        -------
+        [type]
+            [description]
+
+        Notes
+        -----
+        [description]
+        """
+        in_loc = os.path.join(os.path.dirname(source_loc_list[0]), "in")
+        outputStructName = open(os.path.join(in_loc, "outputStruct.txt")).read()
+        code = "#include <stdio.h>\n#include <stdbool.h>\n"
+        for header in header_loc_list:
+            code += "#include \"" + header + "\"\n"
+        code += "\n\n" + instrVarType + " getInstrumentValue(" + outputStructName + "* data) {\n"
+        code += "\treturn data->" + instrVarName + ";\n}"
+
+        f = open(os.path.join(in_loc, "insFunc.c"), mode="w")
+        f.write(code)
+        f.close()
+
+
+class instrumentMethod2(instrumentMethod):
+    def instrument(self, source_loc_list, instrTemplate):
+        """插装与编译
+
+        Parameters
+        ----------
+        source_loc_list : list
+            源文件地址
+        instrTemplate : str
+            插装语句模板
+
+        Notes
+        -----
+        TODO 保留当前插装方式，新增一个插装方式：用户指定发回报文的代码位置，程序自动设计一个插装变量，然后发回报文前进行赋值
+        """
+        root_loc = os.path.dirname(source_loc_list[0])
+
+        # 获取所有函数，下标决定了它的id
+        # TODO 如果函数数量超过插装变量的位数量
+        allFunc = public.getAllFunctions(source_loc_list)
+        instr_loc_list = list()
+        for source in source_loc_list:
+            index = clang.cindex.Index.create()
+            tu = index.parse(source)
+            instr_loc_list.append(self.instrumentBaseOnAST(tu.cursor, allFunc, source, instrTemplate))
+
+    def instrumentBaseOnAST(self, cursor, allFunc, source, instrTemplate):
+        """根据AST的内容进行插装
+
+        Parameters
+        ----------
+        cursor : clang.cindex.Cursor
+            根节点
+        allFunc : list
+            全部函数
+        source : str
+            源文件地址
+        instrTemplate : str
+            插装模板
+
+        Returns
+        -------
+        [type]
+            [description]
+
+        Notes
+        -----
+        [description]
+        """
+        instrTemplate += " |= 1 << "
+        instr = False
+        brace = 0
+        try:
+            f = open(source, mode="r", encoding="utf-8")
+            codeList = f.readlines()
+            f.close()
+        except UnicodeDecodeError:
+            f = open(source, mode="r", encoding="gbk")
+            codeList = f.readlines()
+            f.close()
+        except:
+            print("err!")
+            return
+
+        for token in cursor.get_tokens():
+            if token.spelling in allFunc:
+                if token.spelling == "main":
+                    continue
+                idx = allFunc.index(token.spelling)
+                instrCode = instrTemplate + str(idx) + ";"
+                instr = True
+                print(token.spelling, ",", token.location.file.name + "?" + str(token.location.line))
+            if token.spelling == ";":
+                instr = False
+            if token.spelling == "{":
+                if instr and brace == 0:
+                    temp = codeList[token.location.line - 1].split("{")
+                    temp[1] = instrCode + temp[1]
+                    codeList[token.location.line - 1] = "{".join(temp)
+                    instr = False
+                brace += 1
+            if token.spelling == "}":
+                brace -= 1
+
+        newSource = os.path.join(os.path.dirname(source), "ins_" + os.path.basename(source))
+        try:
+            f = open(newSource, mode="w", encoding="utf-8")
+            for code in codeList:
+                f.write(code)
+            f.close()
+        except UnicodeEncodeError:
+            f = open(newSource, mode="w", encoding="gbk")
+            for code in codeList:
+                f.write(code)
+            f.close()
+        except BaseException as e:
+            print("Error occured in instrumentBaseOnAST:", e)
+        return newSource
+
+
+class instrumentMethod3(instrumentMethod):
     def instrument(self, source_loc_list, dataType, dataName):
         """插装函数
 
@@ -243,129 +345,9 @@ def compileInstrFiles(source_loc_list):
 
     cmd = "g++ -g "
     for file in instrFilesList:
-        cmd += source + " "
+        cmd += file + " "
     cmd += "-o " + os.path.join(os.path.dirname(source_loc_list[0]), "instrument.exe -lws2_32")
     os.system(cmd)
-
-
-def instrumentBaseOnAST(cursor, allFunc, source, instrTemplate):
-    """根据AST的内容进行插装
-
-    Parameters
-    ----------
-    cursor : clang.cindex.Cursor
-        根节点
-    allFunc : list
-        全部函数
-    source : str
-        源文件地址
-    instrTemplate : str
-        插装模板
-
-    Returns
-    -------
-    [type]
-        [description]
-
-    Notes
-    -----
-    [description]
-    """
-    instrTemplate += " |= 1 << "
-    instr = False
-    brace = 0
-    try:
-        f = open(source, mode="r", encoding="utf-8")
-        codeList = f.readlines()
-        f.close()
-    except UnicodeDecodeError:
-        f = open(source, mode="r", encoding="gbk")
-        codeList = f.readlines()
-        f.close()
-    except:
-        print("err!")
-        return
-
-    for token in cursor.get_tokens():
-        if token.spelling in allFunc:
-            if token.spelling == "main":
-                continue
-            idx = allFunc.index(token.spelling)
-            instrCode = instrTemplate + str(idx) + ";"
-            instr = True
-            print(token.spelling, ",", token.location.file.name + "?" + str(token.location.line))
-        if token.spelling == ";":
-            instr = False
-        if token.spelling == "{":
-            if instr and brace == 0:
-                temp = codeList[token.location.line - 1].split("{")
-                temp[1] = instrCode + temp[1]
-                codeList[token.location.line - 1] = "{".join(temp)
-                instr = False
-            brace += 1
-        if token.spelling == "}":
-            brace -= 1
-
-    newSource = re.sub(source.split("/")[-1], "ins_" + source.split("/")[-1], source)
-    try:
-        f = open(newSource, mode="w", encoding="utf-8")
-        for code in codeList:
-            f.write(code)
-        f.close()
-    except UnicodeEncodeError:
-        f = open(newSource, mode="w", encoding="gbk")
-        for code in codeList:
-            f.write(code)
-        f.close()
-    except BaseException as e:
-        print("Error occured in instrumentBaseOnAST:", e)
-
-    return newSource
-
-
-def instrument(source_loc_list, instrTemplate):
-    """插装与编译
-
-    Parameters
-    ----------
-    source_loc_list : list
-        源文件地址
-    instrTemplate : str
-        插装语句模板
-
-    Notes
-    -----
-    TODO 保留当前插装方式，新增一个插装方式：用户指定发回报文的代码位置，程序自动设计一个插装变量，然后发回报文前进行赋值
-    """
-    root_loc = re.sub(source_loc_list[0].split("/")[-1], "", source_loc_list[0])
-
-    # 加载dll
-    libclangPath = subprocess.getstatusoutput("where clang")[1]
-    libclangPath = re.sub(libclangPath.split("\\")[-1], "", libclangPath) + "libclang.dll"
-    if clang.cindex.Config.loaded == True:
-        print("clang.cindex.Config.loaded == True:")
-    else:
-        clang.cindex.Config.set_library_file(libclangPath)
-        print("install path")
-
-    # 获取所有函数，下标决定了它的id
-    # TODO 如果函数数量超过插装变量的位数量
-    allFunc = public.getAllFunctions(source_loc_list)
-    ins_loc_list = list()
-    for source in source_loc_list:
-        index = clang.cindex.Index.create()
-        tu = index.parse(source)
-        ins_loc_list.append(instrumentBaseOnAST(tu.cursor, allFunc, source, instrTemplate))
-
-    # 编译生成exe文件
-    # g++ -g aaa.cpp bbb.cpp -o ccc.exe -lws2_32
-    cmd = "g++ -g "
-    for file in ins_loc_list:
-        cmd += file + " "
-    cmd += "-o " + root_loc + "instrument.exe -lws2_32"
-    os.system(cmd)
-    for file in ins_loc_list:
-        os.remove(file)
 
 
 if __name__ == "__main__":
