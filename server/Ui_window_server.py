@@ -850,17 +850,14 @@ class Ui_MainWindow(object):
         """
         try:
             program_loc = self.CFileLoc.toPlainText().split("\n")[0]
-            program_loc = re.sub(program_loc.split("/")[-1], "instrument.exe", program_loc)
+            program_loc = os.path.join(os.path.dirname(program_loc), "instrument.exe")
             if not os.path.exists(program_loc):
                 programNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "插装程序不存在!")
                 programNotExistBox.exec_()
                 return
 
-            self.execServerDialog = QtWidgets.QDialog()
-            self.uiExecServer = execServerDialogPY.Ui_Dialog()
-            self.uiExecServer.setupUi(self.execServerDialog)
-            self.uiExecServer.startServer(program_loc, ui, self.uiExecServer)
-            self.execServerDialog.show()
+            program_loc = program_loc.replace("/","\\")
+            os.system("explorer.exe " + program_loc)
         except BaseException as e:
             print("\033[1;31m")
             traceback.print_exc()

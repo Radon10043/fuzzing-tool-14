@@ -154,31 +154,47 @@ class Ui_Dialog(object):
             widget2 = QtWidgets.QWidget()
             widget2.setLayout(hLayout2)
             self.structTableWidget.setCellWidget(i, 0, widget2)
-            self.checkboxs[i].clicked.connect(
-                lambda x, i=i: self.selectStruct(self.checkboxs[i], self.structOneDimList[i]))
+            self.checkboxs[i].clicked.connect(lambda x, i=i: self.selectStruct(self.checkboxs[i], self.structOneDimList[i]))
 
         # 默认高度较矮，需要设置一下
         for i in range(len(self.structOneDimList)):
             self.structTableWidget.setRowHeight(i, 50)
 
     def selectStruct(self, checkbox, label):
-        '''
-        @description: 选择了某个结构体，将其对应的checkbox打勾
-        @param {*} self
-        @param {*} checkbox
-        @param {*} label
-        @return {*}
-        '''
+        """选择了某个结构体，将其对应的checkbox打勾
+
+        Parameters
+        ----------
+        checkbox : [type]
+            [description]
+        label : [type]
+            [description]
+
+        Returns
+        -------
+        [type]
+            [description]
+
+        Notes
+        -----
+        [description]
+        """
         self.unselectAll()
         checkbox.setChecked(True)
         self.selectedStruct = label
 
     def unselectAll(self):
-        '''
-        @description: 因为结构体是单选，所以写一个取消全部选择的函数，在选择某个结构体前先取消全部选择
-        @param {*} self
-        @return {*}
-        '''
+        """因为结构体是单选，所以写一个取消全部选择的函数，在选择某个结构体前先取消全部选择
+
+        Returns
+        -------
+        [type]
+            [description]
+
+        Notes
+        -----
+        [description]
+        """
         for i in range(len(self.structOneDimList)):
             self.checkboxs[i].setChecked(False)
         self.selectedStruct = ""
@@ -195,6 +211,8 @@ class Ui_Dialog(object):
         -----
         [description]
         """
+        analyzeTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "如果结构体内容较为复杂，分析内容会较长，请耐心等待")
+        analyzeTipBox.exec_()
         try:
             if self.selectedStruct == "":
                 raise ValueError("没有选择结构体")
@@ -203,12 +221,10 @@ class Ui_Dialog(object):
             self.outputDialog = QtWidgets.QDialog()
             self.uiOutput = outputDialogPY.Ui_Dialog()
             self.uiOutput.setupUi(self.outputDialog)
-            self.uiOutput.initStructDict(
-                self.header_loc_list, "JSONPath", False, self.uiServer, self.selectedStruct, self.structOneDimList)
+            self.uiOutput.initStructDict(self.header_loc_list, "JSONPath", False, self.uiServer, self.selectedStruct, self.structOneDimList)
             self.outputDialog.show()
         except ValueError as e:
-            exceptionBox = QtWidgets.QMessageBox(
-                QtWidgets.QMessageBox.Warning, "警告", "还没有选择结构体")
+            exceptionBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", str(e))
             exceptionBox.exec_()
             print("\033[1;31m")
             traceback.print_exc()
@@ -217,14 +233,13 @@ class Ui_Dialog(object):
             print("\033[1;31m")
             traceback.print_exc()
             print("\033[0m")
-            exceptionBox = QtWidgets.QMessageBox(
-                QtWidgets.QMessageBox.Warning, "警告", repr(e))
+            exceptionBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", repr(e))
             exceptionBox.exec_()
+
     # ====================================================================================================
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(
-        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
     headerNotExistBox.exec_()

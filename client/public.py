@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-09-10 14:28:09
+LastEditTime: 2021-09-14 16:46:22
 Description: Some public function
 '''
 
@@ -15,11 +15,23 @@ from util.check_code import CheckCode
 
 
 def deleteNote(source):
-    '''
-    @description: 删除程序中的注释
-    @param {*} source 代码列表，source = f.readlines()
-    @return {*}
-    '''
+    """删除程序中的注释
+
+    Parameters
+    ----------
+    source : list
+        源码地址列表
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
+    """
+
     skip = False
     for i in range(len(source)):
         if "//" in source[i]:
@@ -37,49 +49,31 @@ def deleteNote(source):
     return source
 
 
-def getAllFunctions(source_loc_list):
-    '''
-    @description: 获取所有定义的函数
-    @param {*} source_loc_list 列表，存储了所有源文件地址
-    @return {*} 返回包含所有自定义函数的列表
-    '''
-    funcList = []
-    for source in source_loc_list:
-        try:
-            f = open(source, encoding="utf8")
-            lines = f.readlines()
-        except UnicodeDecodeError:
-            f = open(source)
-            lines = f.readlines()
-        brace = 0
-        f.close()
-        lines = deleteNote(lines)
-        for line in lines:
-            # 程序有时候会误认为#pragma comment(lib, "ws2_32.lib")是函数，还没想到好方法
-            if "#pragma" in line:
-                continue
-            # 有左括号且没在{}内就认为有可能是函数
-            if "(" in line and brace == 0:
-                code = line.split("(")[0]
-                code.rstrip()
-                code = re.sub("[^A-Za-z0-9_]", "+", code)
-                funcList.append(code.split("+")[-1])
-            if "{" in line:
-                brace += 1
-            if "}" in line:
-                brace -= 1
-        funcList = sorted(set(funcList))
-    return funcList
-
-
 def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
-    '''
-    @description: 写一个生成初始种子的cpp文件，并编译和执行它
-    @param {*} header_loc_list 列表，里面存储了所有头文件的路径
-    @param {*} struct 用户所选择的结构体名称
-    @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
-    @return {*}
-    '''
+    """写一个生成初始种子的cpp文件，并编译和执行它
+
+    Parameters
+    ----------
+    header_loc_list : list
+        里面存储了所有头文件的路径
+    struct : str
+        用户所选择的结构体名称
+    structDict : dict
+        Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
+    checkCodeMethod : str
+        校验方法
+    hasCheckCode : bool
+        是否有校验码
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
+    """
     check_code = CheckCode()
     check_code.init4str(checkCodeMethod)
     # 先设置好相关的位置信息
@@ -144,12 +138,27 @@ def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
 
 
 def gen_test_case_from_structDict(header_loc_list, struct, structDict, path):
-    """
-    @description: 根据structDict中的value，生成指定测试用例，目前用于生成经过校验码后的测试用例
-    @param {*} header_loc_list 列表，里面存储了所有头文件的路径
-    @param {*} struct 用户所选择的结构体名称
-    @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
-    @return {*}
+    """根据structDict中的value，生成指定测试用例，目前用于生成经过校验码后的测试用例
+
+    Parameters
+    ----------
+    header_loc_list : list
+        里面存储了所有头文件的路径
+    struct : str
+        用户所选择的结构体名称
+    structDict : dict
+        Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
+    path : str
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
     """
     # 先设置好相关的位置信息
     cycle_path = path.split("mutate")[0] + "mutate" + path.split("mutate")[1]
@@ -189,13 +198,30 @@ def gen_test_case_from_structDict(header_loc_list, struct, structDict, path):
 
 
 def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
-    '''
-    @description: 写一个mutate.c, 以便测试时进行变异操作
-    @param {*} header_loc_list 列表, 里面存储了所有头文件得位置
-    @param {*} struct 用户所选择得结构体名称
-    @param {*} structDict 结构体字典
-    @return {*}
-    '''
+    """写一个mutate.c, 以便测试时进行变异操作
+    
+    Parameters
+    ----------
+    header_loc_list : list
+        里面存储了所有头文件得位置
+    struct : str
+        用户所选择得结构体名称
+    structDict : dict
+        结构体字典
+    checkCodeMethod : str
+        校验方法
+    hasCheckCode : bool
+        是否选择了校验码
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
+    """
     check_code = CheckCode()
     check_code.init4str(checkCodeMethod)
 
@@ -224,8 +250,7 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
                 checkFieldName = key.split(" ")[-1].split(":")[0]
         checkPartCode += "\tdata." + checkFieldName + " = " + check_code.code + "\n"
         checkPartCode += "\treturn data;\n}\n"
-        checkPartCode = struct + " calculateCheckCode(" + struct + " data){\n\tunsigned int checkList[" + str(
-            count) + "];\n" + checkPartCode
+        checkPartCode = struct + " calculateCheckCode(" + struct + " data){\n\tunsigned int checkList[" + str(count) + "];\n" + checkPartCode
     # 将calculateCheckCode函数添加到主代码中，默认是空的，如果存在校验码则会添加一段
     code += checkPartCode
     # 校验码完毕
@@ -253,8 +278,8 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
         dataName = key.split(" ")[-1].split(":")[0]
         if "noName" in dataName:
             continue
-        code += "\tdata->" + dataName + " = (data->" + dataName + " % ((" + str(
-            value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(value["lower"]) + ");\n"
+        code += "\tdata->" + dataName + " = (data->" + dataName + " % ((" + str(value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(
+            value["lower"]) + ");\n"
     code += "}\n\n"
 
     # 写一个将结构体可视化的方法，savePath需要以.txt结尾
@@ -312,6 +337,5 @@ def genTestcaseVisual(header_loc_list, struct, structDict):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(
-        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
     headerNotExistBox.exec_()

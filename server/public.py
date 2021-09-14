@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-09-08 15:46:21
+LastEditTime: 2021-09-14 17:02:46
 Description: Some public function
 '''
 
@@ -15,11 +15,22 @@ import clang.cindex
 
 
 def deleteNote(source):
-    '''
-    @description: 删除程序中的注释
-    @param {*} source 代码列表，source = f.readlines()
-    @return {*}
-    '''
+    """删除程序中的注释
+
+    Parameters
+    ----------
+    source : list
+        源文件地址
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
+    """
     skip = False
     for i in range(len(source)):
         if "//" in source[i]:
@@ -56,8 +67,7 @@ def getAllFunctions(source_loc_list):
     """
     # 加载dll
     libclangPath = subprocess.getstatusoutput("where clang")[1]
-    libclangPath = re.sub(libclangPath.split(
-        "\\")[-1], "", libclangPath) + "libclang.dll"
+    libclangPath = re.sub(libclangPath.split("\\")[-1], "", libclangPath) + "libclang.dll"
     if clang.cindex.Config.loaded == True:
         print("clang.cindex.Config.loaded == True:")
     else:
@@ -96,13 +106,26 @@ def preorderTraverseToGetAllFunctions(cursor, funcList, source_loc_list):
 
 
 def genSeed(header_loc, struct, structDict):
-    '''
-    @description: 写一个生成初始种子的cpp文件，并编译和执行它
-    @param {*} header_loc 列表，里面存储了所有头文件的路径
-    @param {*} struct 用户所选择的结构体名称
-    @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
-    @return {*}
-    '''
+    """写一个生成初始种子的cpp文件，并编译和执行它
+
+    Parameters
+    ----------
+    header_loc : list
+        里面存储了所有头文件的路径
+    struct : str
+        用户所选择的结构体名称
+    structDict : dict
+        Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
+    """
     # 先设置好相关的位置信息
     root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
     if not os.path.exists(root):
@@ -140,8 +163,7 @@ def genSeed(header_loc, struct, structDict):
     for cmd in cmds:
         os.system(cmd)
     header_loc_save_file_path = root + "header_loc_list.txt"
-    header_loc_save_file_file = open(
-        header_loc_save_file_path, mode="w", encoding="utf")
+    header_loc_save_file_file = open(header_loc_save_file_path, mode="w", encoding="utf")
     for one_header in header_loc:
         header_loc_save_file_file.write(one_header)
         header_loc_save_file_file.write("\n")
@@ -149,12 +171,27 @@ def genSeed(header_loc, struct, structDict):
 
 
 def gen_test_case_from_structDict(header_loc, struct, structDict, path):
-    """
-    @description: 根据structDict中的value，生成指定测试用例
-    @param {*} header_loc 列表，里面存储了所有头文件的路径
-    @param {*} struct 用户所选择的结构体名称
-    @param {*} structDict Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
-    @return {*}
+    """根据structDict中的value，生成指定测试用例
+
+    Parameters
+    ----------
+    header_loc : list
+        里面存储了所有头文件的路径
+    struct : str
+        用户所选择的结构体名称
+    structDict : dict
+        Ui_dialog_seed里的字典，其中存储了分析得到的结构体和它的成员变量的信息
+    path : str
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
     """
     # 先设置好相关的位置信息
     cycle_path = path.split("mutate")[0] + "mutate" + path.split("mutate")[1]
@@ -190,74 +227,7 @@ def gen_test_case_from_structDict(header_loc, struct, structDict, path):
         os.system(cmd)
 
 
-def genMutate(header_loc, struct, structDict):
-    '''
-    @description: 写一个mutate.c, 以便测试时进行变异操作
-    @param {*} header_loc 列表, 里面存储了所有头文件得位置
-    @param {*} struct 用户所选择得结构体名称
-    @param {*} structDict 结构体字典
-    @return {*}
-    '''
-    # 先设置好相关的位置信息
-    root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
-    if not os.path.exists(root):
-        os.mkdir(root)
-    genMutatePath = root + "mutate.c"
-
-    # 开始写代码，先include相关内容
-    code = "#include <stdio.h>\n#include <stdbool.h>\n"
-    # 把用户选择的头文件位置也include
-    for header in header_loc:
-        code += "#include \"" + header + "\"\n"
-    # mutate函数中有三个形参: struct data是发送数据的结构体, seedPath是变异后的文件保存路径, 精确到.txt
-    # r是一个随机数, 用于与原来的值进行异或
-    code += "\nvoid mutate(" + struct + " data, char* savePath, int r){\n"
-    # 变异操作
-    for key, value in structDict[struct].items():
-        if not value["mutation"]:
-            continue
-        dataName = key.split(" ")[-1].split(":")[0]
-        code += "\tdata." + dataName + " ^= r;\n"
-    # 变异体写入文件
-    code += "\n\tFILE* f;"
-    code += "\n\tf = fopen(savePath, \"wb\");"
-    code += "\n\tfwrite(&data, sizeof(data), 1, f);"
-    code += "\n\tfclose(f);\n"
-    code += "}\n\n"
-
-    # 写一个将结构体的值设定在用户指定范围内的方法
-    code += "void setValueInRange(" + struct + " data){\n"
-    code += "\t" + struct + "* temp = &data;\n"
-    for key, value in structDict[struct].items():
-        dataName = key.split(" ")[-1].split(":")[0]
-        if "noName" in dataName:
-            continue
-        code += "\ttemp->" + dataName + " = (temp->" + dataName + " % ((" + str(
-            value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(value["lower"]) + ");\n"
-    code += "}\n\n"
-
-    # 写一个将结构体可视化的方法，savePath需要以.txt结尾
-    code += "void testcaseVisualization(" + \
-        struct + " data, char* savePath){\n"
-    code += "\tFILE* f = fopen(savePath, \"w\");\n"
-    for key, value in structDict[struct].items():
-        dataName = key.split(" ")[-1].split(":")[0]
-        if "noName" in dataName:
-            continue
-        code += "\tfprintf(f, \"" + dataName + \
-            ": %u\\n\", data." + dataName + ");\n"
-    code += "\tfclose(f);\n"
-    code += "}\n"
-
-    mutateFile = open(genMutatePath, mode="w")
-    mutateFile.write(code)
-
-    # 生成.dll文件，在这里生成的话会出现问题，所以改到了在Ui_window.py生成
-    # command: gcc -shared -o mutate_instru.dll mutate_instru.c
-
-
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(
-        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
     headerNotExistBox.exec_()

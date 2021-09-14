@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2020-09-28 13:18:56
 LastEditors: Radon
-LastEditTime: 2021-08-23 18:07:36
+LastEditTime: 2021-09-14 17:15:59
 Description: 调用图相关的函数
 '''
 from PyQt5 import QtWidgets
@@ -12,11 +12,6 @@ import subprocess
 import clang.cindex
 
 import public
-
-
-def get_str_btw(s, f, b):
-    par = s.partition(f)
-    return (par[2].partition(b))[0][:]
 
 
 def createCallGraph(source_loc_list, graph_loc):
@@ -35,8 +30,7 @@ def createCallGraph(source_loc_list, graph_loc):
     """
     # 加载dll
     libclangPath = subprocess.getstatusoutput("where clang")[1]
-    libclangPath = re.sub(libclangPath.split(
-        "\\")[-1], "", libclangPath) + "libclang.dll"
+    libclangPath = re.sub(libclangPath.split("\\")[-1], "", libclangPath) + "libclang.dll"
     if clang.cindex.Config.loaded == True:
         print("clang.cindex.Config.loaded == True:")
     else:
@@ -91,6 +85,5 @@ def preorderTraverseToGetCallgraph(cursor, start, callgraph):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(
-        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
     headerNotExistBox.exec_()

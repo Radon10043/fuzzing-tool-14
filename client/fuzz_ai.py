@@ -6,7 +6,6 @@ from shutil import copyfile, copy
 
 import numpy as np
 
-import instrument as instr
 import nn
 import public
 import utils

@@ -17,11 +17,22 @@ from util.check_code import calculate_check_code_from_dec
 
 
 def mkdir(path):
-    '''
-    @description: 创建文件夹
-    @param {*} path 文件夹的路径
-    @return {*} True表示创建成功，False表示文件夹已存在，创建失败
-    '''
+    """创建文件夹
+
+    Parameters
+    ----------
+    path : str
+        文件夹的路径
+
+    Returns
+    -------
+    bool
+        True表示创建成功，False表示文件夹已存在，创建失败
+
+    Notes
+    -----
+    [description]
+    """
     path = path.strip()
     path = path.rstrip("/")
     isExists = os.path.exists(path)
@@ -33,11 +44,22 @@ def mkdir(path):
 
 
 def getCoverNode(num):
-    '''
-    @description: 获取一个数的二进制中1所在的位置, 主要用于查看覆盖到了哪些点
-    @param {*} num 数字, 结构体中插装变量返回的值
-    @return {*}
-    '''
+    """获取一个数的二进制中1所在的位置, 主要用于查看覆盖到了哪些点
+
+    Parameters
+    ----------
+    num : int
+        数字, 结构体中插装变量返回的值
+
+    Returns
+    -------
+    list
+        覆盖到的结点
+
+    Notes
+    -----
+    [description]
+    """
     cover = []
     coverNode = []
     loc = 0
@@ -54,11 +76,22 @@ def getCoverNode(num):
 
 
 def loadData(fileName):
-    '''
-    @description: 获取调用图的数据
-    @param {*} fileName 调用图位置
-    @return {*}
-    '''
+    """获取调用图的数据
+
+    Parameters
+    ----------
+    fileName : str
+        调用图位置
+
+    Returns
+    -------
+    list
+        [description]
+
+    Notes
+    -----
+    [description]
+    """
     file = open(fileName, 'r')  # read file
     weightedEdges = []
     elementList = []
@@ -75,13 +108,26 @@ def loadData(fileName):
 
 
 def getShortestDistance(graph, nodeSet, target):
-    '''
-    @description: 获取覆盖结点集合与目标结点之间的最短距离
-    @param {*} graph 图, 需要根据图计算距离
-    @param {*} nodeSet 结点集合
-    @param {*} target 目标结点
-    @return {*}
-    '''
+    """[summary]
+
+    Parameters
+    ----------
+    graph : [type]
+        图, 需要根据图计算距离
+    nodeSet : list
+        结点集合
+    target : str
+        目标结点
+
+    Returns
+    -------
+    float
+        最短距离
+
+    Notes
+    -----
+    [description]
+    """
     G = nx.Graph()
     G.add_weighted_edges_from(graph)
     shortest = 999.0
@@ -97,13 +143,26 @@ def getShortestDistance(graph, nodeSet, target):
 
 
 def getAverageDistance(graph, nodeSet, target):
-    '''
-    @description: 获取结点集合与目标结点之间的平均距离
-    @param {*} graph 图, 需要根据图计算距离
-    @param {*} nodeSet 结点集合
-    @param {*} target 目标结点
-    @return {*}
-    '''
+    """获取结点集合与目标结点之间的平均距离
+
+    Parameters
+    ----------
+    graph : [type]
+        需要根据图计算距离
+    nodeSet : list
+        结点集合
+    target : str
+        目标结点
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
+    """
     G = nx.Graph()
     G.add_weighted_edges_from(graph)
     distance = 0
@@ -130,11 +189,22 @@ def getDirContent(position):
 
 
 def threadMonitor(senderAddress):
-    '''
-    @description: 线程2-启动python监控方，用于收集C++返回的UDP
-    @param {*}
-    @return {*}
-    '''
+    """线程2-启动python监控方，用于收集C++返回的UDP
+
+    Parameters
+    ----------
+    senderAddress : str
+        发送方ip地址
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+    [description]
+    """
     global returnUDPInfo
     returnUDPInfo.clear()
     monitorSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # 创建 socket 对象
@@ -150,7 +220,7 @@ def threadMonitor(senderAddress):
 
 
 def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict):
-    """根据南京大学徐安孜同学的例子重新写了一下获取适应度的函数
+    """获取适应度的函数
 
     Parameters
     ----------
@@ -179,7 +249,7 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
     的测试用例，因此它得到的变异机会更多，反之则会更少
     """
     # 启动线程2，用于监控
-    thread2 = threading.Thread(target=threadMonitor, name="thread_monitor", args=(senderAddress,))
+    thread2 = threading.Thread(target=threadMonitor, name="thread_monitor", args=(senderAddress, ))
     thread2.start()
 
     # 测试用例是bytes
@@ -235,8 +305,7 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
 
 
 def mutate(testcase, mutateSavePath, dllDict, isMutateInRange):
-    """根据南京大学徐安孜同学写的例子对变异进行了改写，
-    使用预先编译好的dll文件对测试用例进行变异
+    """对变异进行了改写，使用预先编译好的dll文件对测试用例进行变异
 
     Parameters
     ----------
@@ -461,8 +530,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         for i in range(0, len(testcase)):
             print()
             uiFuzz.textBrowser.append("正在执行第" + str(i + 1) + "个测试用例")
-            returnData = getFitness(testcase[i], targetSet, senderAddress, receiverAddress, callGraph, maxTimeout,
-                                    dllDict)
+            returnData = getFitness(testcase[i], targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict)
             distance = returnData[1]
             fitness = returnData[2]
             coverNode = returnData[3]
@@ -575,20 +643,22 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         mutateTime = 0.1
     if executeTime == 0:
         executeTime = 0.1
-    fuzzInfoDict = {"测试时间": str(int(end - start)),
-                    "测试对象": header_loc_list[0].split("/")[-1],
-                    "循环次数": str(cycle),
-                    "制导目标数量": str(len(targetSet)),
-                    "生成速度": str(int(maxMutateTC / mutateTime)),
-                    "执行速度": str((int(executeNum / executeTime))),
-                    "已生成测试用例": str(mutateNum - 1),
-                    "已保存测试用例": str(count_test - 1),
-                    "已检测到缺陷数量": str(uniq_crash - 1),
-                    "已触发缺陷次数": str(crashes),
-                    "超时测试用例数量": str(count_timeout - 1),
-                    "已发现结点数量": str(len(allNode)),
-                    "已覆盖结点": allCoveredNode,
-                    "整体覆盖率": str(int(coverage[1] * 100))}
+    fuzzInfoDict = {
+        "测试时间": str(int(end - start)),
+        "测试对象": header_loc_list[0].split("/")[-1],
+        "循环次数": str(cycle),
+        "制导目标数量": str(len(targetSet)),
+        "生成速度": str(int(maxMutateTC / mutateTime)),
+        "执行速度": str((int(executeNum / executeTime))),
+        "已生成测试用例": str(mutateNum - 1),
+        "已保存测试用例": str(count_test - 1),
+        "已检测到缺陷数量": str(uniq_crash - 1),
+        "已触发缺陷次数": str(crashes),
+        "超时测试用例数量": str(count_timeout - 1),
+        "已发现结点数量": str(len(allNode)),
+        "已覆盖结点": allCoveredNode,
+        "整体覆盖率": str(int(coverage[1] * 100))
+    }
     generateReport(header_loc_list, fuzzInfoDict)
     uiFuzz.textBrowser.append("\n已生成测试报告! 点击<查看结果>按钮以查看")
 
@@ -630,7 +700,6 @@ crashTC = bytes()  # 存储触发缺陷的测试用例
 crashes = 0  # 统计触发了多少次缺陷
 returnUDPInfo = []  # 存储发送回来的UDP数据包
 # ============================================================================================
-
 
 import sys
 from PyQt5 import QtWidgets

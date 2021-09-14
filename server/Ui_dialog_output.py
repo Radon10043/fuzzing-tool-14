@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-12 15:12:07
+LastEditTime: 2021-09-14 17:05:07
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -290,12 +290,22 @@ class Ui_Dialog(object):
                     del val['checkBox']
 
     def getBitsize(self, variable):
-        '''
-        @description: 根据变量的名称获取它的位大小
-        @param {*} self
-        @param {*} variable 变量的名称
-        @return {*} 返回值是一个int类型的数值，表示了它占多少位
-        '''
+        """根据变量的名称获取它的位大小
+
+        Parameters
+        ----------
+        variable : str
+            变量的名称
+
+        Returns
+        -------
+        int
+            返回值是一个int类型的数值，表示了它占多少位
+
+        Notes
+        -----
+        [description]
+        """
         if ":" in variable:
             return int(re.sub(" ", "", variable.split(":")[1]))
         else:
