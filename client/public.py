@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-09-14 16:46:22
+LastEditTime: 2021-09-17 10:48:13
 Description: Some public function
 '''
 
@@ -10,8 +10,32 @@ from PyQt5 import QtWidgets
 import sys
 import os
 import re
+import struct as structModule
 
 from util.check_code import CheckCode
+
+# ==============================转换大小端关键字对应字典==============================
+# <c Type, format>
+endianKeyWordDict = {
+    "char": "c",
+    "signed char": "b",
+    "unsigned char": "B",
+    "bool": "?",
+    "_Bool": "?",
+    "short": "h",
+    "unsigned short": "H",
+    "short int": "h",
+    "unsigned short int": "H",
+    "int": "i",
+    "unsigned int": "I",
+    "long": "l",
+    "unsigned long": "L",
+    "long long": "q",
+    "unsigned long long": "Q",
+    "float": "f",
+    "double": "d",
+}
+# ===================================================================================
 
 
 def deleteNote(source):
@@ -49,7 +73,7 @@ def deleteNote(source):
     return source
 
 
-def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
+def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode, typedefDict):
     """写一个生成初始种子的cpp文件，并编译和执行它
 
     Parameters
@@ -64,6 +88,8 @@ def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
         校验方法
     hasCheckCode : bool
         是否有校验码
+    typedefDict : dict
+        typedef字典
 
     Returns
     -------
@@ -95,7 +121,12 @@ def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
     # 新建结构体变量，并向它的成员变量赋值
     code += "\t" + struct + " data;\n"
     for key, value in structDict[struct].items():
-        dataName = key.split(" ")[-1].split(":")[0]
+        dataType = key.split(" ")  # 变量数据类型
+        dataType.pop(-1)
+        dataType = " ".join(dataType)
+        if dataType in typedefDict.keys():  # 如果数据类型是别名
+            dataType = typedefDict[dataType]
+        dataName = key.split(" ")[-1].split(":")[0]  # 变量名称
         if "noName" in dataName:  # 跳过无名变量
             continue
         if hasCheckCode:  # 存在校验码就搞这些
@@ -107,7 +138,20 @@ def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
             elif value["checkCode"]:
                 checkFieldName = dataName
                 continue
-        code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
+        if "char" in dataType:      # char型数据只占8位，因此转不转都行
+            code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
+            continue
+        packStr = endianKeyWordDict[dataType]  # char以外数据类型大小端转换
+        if value["endian"] == "little":
+            unpackStr = "<" + packStr
+        else:
+            unpackStr = ">" + packStr
+        valueToBeSwitched = value["value"]
+        switchResult = structModule.unpack(unpackStr, structModule.pack(packStr, valueToBeSwitched))[0] # 大小端转换操作
+        if value["endian"] == sys.byteorder:    # 变量与系统字节序一样则无需额外操作
+            code += "\tdata." + dataName + " = " + str(switchResult) + ";\n"
+        else:                                   # 如果不一样，需要移位防止溢出
+            code += "\tdata." + dataName + " = " + str(switchResult) + " << sizeof(" + dataType + ")*8 - " + str(value["bitsize"]) + ";\n"
     if hasCheckCode:
         code += "\tunsigned int checkList[" + str(count_check_code) + "];\n"
         code += checkCodePart
@@ -199,7 +243,7 @@ def gen_test_case_from_structDict(header_loc_list, struct, structDict, path):
 
 def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
     """写一个mutate.c, 以便测试时进行变异操作
-    
+
     Parameters
     ----------
     header_loc_list : list

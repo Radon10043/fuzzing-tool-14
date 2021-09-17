@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-14 16:59:16
+LastEditTime: 2021-09-16 15:03:59
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -190,7 +190,7 @@ class Ui_Dialog(object):
         # 表格-start
         self.structTable = QtWidgets.QTableWidget(Dialog)
         self.structTable.setGeometry(QtCore.QRect(10, 10, 880, 480))
-        self.structTable.setColumnCount(10)
+        self.structTable.setColumnCount(11)
         # 表格-end
 
         # 保存按钮-start
@@ -228,9 +228,23 @@ class Ui_Dialog(object):
         self.allNotCheckCodeBtn.clicked.connect(self.setAllVariableNotCheckField)
         # 全不校验码按钮-end
 
+        # 全部大端按钮-start
+        self.allBigEndianBtn = QtWidgets.QPushButton(Dialog)
+        self.allBigEndianBtn.setGeometry(QtCore.QRect(900, 301, 200, 35))
+        self.allBigEndianBtn.setText("全部变量为大端")
+        self.allBigEndianBtn.clicked.connect(self.setAllVariableBigEndian)
+        # 全部大端按钮-end
+
+        # 全部小端按钮-start
+        self.allLittleEndianBtn = QtWidgets.QPushButton(Dialog)
+        self.allLittleEndianBtn.setGeometry(QtCore.QRect(900, 346, 200, 35))
+        self.allLittleEndianBtn.setText("全部变量为小端")
+        self.allLittleEndianBtn.clicked.connect(self.setAllVariableLittleEndian)
+        # 全部小端按钮-end
+
         # 生成按钮-start
         self.generateBtn = QtWidgets.QPushButton(Dialog)
-        self.generateBtn.setGeometry(QtCore.QRect(900, 301, 200, 35))
+        self.generateBtn.setGeometry(QtCore.QRect(900, 391, 200, 35))
         self.generateBtn.setText("生成种子文件")
         self.generateBtn.clicked.connect(self.genSeed)
         # 生成按钮-end
@@ -253,6 +267,10 @@ class Ui_Dialog(object):
             self.checkCodeComboBox.setItemText(index, check_code_methods[index])
         # 下拉菜单选择校验算法-end
 
+        # tpyedefDict-start
+        self.typedefDict = dict()
+        # typedefDict-end
+
         structDict = {
             "struct": {
                 "var": {
@@ -263,7 +281,8 @@ class Ui_Dialog(object):
                     "comment": "注释",
                     "mutation": False,
                     "checkCode": False,
-                    "checkField": False
+                    "checkField": False,
+                    "endian": "little"
                 }
             }
         }
@@ -278,7 +297,7 @@ class Ui_Dialog(object):
         # 获取变量数-end
         self.structTable.setRowCount(amountRows)
         self.structTable.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
-        self.structTable.setHorizontalHeaderLabels(["结构体", "成员变量", "当前值", "范围下限", "范围上限", "位", "注释", "是否变异", "校验码", "校验字段", "是否大小端转换"])
+        self.structTable.setHorizontalHeaderLabels(["结构体", "成员变量", "当前值", "范围下限", "范围上限", "位", "注释", "是否变异", "校验码", "校验字段", "字节序"])
 
         i = 0  # 行
         j = 0  # 列
@@ -300,6 +319,7 @@ class Ui_Dialog(object):
                 self.structTable.setCellWidget(i, 7, self.varCheckBoxItem(val["mutation"], structKey, key))  # 变异
                 self.structTable.setCellWidget(i, 8, self.checkCodeCheckBoxItem(val["checkCode"], structKey, key))  # 校验码
                 self.structTable.setCellWidget(i, 9, self.checkFieldCheckBoxItem(val["checkField"], structKey, key))  # 校验字段
+                self.structTable.setCellWidget(i, 10, self.endianComboBoxItem(structKey, key))  # 字节序
                 i += 1
 
     # 结束
@@ -345,7 +365,7 @@ class Ui_Dialog(object):
         if structDict[struct][memVal]["checkField"] and checkBool:
             structDict[struct][memVal]["checkFieldCheckBox"].setChecked(False)
             structDict[struct][memVal]["checkField"] = False
-        structDict[struct][memVal]["mutation"] = False      # 一个变量不能既作为校验码又变异
+        structDict[struct][memVal]["mutation"] = False  # 一个变量不能既作为校验码又变异
         self.setTableContent()
 
     # 表格校验码变量-CheckBox-end
@@ -373,7 +393,6 @@ class Ui_Dialog(object):
     def lineEditItem(self, isNumber, placeholderText, whatThing, struct, memVal):
         global structDict
         lineEdit = QtWidgets.QLineEdit()
-        # print(isNumber, placeholderText, whatThing, struct, memVal)
         if isNumber:
             # 输入框文本验证-start
             reg = QRegExp("^(\-|\+)?\d+(\.\d+)?$")  # 正数、负数、小数-正则
@@ -396,7 +415,6 @@ class Ui_Dialog(object):
         else:
             lineEdit.setPlaceholderText(str(placeholderText))
 
-        # print(lineEdit.hasFocus())
         lineEdit.editingFinished.connect(lambda: self.editFinish(lineEdit.text(), whatThing, struct, memVal, lineEdit))  # 编辑-活动
         return lineEdit
 
@@ -416,6 +434,8 @@ class Ui_Dialog(object):
                 dataType = memVal.split(" ")
                 dataType.pop(-1)
                 dataType = " ".join(dataType)
+                if dataType in self.typedefDict.keys():
+                    dataType = self.typedefDict[dataType]
                 maxUpper = dataTypeDict[dataType]["upper"]
                 minLower = dataTypeDict[dataType]["lower"]
         except BaseException as e:
@@ -463,6 +483,57 @@ class Ui_Dialog(object):
                     structDict[struct][memVal][whatThing] = float(text)
                 else:
                     structDict[struct][memVal][whatThing] = int(text)
+
+    def endianComboBoxItem(self, struct, memVal):
+        """字节序选择下拉框
+
+        Parameters
+        ----------
+        struct : str
+            结构体
+        memVal : str
+            成员变量
+
+        Returns
+        -------
+        QtWidgets.QCombox
+            [description]
+
+        Notes
+        -----
+        [description]
+        """
+        global structDict
+        comboBox = QtWidgets.QComboBox()
+        comboBox.addItems(["小端", "大端"])
+        if structDict[struct][memVal]["endian"] == "little":
+            comboBox.setCurrentIndex(0)
+        else:
+            comboBox.setCurrentIndex(1)
+        comboBox.currentIndexChanged.connect(lambda: self.endianChange(struct, memVal, comboBox))
+        comboBox.wheelEvent = lambda event : None
+        return comboBox
+
+    def endianChange(self, struct, memVal, combox):
+        """comboBox所选内容改变事件
+
+        Parameters
+        ----------
+        struct : str
+            所选结构体
+        memVal : str
+            改变字节序的成员变量
+        combox : QtWdigets.QCombox
+            改变Index的下拉框
+
+        Notes
+        -----
+        [description]
+        """
+        if combox.currentIndex() == 0:
+            structDict[struct][memVal]["endian"] = "little"
+        else:
+            structDict[struct][memVal]["endian"] = "big"
 
     def saveData(self):
         """将structDict保存为JSON文件
@@ -574,8 +645,8 @@ class Ui_Dialog(object):
             self.struct = struct
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
             structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
-            typedefDict = sa.getTypedefDict(header_loc_list)
-            # print(structInfo)
+            self.typedefDict = sa.getTypedefDict(header_loc_list)
+
             tempDict = {}
             # 分析并设置structDict的值
             for i in range(0, len(structInfo)):
@@ -586,7 +657,8 @@ class Ui_Dialog(object):
                     "mutation": False,
                     "bitsize": -1,
                     "checkCode": False,
-                    "checkField": False
+                    "checkField": False,
+                    "endian": "little"
                 }
                 tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
@@ -607,7 +679,7 @@ class Ui_Dialog(object):
                     dataType = " ".join(dataType)
                     try:
                         if not dataType in dataTypeDict.keys():
-                            dataType = typedefDict[dataType]
+                            dataType = self.typedefDict[dataType]
 
                         if tempDict[structInfo[i][0]]["bitsize"] == -1:
                             tempDict[structInfo[i][0]]["bitsize"] = dataTypeDict[dataType]["bitsize"]
@@ -650,7 +722,7 @@ class Ui_Dialog(object):
         self.struct = struct
         # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
         structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
-        typedefDict = sa.getTypedefDict(header_loc_list)
+        self.typedefDict = sa.getTypedefDict(header_loc_list)
         root_loc = os.path.dirname(header_loc_list[0])
         seedBinaryName = os.path.basename(seedBinaryPath)
         seedVisualPath = os.path.join(root_loc, "in", seedBinaryName + "Visual.txt")  # 测试用例可视化路径
@@ -678,7 +750,7 @@ class Ui_Dialog(object):
                 dataType = " ".join(dataType)
                 try:
                     if not dataType in dataTypeDict.keys():
-                        dataType = typedefDict[dataType]
+                        dataType = self.typedefDict[dataType]
 
                     if tempDict[structInfo[i][0]]["bitsize"] == -1:
                         tempDict[structInfo[i][0]]["bitsize"] = dataTypeDict[dataType]["bitsize"]
@@ -795,7 +867,7 @@ class Ui_Dialog(object):
         for key in structDict:
             struct = key
         structDict, hasCheckCode = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里，用于初始化种子
-        public.genSeed(self.header_loc_list, struct, structDict, self.checkCodeComboBox.currentText(), hasCheckCode)
+        public.genSeed(self.header_loc_list, struct, structDict, self.checkCodeComboBox.currentText(), hasCheckCode, self.typedefDict)
         # 生成变异所需的C文件
         try:
             # 生成变异所需C文件
@@ -817,6 +889,30 @@ class Ui_Dialog(object):
             genSeedMsgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "种子文件生成失败: " + str(e))
             genSeedMsgBox.exec_()
             traceback.print_exc()
+
+    def setAllVariableBigEndian(self):
+        """将所有变量设置为大端
+
+        Notes
+        -----
+        [description]
+        """
+        global structDict
+        for key, value in structDict[self.struct].items():
+            value["endian"] = "big"
+        self.setTableContent()
+
+    def setAllVariableLittleEndian(self):
+        """将所有变量设置为小端
+
+        Notes
+        -----
+        [description]
+        """
+        global structDict
+        for key, value in structDict[self.struct].items():
+            value["endian"] = "little"
+        self.setTableContent()
 
     def setDataTypeDict(self, typeJSONPath):
         global dataTypeDict
@@ -939,8 +1035,7 @@ class Ui_Dialog(object):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(
-        QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
     headerNotExistBox.exec_()
 
 # if __name__ == "__main__":

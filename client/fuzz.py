@@ -7,6 +7,8 @@ import shutil
 import socket
 import threading
 import time
+import struct
+import traceback
 from operator import itemgetter
 from subprocess import *
 
@@ -43,7 +45,7 @@ def mkdir(path):
         return False
 
 
-def getCoverNode(num):
+def getCoverNode(num, instrVarSetTuple):
     """获取一个数的二进制中1所在的位置, 主要用于查看覆盖到了哪些点
 
     Parameters
@@ -60,6 +62,26 @@ def getCoverNode(num):
     -----
     [description]
     """
+    try:        # 插装变量大小端转换
+        instrVarEndian = instrVarSetTuple[0]
+        instrVarBitsize = instrVarSetTuple[1].replace("位", "")
+        instrVarBitsize = instrVarBitsize.replace("无符号", "u")
+        packStr = endianKeyWordDict[instrVarBitsize]
+        if instrVarEndian == "小端":
+            instrVarEndian = "little"
+        else:
+            instrVarEndian = "big"
+        if instrVarEndian != sys.byteorder:
+            if sys.byteorder == "little":
+                unpackStr = ">" + packStr
+            else:
+                unpackStr = "<" + packStr
+            num = struct.unpack(unpackStr, struct.pack(packStr, num))[0]
+    except:
+        print("\033[1;31m")
+        traceback.print_exc()
+        print("\033[0m")
+
     cover = []
     coverNode = []
     loc = 0
@@ -219,7 +241,7 @@ def threadMonitor(senderAddress):
     returnUDPInfo = str(bytes(data))
 
 
-def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict):
+def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict, instrVarSetTuple):
     """获取适应度的函数
 
     Parameters
@@ -236,6 +258,8 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
         超时时间
     dllDict : dict
         编译好的dll文件存储在该dict中，key是str，value是CDLL
+    instrVarSetTuple : tuple
+        插装变量设置元组: (字节序, 位)
 
     Returns
     -------
@@ -285,7 +309,7 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
         # 获得覆盖的结点
         instrValue = dllDict["instrument"].getInstrumentValue(bytes(returnUDPInfo))
         print("instrValue:", instrValue)
-        coverNode = getCoverNode(instrValue)
+        coverNode = getCoverNode(instrValue, instrVarSetTuple)
         print("coverNode:", coverNode)
     except BaseException as e:
         print("解析失败: ", e)
@@ -480,6 +504,9 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     maxTimeout = 20  # 最大超时时间
     mutateTime = 0  # 测试用例生成时间
     executeTime = 0  # 执行总时间
+    instrVarEndian = ui.instrValueEndianComboBox.currentText()
+    instrVarBitsize = ui.instrValueBitsizeComboBox.currentText()
+    instrVarSetTuple = (instrVarEndian, instrVarBitsize)
 
     maxMutateTC = int(ui.TCNumPerCyc.text())
     maxTimeout = int(ui.timeoutLEdit.text())
@@ -530,7 +557,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         for i in range(0, len(testcase)):
             print()
             uiFuzz.textBrowser.append("正在执行第" + str(i + 1) + "个测试用例")
-            returnData = getFitness(testcase[i], targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict)
+            returnData = getFitness(testcase[i], targetSet, senderAddress, receiverAddress, callGraph, maxTimeout, dllDict, instrVarSetTuple)
             distance = returnData[1]
             fitness = returnData[2]
             coverNode = returnData[3]
@@ -699,6 +726,16 @@ isCrash = 0  # 计算没有相应的测试用例数量
 crashTC = bytes()  # 存储触发缺陷的测试用例
 crashes = 0  # 统计触发了多少次缺陷
 returnUDPInfo = []  # 存储发送回来的UDP数据包
+endianKeyWordDict = {   # 字节序关键字
+    "8": "c",
+    "u8": "B",
+    "16": "h",
+    "u16": "H",
+    "32": "i",
+    "u32": "I",
+    "64": "q",
+    "u64": "Q"
+}
 # ============================================================================================
 
 import sys

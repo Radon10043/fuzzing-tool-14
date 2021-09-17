@@ -1,10 +1,3 @@
-'''
-Author: Radon
-Date: 2021-09-06 14:44:13
-LastEditors: Radon
-LastEditTime: 2021-09-10 15:18:47
-Description: Hi, say something
-'''
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'd:\Project_VSCode\python\fuzzProject\client\window_client.ui'
@@ -113,7 +106,7 @@ class Ui_MainWindow(object):
         self.receiverColonLabel.setGeometry(QtCore.QRect(165, 70, 16, 16))
         self.receiverColonLabel.setObjectName("receiverColonLabel")
         self.startFuzzBtn = QtWidgets.QPushButton(self.centralwidget)
-        self.startFuzzBtn.setGeometry(QtCore.QRect(420, 600, 201, 81))
+        self.startFuzzBtn.setGeometry(QtCore.QRect(390, 640, 251, 61))
         self.startFuzzBtn.setObjectName("startFuzzBtn")
         self.stopOptionGroupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.stopOptionGroupBox.setGeometry(QtCore.QRect(79, 430, 291, 141))
@@ -181,6 +174,31 @@ class Ui_MainWindow(object):
         self.AICfgBtn.setCheckable(False)
         self.AICfgBtn.setObjectName("AICfgBtn")
         self.optionTabWidget.addTab(self.AITab, "")
+        self.switchInstrValueEndianLabel = QtWidgets.QLabel(self.centralwidget)
+        self.switchInstrValueEndianLabel.setGeometry(QtCore.QRect(400, 580, 81, 20))
+        self.switchInstrValueEndianLabel.setObjectName("switchInstrValueEndianLabel")
+        self.instrValueEndianComboBox = QtWidgets.QComboBox(self.centralwidget)
+        self.instrValueEndianComboBox.setGeometry(QtCore.QRect(480, 580, 91, 21))
+        self.instrValueEndianComboBox.setObjectName("instrValueEndianComboBox")
+        self.instrValueEndianComboBox.addItem("")
+        self.instrValueEndianComboBox.addItem("")
+        self.instrValueBitsizeTipLabel = QtWidgets.QLabel(self.centralwidget)
+        self.instrValueBitsizeTipLabel.setGeometry(QtCore.QRect(400, 610, 131, 20))
+        self.instrValueBitsizeTipLabel.setObjectName("instrValueBitsizeTipLabel")
+        self.instrValueBitsizeComboBox = QtWidgets.QComboBox(self.centralwidget)
+        self.instrValueBitsizeComboBox.setGeometry(QtCore.QRect(480, 610, 91, 21))
+        self.instrValueBitsizeComboBox.setObjectName("instrValueBitsizeComboBox")
+        self.instrValueBitsizeComboBox.addItem("")
+        self.instrValueBitsizeComboBox.addItem("")
+        self.instrValueBitsizeComboBox.addItem("")
+        self.instrValueBitsizeComboBox.addItem("")
+        self.instrValueBitsizeComboBox.addItem("")
+        self.instrValueBitsizeComboBox.addItem("")
+        self.instrValueBitsizeComboBox.addItem("")
+        self.instrValueBitsizeComboBox.addItem("")
+        self.localVarEndianLabel = QtWidgets.QLabel(self.centralwidget)
+        self.localVarEndianLabel.setGeometry(QtCore.QRect(580, 580, 81, 20))
+        self.localVarEndianLabel.setObjectName("localVarEndianLabel")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 722, 26))
@@ -209,6 +227,10 @@ class Ui_MainWindow(object):
         self.TCNumsLineEdit.setValidator(QtGui.QRegExpValidator(regExp2))
         self.AICfgDialog = None
 
+        if sys.byteorder == "little":  # 根据电脑的字节序设置插装值下拉框默认值
+            self.instrValueEndianComboBox.setCurrentIndex(0)
+        else:
+            self.instrValueEndianComboBox.setCurrentIndex(1)
         # self.senderIPLineEdit.setText("")
         # self.senderPortLineEdit.setText("9999")
         # self.receiverIPLineEdit.setText("192.168.50.176")
@@ -218,6 +240,13 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.optionTabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+        # ================================刷新组件内容==============================
+        if sys.byteorder == "little":
+            self.localVarEndianLabel.setText("转为小端")
+        else:
+            self.localVarEndianLabel.setText("转为大端")
+        # =========================================================================
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -261,6 +290,21 @@ class Ui_MainWindow(object):
         self.optionTabWidget.setTabText(self.optionTabWidget.indexOf(self.codeStructTab), _translate("MainWindow", "代码结构"))
         self.AICfgBtn.setText(_translate("MainWindow", "设置"))
         self.optionTabWidget.setTabText(self.optionTabWidget.indexOf(self.AITab), _translate("MainWindow", "交互接口规约"))
+        self.switchInstrValueEndianLabel.setText(_translate("MainWindow", "将插装值从"))
+        self.instrValueEndianComboBox.setCurrentText(_translate("MainWindow", "小端"))
+        self.instrValueEndianComboBox.setItemText(0, _translate("MainWindow", "小端"))
+        self.instrValueEndianComboBox.setItemText(1, _translate("MainWindow", "大端"))
+        self.instrValueBitsizeTipLabel.setText(_translate("MainWindow", "插装变量为"))
+        self.instrValueBitsizeComboBox.setCurrentText(_translate("MainWindow", "8位"))
+        self.instrValueBitsizeComboBox.setItemText(0, _translate("MainWindow", "8位"))
+        self.instrValueBitsizeComboBox.setItemText(1, _translate("MainWindow", "无符号8位"))
+        self.instrValueBitsizeComboBox.setItemText(2, _translate("MainWindow", "16位"))
+        self.instrValueBitsizeComboBox.setItemText(3, _translate("MainWindow", "无符号16位"))
+        self.instrValueBitsizeComboBox.setItemText(4, _translate("MainWindow", "32位"))
+        self.instrValueBitsizeComboBox.setItemText(5, _translate("MainWindow", "无符号32位"))
+        self.instrValueBitsizeComboBox.setItemText(6, _translate("MainWindow", "64位"))
+        self.instrValueBitsizeComboBox.setItemText(7, _translate("MainWindow", "无符号64位"))
+        self.localVarEndianLabel.setText(_translate("MainWindow", "转为X端"))
 
     # ==========定义功能================================================================
 
@@ -273,6 +317,8 @@ class Ui_MainWindow(object):
         """
         temp = QtWidgets.QFileDialog.getOpenFileNames(None, "choose file", "C:/Users/Radon/Desktop/", "h files (*.h)")
         path = ""
+        if len(temp[0]) == 0:
+            return
         for i in range(len(temp[0])):
             path += temp[0][i] + "\n"
         path = path.rstrip("\n")

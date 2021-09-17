@@ -296,10 +296,10 @@
    <widget class="QPushButton" name="startFuzzBtn">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>600</y>
-      <width>201</width>
-      <height>81</height>
+      <x>390</x>
+      <y>640</y>
+      <width>251</width>
+      <height>61</height>
      </rect>
     </property>
     <property name="text">
@@ -558,6 +558,121 @@
       </property>
      </widget>
     </widget>
+   </widget>
+   <widget class="QLabel" name="switchInstrValueEndianLabel">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>580</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>将插装值从</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="instrValueEndianComboBox">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>580</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="currentText">
+     <string>小端</string>
+    </property>
+    <item>
+     <property name="text">
+      <string>小端</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>大端</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="instrValueBitsizeTipLabel">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>610</y>
+      <width>131</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>插装变量为</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="instrValueBitsizeComboBox">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>610</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="currentText">
+     <string>8位</string>
+    </property>
+    <item>
+     <property name="text">
+      <string>8位</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>无符号8位</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>16位</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>无符号16位</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>32位</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>无符号32位</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>64位</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>无符号64位</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="localVarEndianLabel">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>580</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>转为X端</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
