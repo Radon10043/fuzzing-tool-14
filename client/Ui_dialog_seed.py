@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-16 15:03:59
+LastEditTime: 2021-09-17 14:28:38
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -511,7 +511,7 @@ class Ui_Dialog(object):
         else:
             comboBox.setCurrentIndex(1)
         comboBox.currentIndexChanged.connect(lambda: self.endianChange(struct, memVal, comboBox))
-        comboBox.wheelEvent = lambda event : None
+        comboBox.wheelEvent = lambda event: None
         return comboBox
 
     def endianChange(self, struct, memVal, combox):
@@ -730,7 +730,16 @@ class Ui_Dialog(object):
         tempDict = dict()
         # 分析并设置structDict的上下限与位
         for i in range(0, len(structInfo)):
-            tempDict[structInfo[i][0]] = {"value": None, "lower": 0, "upper": 999, "mutation": False, "bitsize": -1, "checkCode": False, "checkField": False}
+            tempDict[structInfo[i][0]] = {
+                "value": None,
+                "lower": 0,
+                "upper": 999,
+                "mutation": False,
+                "bitsize": -1,
+                "checkCode": False,
+                "checkField": False,
+                "endian": "little"
+            }
             tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
             # 如果用户指定了位大小
             if ":" in structInfo[i][0]:

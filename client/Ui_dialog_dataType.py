@@ -1,7 +1,7 @@
 '''
 Author: Radon
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-07 14:40:17
+LastEditTime: 2021-09-17 14:46:11
 Description: 数据类型设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -167,6 +167,7 @@ class Ui_Dialog(object):
         self.saveBtn.clicked.connect(self.saveData)
         # 保存按钮-end
 
+        self.setDefaultDataTypeDict()
         self.setTableContent()
 
     def setTableContent(self):
@@ -176,6 +177,7 @@ class Ui_Dialog(object):
         -----
         [description]
         """
+        global dataTypeDict
         amountRows = len(dataTypeDict)  # 行数
 
         self.dataTypeTable.setRowCount(amountRows)
