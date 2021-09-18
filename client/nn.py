@@ -20,6 +20,7 @@ from keras.models import Sequential
 from keras.models import load_model
 
 import utils
+import json
 
 HOST = '127.0.0.1'
 PORT = 12012
@@ -76,13 +77,13 @@ class LossHistory(keras.callbacks.Callback):
 
 class NN():
 
-    def __init__(self, ui, ui_fuzz, fuzz_thread, input_dim, all_node, grads_cnt, program_loc, MAIdll, root_loc):
+    def __init__(self, ui, ui_fuzz, fuzz_thread, struct, all_node, grads_cnt, program_loc, MAIdll, root_loc):
         tf.compat.v1.disable_eager_execution()
         # threading.Thread.__init__(self)
         self.ui = ui
         self.uiFuzz = ui_fuzz
         self.fuzzThread = fuzz_thread
-        self.input_dim = input_dim
+        self.input_dim = len(struct.keys())
         self.output_dim = len(all_node)
         self.grads_cnt = grads_cnt
         self.dir = os.path.join(root_loc, "AIFuzz")
@@ -98,11 +99,23 @@ class NN():
         for idx, node in enumerate(all_node):
             self.nodes_map[node] = idx
 
+        self.idx_name = []
+        self.name_idx = {}
+        for i, key in enumerate(struct.keys()):
+            self.idx_name.append(key)
+            self.name_idx[key] = i
+
     def setExec(self, exec_module):
         self.exec_module = exec_module
 
     def crossover(self, fl1, fl2, idxx):
-        tmp1 = open(fl1, 'rb').read()
+        f = open(JSONPath)
+        dataTypeDict = json.load(f)
+
+        tmp1 = open(fl1)
+        tmp2 = open(fl1)
+        struct1 = json.load(tmp1)
+        struct2 = json.load(tmp2)
         ret = 1
         randd = fl2
         while ret == 1:
@@ -226,6 +239,7 @@ class NN():
         return seed, bitmap
 
     def train_generate(self, batch_size):
+
         while 1:
             np.random.shuffle(self.seed_list)
             # load a batch of training data

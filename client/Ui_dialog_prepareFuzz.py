@@ -19,7 +19,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import Ui_dialog_fuzz as fuzzDialogPY
 import utils
 import re, os, traceback
-
+import Ui_dialog_seed
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -152,7 +152,7 @@ class Ui_Dialog(object):
             else:
                 self.textBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))
                 targetFilesValidation = False
-
+        print(Ui_dialog_seed.structDict)
         # 如果没有填IP，就没法开始测试
         if IPAddressValidation:
             # 如果客户端与服务端的完整性验证均通过，则可以开始目标制导的模糊测试
@@ -173,7 +173,7 @@ class Ui_Dialog(object):
             elif noTargetFilesValidation and not targetFilesValidation:
                 self.textBrowser.append("<font color='orange'>- %s</font>" % ("可以开始无目标制导的模糊测试"))
                 self.startNoTargetFuzzBtn.setEnabled(True)
-                self.startAIFuzzBtn.setEnabled(True)
+                # self.startAIFuzzBtn.setEnabled(True)
 
             else:
                 self.textBrowser.append("<font color='red'>- %s</font>" % ("无法开始模糊测试，请尝试重新生成文件"))

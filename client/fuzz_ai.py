@@ -1,9 +1,9 @@
 import ctypes
+import json
 import os
 import re
 import time
 from shutil import copyfile, copy
-
 import numpy as np
 
 import nn
@@ -113,6 +113,8 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     # 调用图位置
     graph_loc = now_loc + "in/callgraph.txt"
 
+    input_json_loc = now_loc + "in/input.json"
+
     # 加载所需的DLL文件，并将CDLL存入一个字典，以便调用
     mutateDll = ctypes.cdll.LoadLibrary(now_loc + "in/mutate.dll")
     instrumentDll = ctypes.cdll.LoadLibrary(now_loc + "in/insFunc.dll")
@@ -127,7 +129,12 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     utils.allNode = allNode
     print("allNode:", allNode)
 
-
+    structDict = json.load(open(input_json_loc, "r"))
+    in_struct = {}
+    for key in structDict.keys():
+        struct = key
+    for key, value in structDict[struct].items():
+        in_struct[key.split(" ")[-1]] = value
     # 待修改
     testcase = open(seed_loc, "rb").read()
 
@@ -148,11 +155,11 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         for f in [os.path.join(seeds_dir, path) for path in os.listdir(seeds_dir)]:
             os.remove(f)
 
-        utils.gen_training_data(os.path.join(now_loc, "AIFuzz"), seed_loc, int(ui.AICfgDialog.randTSSize.text()),
-                                dllDict)
+        utils.gen_training_data(os.path.join(now_loc, "AIFuzz"), in_struct, int(ui.AICfgDialog.randTSSize.text()))
 
         # uiFuzz.text_browser_nn.append("已生成初始训练数据...\n")
         fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经生成初始训练数据，训练集规模：" + ui.AICfgDialog.randTSSize.text() + "\n")
+        return
     else:
         dir = ui.AICfgDialog.tsLoc.toPlainText()
         if dir != "":
