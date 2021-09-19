@@ -232,7 +232,7 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
     genMutatePath = root + "mutate.c"
 
     # 开始写代码，先include相关内容
-    code = "#include <stdio.h>\n#include <stdbool.h>\n" \
+    code = "#include <stdio.h>\n#include <stdbool.h>\n#include \"cJSON.h\"\n" \
            "#include \"" + check_code.header_file_path + "\"\n"
     # 把用户选择的头文件位置也include
     for header in header_loc_list:
@@ -270,6 +270,34 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
     code += "\n\tf = fopen(savePath, \"wb\");"
     code += "\n\tfwrite(&data, sizeof(data), 1, f);"
     code += "\n\tfclose(f);\n"
+    code += "}\n\n"
+
+    # 读取json文件中的测试输入，生成相应的二进制序列
+    code += "\nvoid json2bytes(char* jsonPath, char* savePath){\n"
+    code += "\tFILE * f;\n"
+    code += "\tlong len;\n"
+    code += "\tchar* buf;\n"
+    code += "\tcJSON* root_json;\n"
+    code += "\tf = fopen(filename, \"r\");\n"
+    code += "\tfseek(f, 0, SEEK_END);\n"
+    code += "\tlen = ftell(f);\n"
+    code += "\tfseek(f, 0, SEEK_SET);\n"
+    code += "\tbuf = (char *)malloc(len + 1);\n"
+    code += "\tfread(buf, 1, len, f);\n"
+    code += "\tbuf[len] = \'\\0\';\n"
+    code += "\troot_json = cJSON_Parse(buf);\n"
+    code += "\t" + struct + " data;\n"
+    for key, value in structDict[struct].items():
+        dataName = key.split(" ")[-1].split(":")[0]
+        code += "\tdata." + dataName + " = cJSON_GetObjectItem(root_json,\"" + dataName + "\")->valuedouble;\n"
+    if hasCheckCode:
+        code += "\tdata = calculateCheckCode(data);\n"
+
+    # 变异体写入文件
+    code += "\n\tFILE* out;"
+    code += "\n\tout = fopen(savePath, \"wb\");"
+    code += "\n\tfwrite(&data, sizeof(data), 1, out);"
+    code += "\n\tfclose(out);\n"
     code += "}\n\n"
 
     # 写一个将结构体的值设定在用户指定范围内的方法

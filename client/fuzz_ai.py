@@ -134,7 +134,13 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     for key in structDict.keys():
         struct = key
     for key, value in structDict[struct].items():
-        in_struct[key.split(" ")[-1]] = value
+        dataType = key.split(" ")[0]
+        dataName = key.split(" ")[1]
+        in_struct[dataName] = value
+        if dataType == "bool":
+            in_struct[dataName]["enum"] = [0, 1]
+        else:
+            in_struct[dataName]["enum"] = []
     # 待修改
     testcase = open(seed_loc, "rb").read()
 

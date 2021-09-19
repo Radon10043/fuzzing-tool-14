@@ -138,7 +138,7 @@ class Ui_Dialog(object):
             if os.path.exists(root_loc + file):
                 self.textBrowser.append("<font color='green'>√ %s</font>" % ("已检测到" + file))
                 if file == "mutate.c":
-                    os.system("gcc -shared -o " + root_loc + "mutate.dll " + root_loc + "mutate.c")
+                    os.system("gcc -shared -o " + root_loc + "mutate.dll " + root_loc + "mutate.c cJSON.c")
             else:
                 self.textBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))
                 noTargetFilesValidation = False

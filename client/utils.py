@@ -170,13 +170,17 @@ def gen_training_data(PATH_PREFIX, struct, num):
             if struct[key]["mutation"]:
                 lower = float(struct[key]["lower"])
                 upper = float(struct[key]["upper"])
-                p = random.random()
-                if p < 0.1:
-                    tmp[key] = lower
-                elif p < 0.2:
-                    tmp[key] = upper
+                if len(struct[key]["enum"]) == 0:
+                    p = random.random()
+                    if p < 0.1:
+                        tmp[key] = lower
+                    elif p < 0.2:
+                        tmp[key] = upper
+                    else:
+                        tmp[key] = random.uniform(lower, upper)
                 else:
-                    tmp[key] = random.uniform(lower, upper)
+                    idx = random.randint(0, len(struct[key]["enum"])-1)
+                    tmp[key] = struct[key]["enum"][idx]
             else:
                 tmp[key] = struct[key]["value"]
         fn = os.path.join(PATH_PREFIX, "seeds", "input_" + str(i).zfill(10)+".json")
