@@ -278,13 +278,14 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
     code += "\tlong len;\n"
     code += "\tchar* buf;\n"
     code += "\tcJSON* root_json;\n"
-    code += "\tf = fopen(filename, \"r\");\n"
+    code += "\tf = fopen(jsonPath, \"r\");\n"
     code += "\tfseek(f, 0, SEEK_END);\n"
     code += "\tlen = ftell(f);\n"
     code += "\tfseek(f, 0, SEEK_SET);\n"
     code += "\tbuf = (char *)malloc(len + 1);\n"
     code += "\tfread(buf, 1, len, f);\n"
     code += "\tbuf[len] = \'\\0\';\n"
+    code += "\tfclose(f);\n"
     code += "\troot_json = cJSON_Parse(buf);\n"
     code += "\t" + struct + " data;\n"
     for key, value in structDict[struct].items():
@@ -298,6 +299,7 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
     code += "\n\tout = fopen(savePath, \"wb\");"
     code += "\n\tfwrite(&data, sizeof(data), 1, out);"
     code += "\n\tfclose(out);\n"
+    code += "\n\tfree(buf);\n"
     code += "}\n\n"
 
     # 写一个将结构体的值设定在用户指定范围内的方法

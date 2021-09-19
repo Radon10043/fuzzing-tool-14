@@ -1,3 +1,4 @@
+import ctypes
 import os
 import random
 import re
@@ -84,12 +85,19 @@ def threadMonitor(senderAddress):
     returnUDPInfo = str(bytes(data))
 
 
-def getCoverage(testcase, senderAddress, receiverAddress, maxTimeout, dllDict):
+def getCoverage(fn_json, tmp_fn_bin, senderAddress, receiverAddress, maxTimeout, dllDict):
     thread2 = threading.Thread(target=threadMonitor, name="thread_monitor", args=(senderAddress,))
     thread2.start()
-
+    print(fn_json)
+    print(tmp_fn_bin)
+    dllDict['mutate'].json2bytes.argtypes = ctypes.c_char_p, ctypes.c_char_p
+    dllDict['mutate'].json2bytes.restype = None
+    f1 = ctypes.c_char_p(bytes(fn_json, encoding='utf8'))
+    f2 = ctypes.c_char_p(bytes(tmp_fn_bin, encoding='utf8'))
+    dllDict['mutate'].json2bytes(f1,f2 )
     # 测试用例是bytes
-    data = testcase
+    with open(tmp_fn_bin, "rb") as f:
+        data = f.read()
     global isCrash
     global crashTC
     try:
@@ -126,10 +134,9 @@ def getCoverage(testcase, senderAddress, receiverAddress, maxTimeout, dllDict):
         print("解析失败: ", e)
         coverNode = ["main"]
 
-
     crashResult = isCrash == 10
     timeout = False
-    return (testcase, coverNode, crashResult, crashTC)
+    return (data, coverNode, crashResult, crashTC)
 
 
 def mutate(a, add=True, delete=True):
@@ -183,7 +190,7 @@ def gen_training_data(PATH_PREFIX, struct, num):
                     tmp[key] = struct[key]["enum"][idx]
             else:
                 tmp[key] = struct[key]["value"]
-        fn = os.path.join(PATH_PREFIX, "seeds", "input_" + str(i).zfill(10)+".json")
+        fn = os.path.join(PATH_PREFIX, "input_" + str(i).zfill(10)+".json")
         json.dump(tmp, open(fn, "w"))
 
 
@@ -252,12 +259,3 @@ def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
     header_loc_list_save_file_file.close()
 
 
-if __name__ == "__main__":
-    """
-    fn = "D:\\fuzzing-tool-14\\example\\in\\structDict.json"
-    res = json.load(open(fn, "r"))
-    json.dump(struct2TC(res), open("D:\\fuzzing-tool-14\\tmp.json", "w"))
-    """
-    MAIdll = ctypes.cdll.LoadLibrary("D:\\fuzzing-tool-14\\example\\in\\mutate_instru.dll")
-
-    MAIdll.serialize()

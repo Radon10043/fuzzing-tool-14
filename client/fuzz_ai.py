@@ -2,6 +2,7 @@ import ctypes
 import json
 import os
 import re
+import random
 import time
 from shutil import copyfile, copy
 import numpy as np
@@ -123,49 +124,52 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     # 设置地址
     s = uiPrepareFuzz.senderIPLabel.text()
     r = uiPrepareFuzz.receiverIPLabel.text()
+    s = "127.0.0.1:9999"
+    r = "127.0.0.1:8888"
+
     allCoveredNode = []  # 储存了所有被覆盖到的结点
 
     allNode = uiPrepareFuzz.allNodes
     utils.allNode = allNode
     print("allNode:", allNode)
 
-    structDict = json.load(open(input_json_loc, "r"))
+    with open(input_json_loc, "r") as fp:
+        structDict = json.load(fp)
     in_struct = {}
     for key in structDict.keys():
         struct = key
     for key, value in structDict[struct].items():
-        dataType = key.split(" ")[0]
-        dataName = key.split(" ")[1]
+        dataName = key.split(" ")[-1].split(":")[0]
+        dataType = key.replace(dataName, "").strip()
         in_struct[dataName] = value
         if dataType == "bool":
             in_struct[dataName]["enum"] = [0, 1]
         else:
             in_struct[dataName]["enum"] = []
     # 待修改
-    testcase = open(seed_loc, "rb").read()
+    # testcase = open(seed_loc, "rb").read()
 
     # testcase[0] = [str(data) for data in testcase[0]]
 
-    seeds_dir = os.path.join(now_loc, "AIFuzz", "seeds")
-    p2 = os.path.join(now_loc, "AIFuzz", "crossovers")
-    p3 = os.path.join(now_loc, "AIFuzz", "mutations")
-    p4 = os.path.join(now_loc, "AIFuzz", "bitmaps")
-    p5 = os.path.join(now_loc, "AIFuzz", "crashes")
-    utils.mkdir(seeds_dir, del_if_exist=False)
-    utils.mkdir(p2)
-    utils.mkdir(p3)
-    utils.mkdir(p4)
-    utils.mkdir(p5)
+    dirs = [os.path.join(now_loc, "AIFuzz", "input_json", "seeds"),
+            os.path.join(now_loc, "AIFuzz", "input_json", "crossovers"),
+            os.path.join(now_loc, "AIFuzz", "input_json", "mutations"),
+            os.path.join(now_loc, "AIFuzz", "input_json", "bitmaps"),
+            os.path.join(now_loc, "AIFuzz", "input_json", "crashes"),
+            os.path.join(now_loc, "AIFuzz", "input_bin", "seeds"),
+            os.path.join(now_loc, "AIFuzz", "input_bin", "crossovers"),
+            os.path.join(now_loc, "AIFuzz", "input_bin", "mutations"),
+            os.path.join(now_loc, "AIFuzz", "input_bin", "crashes")]
+    for d in dirs:
+        utils.mkdir(d)
+
     # uiFuzz.text_browser_nn.append("测试文件夹准备完成...\n")
     if ui.AICfgDialog.randTS.isChecked():
-        for f in [os.path.join(seeds_dir, path) for path in os.listdir(seeds_dir)]:
-            os.remove(f)
-
-        utils.gen_training_data(os.path.join(now_loc, "AIFuzz"), in_struct, int(ui.AICfgDialog.randTSSize.text()))
-
+        utils.gen_training_data(os.path.join(now_loc, "AIFuzz", "input_json", "seeds"),
+                                in_struct, int(ui.AICfgDialog.randTSSize.text()))
         # uiFuzz.text_browser_nn.append("已生成初始训练数据...\n")
         fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经生成初始训练数据，训练集规模：" + ui.AICfgDialog.randTSSize.text() + "\n")
-        return
+    """
     else:
         dir = ui.AICfgDialog.tsLoc.toPlainText()
         if dir != "":
@@ -177,7 +181,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
             for f in files:
                 copy(f, seeds_dir)
             fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经拷贝初始训练数据，训练集规模：" + str(len(files)) + '\n')
-
+    """
     # 设置终止条件
     condition = ""
     if ui.stopByCrash.isChecked():
@@ -194,10 +198,10 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         condition = "self.exec_cnt >" + str(stopNum)
 
     condition += " or self.uiFuzz.stop"
-    n = nn.NN(ui, uiFuzz, fuzzThread, len(testcase), allNode, int(ui.AICfgDialog.seedPerRound.text()), program_loc,
+    n = nn.NN(ui, uiFuzz, fuzzThread, in_struct, allNode, int(ui.AICfgDialog.seedPerRound.text()), program_loc,
               dllDict, now_loc)
     e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, dllDict, allNode, n, condition,
-                 ui.AICfgDialog.mutSize.currentText(), now_loc, s, r)
+                 ui.AICfgDialog.mutSize.currentText(), now_loc, s, r, in_struct)
     n.setExec(e)
     start = time.time()
     e.run()
@@ -233,7 +237,8 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
 
 
 class FuzzExec():
-    def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes, nn, cond, mut_size, root_loc,s, r):
+    def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes, nn, cond, mut_size, root_loc, s, r,
+                 struct):
         self.ui = ui
         self.uiFuzz = ui_fuzz
         self.fuzzThread = fuzz_thread
@@ -259,6 +264,13 @@ class FuzzExec():
         self.cov_map = {}
         self.s = s
         self.r = r
+        self.struct = struct
+        self.idx_name = []
+        self.name_idx = {}
+        for key, value in struct.items():
+            if value["mutation"]:
+                self.idx_name.append(key)
+                self.name_idx[key] = len(self.idx_name) - 1
 
     def genFuzzInfo(self):
         info = "轮次：\t\t\t" + str(self.round_cnt + 1) + "\n"
@@ -283,36 +295,40 @@ class FuzzExec():
             self.program_cov = self.program_cov | cov
             return 2
 
+    # stage = 1: Normal fuzzing process
+    # stage = 2: Running training input
     def run_testcases(self, dir, stage):
         files = os.listdir(dir)
         start = time.time()
         time_ckpt = start
         for i, f in enumerate(files):
-            fn = os.path.join(os.path.abspath(dir), f)
-            # crash, timeout = run_target([program_loc, fn])
-            print(fn)
-            tc = open(fn, "rb").read()
-            # self.MAIdll.setValueInRange(tc)
-            cur_cov = None
-            crash = None
+            fn_json = os.path.join(os.path.abspath(dir), f)
+            tmp_fn_bin = os.path.join(self.dir, "tmp")
             if stage == 2:
-                if fn in self.cov_map.keys():
-                    cur_cov, crash = self.cov_map[fn]
+                if fn_json in self.cov_map.keys():
+                    cur_cov, crash = self.cov_map[fn_json]
                 else:
-                    _, cur_cov, crash, data = utils.getCoverage(tc, self.s, self.r, 1, self.MAIdll)
-                    self.cov_map[fn] = cur_cov, crash
+                    _, cur_cov, crash, data = utils.getCoverage(fn_json, tmp_fn_bin, self.s, self.r, 1, self.MAIdll)
+                    self.cov_map[fn_json] = cur_cov, crash
             else:
-                _, cur_cov, crash, data = utils.getCoverage(tc, self.s, self.r, 1, self.MAIdll)
+                _, cur_cov, crash, data = utils.getCoverage(fn_json, tmp_fn_bin, self.s, self.r, 1, self.MAIdll)
+                copyfile(tmp_fn_bin, fn_json.replace("input_json", "input_bin").replace(".json", ""))
             if crash and stage != 2:
-                crash_fn = os.path.join(self.dir, "crashes", str(self.round_cnt) + "_" + str(self.crash_cnt))
-                open(crash_fn, "wb").write(bytes(data))
-                # copyfile(fn, crash_fn)
-                self.MAIdll['mutate'].testcaseVisualization(bytes(data), bytes(crash_fn+".txt", encoding="utf8"))
+                crash_fn_json = os.path.join(self.dir, "input_json", "crashes",
+                                             str(self.round_cnt) + "_" + str(self.crash_cnt) + ".json")
+                crash_fn_bin = os.path.join(self.dir, "input_bin", "crashes",
+                                             str(self.round_cnt) + "_" + str(self.crash_cnt))
+                copyfile(fn_json, crash_fn_json)
+                copyfile(tmp_fn_bin, crash_fn_bin)
                 self.crash_cnt += 1
             ret = self.update_program_cov(cur_cov)
-            if ret == 2 and stage == 1:
-                cov_fn = os.path.join(self.dir, "seeds", "id_" + str(self.round_cnt) + "_" + str(self.cov_gain_cnt))
-                copyfile(fn, cov_fn)
+            if ret >= 1 and stage == 1:
+                cov_fn_json = os.path.join(self.dir, "input_json", "seeds",
+                                           "id_" + str(self.round_cnt) + "_" + str(self.cov_gain_cnt)+".json")
+                cov_fn_bin = os.path.join(self.dir, "input_bin", "seeds",
+                                          "id_" + str(self.round_cnt) + "_" + str(self.cov_gain_cnt))
+                copyfile(fn_json, cov_fn_json)
+                copyfile(tmp_fn_bin, cov_fn_bin)
                 self.cov_gain_cnt += 1
             if stage == 1:
                 self.exec_cnt += 1
@@ -320,7 +336,7 @@ class FuzzExec():
             if stage != 2:
                 time_ckpt = time.time()
                 info = self.genFuzzInfo()
-                info += "\n正在执行测试用例：\n" + fn + "\n"
+                info += "\n正在执行测试用例：\n" + fn_json + "\n"
                 info += "执行速度：" + (
                     "-" if time.time() - start < 1e-4 else "{:.2f}".format((i + 1) / (time.time() - start))) + "个/秒\n"
                 self.fuzzThread.execInfoSgn.emit(info)
@@ -331,7 +347,7 @@ class FuzzExec():
                 return
 
     def fuzz_loop(self):
-        self.run_testcases(os.path.join(self.dir, "crossovers"), 1)
+        self.run_testcases(os.path.join(self.dir,"input_json", "crossovers"), 1)
         dest = os.path.join(self.dir, "gradient_info")
         src = os.path.join(self.dir, "gradient_info_p")
         copyfile(src, dest)
@@ -351,182 +367,76 @@ class FuzzExec():
         if self.mut_size == "小":
             N = 10
         elif self.mut_size == "中":
-            N = 30
+            N = 50
         else:
-            N = 255
-        out_buf = open(seed_fn, "rb").read()
-        save_dir = os.path.join(self.dir, "mutations", str(self.round_cnt), seed_fn.split("\\")[-1])
-        utils.mkdir(save_dir)
+            N = 100
+        mut_prob = []
+        prob = 0.9
+        step = 0.8 / len(loc)
+        for i in loc:
+            mut_prob.append(prob)
+            prob -= step
+        with open(seed_fn, "r") as fp:
+            seed = json.load(fp)
+
+        save_dir1 = os.path.join(self.dir, "input_json", "mutations", str(self.round_cnt),
+                                 seed_fn.split("\\")[-1].split(".")[0])
+        save_dir2 = os.path.join(self.dir, "input_bin", "mutations", str(self.round_cnt),
+                                 seed_fn.split("\\")[-1].split(".")[0])
+        utils.mkdir(save_dir1)
+        utils.mkdir(save_dir2)
         start = time.time()
         cnt = 0
         time_ckpt = start
-        for iter in range(0, 10):
-            out_buf1 = bytearray(out_buf)
-            out_buf2 = bytearray(out_buf)
-            low_index = num_index[iter]
-            up_index = num_index[iter + 1]
-            if low_index >= len(sign):
-                up_index = low_index - 1
-            elif up_index >= len(sign):
-                up_index = len(sign)
-            up_step = 0
-            low_step = 0
-            for index in range(low_index, up_index):
-                if self.uiFuzz.stop:
-                    self.stop = True
-                    return
-                if sign[index] == 1:
-                    cur_up_step = 255 - out_buf[loc[index]]
-                    if cur_up_step > up_step:
-                        up_step = cur_up_step
-                    cur_low_step = out_buf[loc[index]]
-                    if cur_low_step > low_step:
-                        low_step = cur_low_step
-                else:
-                    cur_up_step = out_buf[loc[index]]
-                    if cur_up_step > up_step:
-                        up_step = cur_up_step
-                    cur_low_step = 255 - out_buf[loc[index]]
-                    if cur_low_step > low_step:
-                        low_step = cur_low_step
 
-            # print(iter, low_step, up_step)
-            N = N if N <= up_step else up_step
-            up_step = [] if up_step == 0 else np.random.choice(up_step, N, replace=False)
-            N = N if N <= low_step else low_step
-            low_step = [] if low_step == 0 else np.random.choice(low_step, N, replace=False)
-
-            # for step in range(0, up_step):
-            for step in up_step:
-                if self.uiFuzz.stop:
-                    self.stop = True
-                    return
-                if step == 0:
-                    continue
-                for index in range(low_index, up_index):
-                    mut_val = int(out_buf1[loc[index]]) + sign[index] * step
-                    if mut_val < 0:
-                        out_buf1[loc[index]] = 0
-                    elif mut_val > 255:
-                        out_buf1[loc[index]] = 255
+        for num in range(N):
+            if eval(self.cond):
+                self.stop = True
+                return
+            prob = random.random()
+            for i, idx in enumerate(loc):
+                if prob < mut_prob[i]:
+                    name = self.idx_name[idx]
+                    enum = len(self.struct[name]["enum"])
+                    if enum == 0:
+                        upper = float(self.struct[name]["upper"])
+                        lower = float(self.struct[name]["lower"])
+                        seed[name] = random.uniform(lower, upper)
                     else:
-                        out_buf1[loc[index]] = mut_val
+                        seed[name] = self.struct[name]["enum"][random.randint(0, enum-1)]
 
-                # fn = os.path.join(self.dir, 'mutations', str(self.round_cnt),
-                #                  "input_{:d}_{:06d}".format(iter, self.mut_cnt))
-                fn = save_dir + "\\" + str(self.mut_cnt)
-                tmp = bytes(out_buf1)
-                # self.MAIdll.setValueInRange(tmp)
-                write_to_testcase(fn, tmp, self.MAIdll)
-                self.mut_cnt += 1
-                self.mut_time += (time.time() - time_ckpt)
-                time_ckpt = time.time()
-                cnt += 1
-                info = self.genFuzzInfo()
-                info += "\n正在变异种子文件：\n" + seed_fn + "\n"
-                info += "变异速度：" + (
-                    "-" if time.time() - start < 1e-4 else "{:.2f}".format(cnt / (time.time() - start))) + "个/秒\n"
-                self.fuzzThread.execInfoSgn.emit(info)
+            fn = save_dir1 + "\\" + str(self.mut_cnt) + ".json"
+            # self.MAIdll.setValueInRange(tmp)
+            with open(fn, "w") as fp:
+                json.dump(seed, fp)
+            self.mut_cnt += 1
+            self.mut_time += (time.time() - time_ckpt)
+            time_ckpt = time.time()
+            cnt += 1
+            info = self.genFuzzInfo()
+            info += "\n正在变异种子文件：\n" + seed_fn + "\n"
+            info += "变异速度：" + (
+                "-" if time.time() - start < 1e-4 else "{:.2f}".format(cnt / (time.time() - start))) + "个/秒\n"
+            self.fuzzThread.execInfoSgn.emit(info)
 
-                """
-                crash, timeout = run_target([program_loc, fn])
-                if crash:
-                    mut_fn = "crashes/crash_{:d}_{:06d}".format(round_cnt, mut_cnt)
-                    write_to_testcase(mut_fn, out_buf1)
-                elif timeout and tmout_cnt < 20:
-                    tmout_cnt = tmout_cnt + 1
-                    crash, timeout = run_target([program_loc, fn], 2)
-                    if crash:
-                        mut_fn = "crashes/crash_{:d}_{:06d}".format(round_cnt, mut_cnt)
-                        write_to_testcase(mut_fn, out_buf1)
-
-                ret = update_program_cov()
-                if ret == 2:
-                    mut_fn = "seeds/id_{:d}_{:d}_{:06d}_cov".format(round_cnt, iter, mut_cnt)
-                    write_to_testcase(mut_fn, out_buf1)
-                elif ret == 1:
-                    mut_fn = "seeds/id_{:d}_{:d}_{:06d}".format(round_cnt, iter, mut_cnt)
-                    write_to_testcase(mut_fn, out_buf1)
-                """
-
-            # for step in range(0, low_step):
-            for step in low_step:
-                if self.uiFuzz.stop:
-                    self.stop = True
-                    return
-                if step == 0:
-                    continue
-                for index in range(low_index, up_index):
-                    mut_val = int(out_buf2[loc[index]]) - sign[index] * step
-                    if mut_val < 0:
-                        out_buf2[loc[index]] = 0
-                    elif mut_val > 255:
-                        out_buf2[loc[index]] = 255
-                    else:
-                        out_buf2[loc[index]] = mut_val
-
-                # fn = os.path.join(self.dir, 'mutations', str(self.round_cnt),
-                #                  "input_{:d}_{:06d}".format(iter, self.mut_cnt))
-                fn = save_dir + "\\" + str(self.mut_cnt)
-                tmp = bytes(out_buf2)
-                # self.MAIdll.setValueInRange(tmp)
-                write_to_testcase(fn, tmp, self.MAIdll)
-                self.mut_cnt += 1
-                self.mut_time += (time.time() - time_ckpt)
-                time_ckpt = time.time()
-                cnt += 1
-                info = self.genFuzzInfo()
-                info += "\n正在变异种子文件：\n" + seed_fn + "\n"
-                info += "变异速度：" + (
-                    "-" if time.time() - start < 1e-4 else "{:.2f}".format(cnt / (time.time() - start))) + "个/秒\n"
-                self.fuzzThread.execInfoSgn.emit(info)
-
-                """
-                crash, timeout = run_target([program_loc, fn])
-                if crash:
-                    mut_fn = "crashes/crash_{:d}_{:06d}".format(round_cnt, mut_cnt)
-                    write_to_testcase(mut_fn, out_buf2)
-                elif timeout and tmout_cnt < 20:
-                    tmout_cnt = tmout_cnt + 1
-                    crash, timeout= run_target([program_loc, fn], 2)
-                    if crash:
-                        mut_fn = "crashes/crash_{:d}_{:06d}".format(round_cnt, mut_cnt)
-                        write_to_testcase(mut_fn, out_buf2)
-
-                ret = update_program_cov()
-                if ret == 2:
-                    mut_fn = "seeds/id_{:d}_{:d}_{:06d}_cov".format(round_cnt, iter, mut_cnt)
-                    write_to_testcase(mut_fn, out_buf2)
-                elif ret == 1:
-                    mut_fn = "seeds/id_{:d}_{:d}_{:06d}".format(round_cnt, iter, mut_cnt)
-                    write_to_testcase(mut_fn, out_buf2)
-                """
-
-        self.run_testcases(save_dir, 1)
+        self.run_testcases(save_dir1, 1)
 
     def run(self):
         step = 0
-        # s = socket.socket()
         # s.connect((HOST, PORT))
         self.start = time.time()
-        seeds_dir = os.path.join(self.dir, "seeds")
-        utils.mkdir(os.path.join(self.dir, "mutations", "0"))
+        seeds_dir = os.path.join(self.dir, "input_json", "seeds")
+        utils.mkdir(os.path.join(self.dir, "input_json", "mutations", "0"))
         self.run_testcases(seeds_dir, 2)
         self.nn.gen_grad(b'train')
         while True:
-            old_cov = self.program_cov
             self.fuzz_loop()
             if self.stop:
                 return
-            new_cov = self.program_cov
             self.round_cnt += 1
-            utils.mkdir(os.path.join(self.dir, 'mutations', str(self.round_cnt)))
-            if len(new_cov) > len(old_cov) or self.fast == 0:
-                self.nn.gen_grad(b"train")
-                self.fast = 1
-            else:
-                self.nn.gen_grad(b"sloww")
-                self.fast = 0
+            utils.mkdir(os.path.join(self.dir, "input_json", 'mutations', str(self.round_cnt)))
+            utils.mkdir(os.path.join(self.dir, "input_bin", 'mutations', str(self.round_cnt)))
+            self.nn.gen_grad(b"train")
 
 
 """
