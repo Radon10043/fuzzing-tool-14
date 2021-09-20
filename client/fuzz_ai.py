@@ -164,11 +164,15 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         utils.mkdir(d)
 
     # uiFuzz.text_browser_nn.append("测试文件夹准备完成...\n")
-    if ui.AICfgDialog.randTS.isChecked():
+    if not ui.ProtocolFuzzCfgDialog.aiEnableCheckBox.ischecked():
         utils.gen_training_data(os.path.join(now_loc, "AIFuzz", "input_json", "seeds"),
-                                in_struct, int(ui.AICfgDialog.randTSSize.text()))
+                                in_struct, int(ui.ProtocolFuzzCfgDialog.seedPerRound.text()))
+        fuzzThread.nnInfoSgn.emit("无模型训练信息：\n采用随机测试用例生成策略\n")
+    elif ui.ProtocolFuzzCfgDialog.randTS.isChecked():
+        utils.gen_training_data(os.path.join(now_loc, "AIFuzz", "input_json", "seeds"),
+                                in_struct, int(ui.ProtocolFuzzCfgDialog.randTSSize.text()))
         # uiFuzz.text_browser_nn.append("已生成初始训练数据...\n")
-        fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经生成初始训练数据，训练集规模：" + ui.AICfgDialog.randTSSize.text() + "\n")
+        fuzzThread.nnInfoSgn.emit("模型训练信息：\n已经生成初始训练数据，训练集规模：" + ui.ProtocolFuzzCfgDialog.randTSSize.text() + "\n")
     """
     else:
         dir = ui.AICfgDialog.tsLoc.toPlainText()
@@ -198,10 +202,8 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         condition = "self.exec_cnt >" + str(stopNum)
 
     condition += " or self.uiFuzz.stop"
-    n = nn.NN(ui, uiFuzz, fuzzThread, in_struct, allNode, int(ui.AICfgDialog.seedPerRound.text()), program_loc,
-              dllDict, now_loc)
-    e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, dllDict, allNode, n, condition,
-                 ui.AICfgDialog.mutSize.currentText(), now_loc, s, r, in_struct)
+    n = nn.NN(ui, uiFuzz, fuzzThread, in_struct, allNode, program_loc, dllDict, now_loc)
+    e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, dllDict, allNode, n, condition, now_loc, s, r, in_struct)
     n.setExec(e)
     start = time.time()
     e.run()
@@ -237,7 +239,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
 
 
 class FuzzExec():
-    def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes, nn, cond, mut_size, root_loc, s, r,
+    def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes, nn, cond, root_loc, s, r,
                  struct):
         self.ui = ui
         self.uiFuzz = ui_fuzz
@@ -260,8 +262,8 @@ class FuzzExec():
         self.cond = cond
         self.start = time.time()
         self.stop = False
-        self.mut_size = mut_size
-        self.cov_map = {}
+        self.mut_size = ui.ProtocolFuzzCfgDialog.mutSize.currentText()
+        self.seed_cov_map = {}
         self.s = s
         self.r = r
         self.struct = struct
@@ -305,11 +307,11 @@ class FuzzExec():
             fn_json = os.path.join(os.path.abspath(dir), f)
             tmp_fn_bin = os.path.join(self.dir, "tmp")
             if stage == 2:
-                if fn_json in self.cov_map.keys():
-                    cur_cov, crash = self.cov_map[fn_json]
+                if fn_json in self.seed_cov_map.keys():
+                    cur_cov, crash = self.seed_cov_map[fn_json]
                 else:
                     _, cur_cov, crash, data = utils.getCoverage(fn_json, tmp_fn_bin, self.s, self.r, 1, self.MAIdll)
-                    self.cov_map[fn_json] = cur_cov, crash
+                    self.seed_cov_map[fn_json] = cur_cov, crash
             else:
                 _, cur_cov, crash, data = utils.getCoverage(fn_json, tmp_fn_bin, self.s, self.r, 1, self.MAIdll)
                 copyfile(tmp_fn_bin, fn_json.replace("input_json", "input_bin").replace(".json", ""))
@@ -365,11 +367,11 @@ class FuzzExec():
 
     def gen_mutate(self, loc, sign, seed_fn):
         if self.mut_size == "小":
-            N = 10
+            N = 20
         elif self.mut_size == "中":
-            N = 50
-        else:
             N = 100
+        else:
+            N = 200
         mut_prob = []
         prob = 0.9
         step = 0.8 / len(loc)

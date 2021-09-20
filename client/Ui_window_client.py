@@ -23,7 +23,7 @@ import Ui_dialog_selectStruct as selectStructDialogPY
 import Ui_dialog_validation as validateDialogPY
 import Ui_dialog_prepareFuzz as prepareFuzzDialogPY
 
-import Ui_dialog_AICfg as aicfgDialogPY
+import Ui_dialog_protocolFuzzConfig as pfcfgDialogPY
 
 # 初始化logger
 logDir = os.path.join(os.path.dirname(__file__), "logs")
@@ -163,17 +163,17 @@ class Ui_MainWindow(object):
         self.secondLabel.setGeometry(QtCore.QRect(210, 60, 21, 16))
         self.secondLabel.setObjectName("secondLabel")
         self.optionTabWidget.addTab(self.codeStructTab, "")
-        self.AITab = QtWidgets.QWidget()
-        self.AITab.setObjectName("AITab")
-        self.AICfgInfo = QtWidgets.QTextBrowser(self.AITab)
-        self.AICfgInfo.setGeometry(QtCore.QRect(10, 10, 221, 61))
-        self.AICfgInfo.setStyleSheet("background-color:rgb(255, 255, 255)")
-        self.AICfgInfo.setObjectName("AICfgInfo")
-        self.AICfgBtn = QtWidgets.QPushButton(self.AITab)
-        self.AICfgBtn.setGeometry(QtCore.QRect(80, 77, 93, 28))
-        self.AICfgBtn.setCheckable(False)
-        self.AICfgBtn.setObjectName("AICfgBtn")
-        self.optionTabWidget.addTab(self.AITab, "")
+        self.ProtocolFuzzTab = QtWidgets.QWidget()
+        self.ProtocolFuzzTab.setObjectName("AITab")
+        self.ProtocolFuzzConfig = QtWidgets.QTextBrowser(self.ProtocolFuzzTab)
+        self.ProtocolFuzzConfig.setGeometry(QtCore.QRect(10, 10, 221, 61))
+        self.ProtocolFuzzConfig.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.ProtocolFuzzConfig.setObjectName("AICfgInfo")
+        self.ProtocolFuzzConfigBtn = QtWidgets.QPushButton(self.ProtocolFuzzTab)
+        self.ProtocolFuzzConfigBtn.setGeometry(QtCore.QRect(80, 77, 93, 28))
+        self.ProtocolFuzzConfigBtn.setCheckable(False)
+        self.ProtocolFuzzConfigBtn.setObjectName("AICfgBtn")
+        self.optionTabWidget.addTab(self.ProtocolFuzzTab, "")
         self.switchInstrValueEndianLabel = QtWidgets.QLabel(self.centralwidget)
         self.switchInstrValueEndianLabel.setGeometry(QtCore.QRect(400, 580, 81, 20))
         self.switchInstrValueEndianLabel.setObjectName("switchInstrValueEndianLabel")
@@ -217,7 +217,7 @@ class Ui_MainWindow(object):
         self.dataTypeInputBtn.clicked.connect(self.popDataTypeDialog)
         self.mainWindow = MainWindow
 
-        self.AICfgBtn.clicked.connect(self.popAICfgDialog)
+        self.ProtocolFuzzConfigBtn.clicked.connect(self.popProtocolFuzzConfigDialog)
 
         # 每轮测试用例数量、超时时间上线为1000，测试用例总数量上线为1亿
         regExp1 = QtCore.QRegExp("^([1-9]\d{0,2}|1000)$")
@@ -225,7 +225,7 @@ class Ui_MainWindow(object):
         self.timeoutLEdit.setValidator(QtGui.QRegExpValidator(regExp1))
         regExp2 = QtCore.QRegExp("^([1-9]\d{0,6}|10000000)$")
         self.TCNumsLineEdit.setValidator(QtGui.QRegExpValidator(regExp2))
-        self.AICfgDialog = None
+        self.ProtocolFuzzCfgDialog = None
 
         if sys.byteorder == "little":  # 根据电脑的字节序设置插装值下拉框默认值
             self.instrValueEndianComboBox.setCurrentIndex(0)
@@ -288,8 +288,8 @@ class Ui_MainWindow(object):
         self.TCTimeoutLabel.setText(_translate("MainWindow", "测试用例超时时间"))
         self.secondLabel.setText(_translate("MainWindow", "秒"))
         self.optionTabWidget.setTabText(self.optionTabWidget.indexOf(self.codeStructTab), _translate("MainWindow", "代码结构"))
-        self.AICfgBtn.setText(_translate("MainWindow", "设置"))
-        self.optionTabWidget.setTabText(self.optionTabWidget.indexOf(self.AITab), _translate("MainWindow", "交互接口规约"))
+        self.ProtocolFuzzConfigBtn.setText(_translate("MainWindow", "设置"))
+        self.optionTabWidget.setTabText(self.optionTabWidget.indexOf(self.ProtocolFuzzTab), _translate("MainWindow", "交互接口规约"))
         self.switchInstrValueEndianLabel.setText(_translate("MainWindow", "将插装值从"))
         self.instrValueEndianComboBox.setCurrentText(_translate("MainWindow", "小端"))
         self.instrValueEndianComboBox.setItemText(0, _translate("MainWindow", "小端"))
@@ -334,9 +334,9 @@ class Ui_MainWindow(object):
         path = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", "C:/Users/Radon/Desktop/", "json files (*.json)")
         self.dataTypeDictLoc.setText(path[0])
 
-    def popAICfgDialog(self):
-        self.AICfgDialog = aicfgDialogPY.Ui_Dialog(self.AICfgInfo)
-        self.AICfgDialog.show()
+    def popProtocolFuzzConfigDialog(self):
+        self.ProtocolFuzzCfgDialog = pfcfgDialogPY.Ui_Dialog(self.ProtocolFuzzConfig)
+        self.ProtocolFuzzCfgDialog.show()
 
     def popDataTypeDialog(self):
         typeJSONPath = self.dataTypeDictLoc.toPlainText()

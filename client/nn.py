@@ -76,8 +76,7 @@ class LossHistory(keras.callbacks.Callback):
 
 
 class NN():
-
-    def __init__(self, ui, ui_fuzz, fuzz_thread, struct, all_node, grads_cnt, program_loc, MAIdll, root_loc):
+    def __init__(self, ui, ui_fuzz, fuzz_thread, struct, all_node, program_loc, MAIdll, root_loc):
         tf.compat.v1.disable_eager_execution()
         # threading.Thread.__init__(self)
         self.ui = ui
@@ -86,7 +85,7 @@ class NN():
         self.struct = struct
         self.input_dim = 0
         self.output_dim = len(all_node)
-        self.grads_cnt = grads_cnt
+        self.grads_cnt = int(ui.ProtocolFuzzCfgDialog.seedPerRound.text())
         self.dir = os.path.join(root_loc, "AIFuzz")
         self.program_loc = program_loc
         self.MAIdll = MAIdll
@@ -146,8 +145,8 @@ class NN():
             out = None
             crash = None
             self.fuzzThread.nnInfoSgn.emit("正在执行训练数据：" + f + "\n")
-            if f in self.exec_module.cov_map.keys():
-                out, crash = self.exec_module.cov_map[f]
+            if f in self.exec_module.seed_cov_map.keys():
+                out, crash = self.exec_module.seed_cov_map[f]
             else:
                 _, out, crash, _ = utils.getCoverage(f, os.path.join(self.dir, "tmp"), self.exec_module.s, self.exec_module.r, 1,
                                                      self.MAIdll)

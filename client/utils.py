@@ -174,7 +174,7 @@ def gen_training_data(PATH_PREFIX, struct, num):
     for i in range(0, num):
         tmp = {}
         for key in struct.keys():
-            if struct[key]["mutation"]:
+            if struct[key]["mutation"] and i != 0:
                 lower = float(struct[key]["lower"])
                 upper = float(struct[key]["upper"])
                 if len(struct[key]["enum"]) == 0:
