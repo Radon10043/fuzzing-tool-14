@@ -19,7 +19,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import Ui_dialog_fuzz as fuzzDialogPY
 import utils
 import re, os, traceback
-
+import Ui_dialog_seed
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -138,7 +138,7 @@ class Ui_Dialog(object):
             if os.path.exists(root_loc + file):
                 self.textBrowser.append("<font color='green'>√ %s</font>" % ("已检测到" + file))
                 if file == "mutate.c":
-                    os.system("gcc -shared -o " + root_loc + "mutate.dll " + root_loc + "mutate.c")
+                    os.system("gcc -shared -o " + root_loc + "mutate.dll " + root_loc + "mutate.c " + root_loc + "cJSON.c")
             else:
                 self.textBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))
                 noTargetFilesValidation = False
@@ -152,7 +152,7 @@ class Ui_Dialog(object):
             else:
                 self.textBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))
                 targetFilesValidation = False
-
+        print(Ui_dialog_seed.structDict)
         # 如果没有填IP，就没法开始测试
         if IPAddressValidation:
             # 如果客户端与服务端的完整性验证均通过，则可以开始目标制导的模糊测试
@@ -173,7 +173,7 @@ class Ui_Dialog(object):
             elif noTargetFilesValidation and not targetFilesValidation:
                 self.textBrowser.append("<font color='orange'>- %s</font>" % ("可以开始无目标制导的模糊测试"))
                 self.startNoTargetFuzzBtn.setEnabled(True)
-                self.startAIFuzzBtn.setEnabled(True)
+                # self.startAIFuzzBtn.setEnabled(True)
 
             else:
                 self.textBrowser.append("<font color='red'>- %s</font>" % ("无法开始模糊测试，请尝试重新生成文件"))
@@ -260,15 +260,15 @@ class Ui_Dialog(object):
     def startAIFuzz(self):
         root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0])
 
-        if self.ui.AICfgDialog is None:
+        if self.ui.ProtocolFuzzCfgDialog is None:
             fuzzErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请正确配置测试参数！")
             fuzzErrBox.exec_()
             return
 
-        if self.ui.AICfgDialog.existTS.isChecked() and self.ui.AICfgDialog.tsLoc.toPlainText() == "":
-            msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请确保已将初始训练集拷贝到" + os.path.join(root_loc, "AIFuzz", "seeds") + "目录下！")
-            msg.addButton("确定", QtWidgets.QMessageBox.YesRole)
-            msg.exec_()
+        # if self.ui.ProtocolFuzzCfgDialog.existTS.isChecked() and self.ui.ProtocolFuzzCfgDialog.tsLoc.toPlainText() == "":
+        #     msg = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请确保已将初始训练集拷贝到" + os.path.join(root_loc, "AIFuzz", "seeds") + "目录下！")
+        #     msg.addButton("确定", QtWidgets.QMessageBox.YesRole)
+        #     msg.exec_()
 
         try:
             self.fuzzDialog = QtWidgets.QDialog()

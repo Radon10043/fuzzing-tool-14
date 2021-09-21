@@ -1,12 +1,16 @@
+import ctypes
+import math
 import os
 import random
 import re
 import shutil
 import socket
 import threading
+import json
+import numpy as np
 import time
 from subprocess import *
-
+from util.check_code import CheckCode
 
 ROOT = "D:\\fuzzing-tool-14"
 returnUDPInfo = []
@@ -20,6 +24,8 @@ crashTC = bytes()  # 存储触发缺陷的测试用例
 def parse_array(text):
     # loc|sign|filename
     loc_sign_fn = text.strip().split("|")
+    if loc_sign_fn[0] == "":
+        return [], [], loc_sign_fn[2]
     loc = [int(i) for i in loc_sign_fn[0].split(',')]
     sign = [int(i) for i in loc_sign_fn[1].split(',')]
     fn = loc_sign_fn[2]
@@ -83,12 +89,19 @@ def threadMonitor(senderAddress):
     returnUDPInfo = str(bytes(data))
 
 
-def getCoverage(testcase, senderAddress, receiverAddress, maxTimeout, dllDict):
+def getCoverage(fn_json, tmp_fn_bin, senderAddress, receiverAddress, maxTimeout, dllDict):
     thread2 = threading.Thread(target=threadMonitor, name="thread_monitor", args=(senderAddress,))
     thread2.start()
-
+    print(fn_json)
+    print(tmp_fn_bin)
+    dllDict['mutate'].json2bytes.argtypes = ctypes.c_char_p, ctypes.c_char_p
+    dllDict['mutate'].json2bytes.restype = None
+    f1 = ctypes.c_char_p(bytes(fn_json, encoding='utf8'))
+    f2 = ctypes.c_char_p(bytes(tmp_fn_bin, encoding='utf8'))
+    dllDict['mutate'].json2bytes(f1,f2 )
     # 测试用例是bytes
-    data = testcase
+    with open(tmp_fn_bin, "rb") as f:
+        data = f.read()
     global isCrash
     global crashTC
     try:
@@ -125,10 +138,9 @@ def getCoverage(testcase, senderAddress, receiverAddress, maxTimeout, dllDict):
         print("解析失败: ", e)
         coverNode = ["main"]
 
-
     crashResult = isCrash == 10
     timeout = False
-    return (testcase, coverNode, crashResult, crashTC)
+    return (data, coverNode, crashResult, crashTC)
 
 
 def mutate(a, add=True, delete=True):
@@ -149,37 +161,37 @@ def mutate(a, add=True, delete=True):
     return bytes(res)
 
 
-def gen_training_data(PATH_PREFIX, seed_fn, num, dll):
+"""
+        "变量名21": {
+            "value": "var3",
+            "lower": 30,
+            "upper": 50,
+            "mutation": False,
+            "bitsize": 8,
+            "comment": "占位",
+            "checkCode": False,
+            "checkField": False
+        },
+"""
+def gen_training_data(PATH_PREFIX, struct, num):
     # population = [bytearray([1, 2, 3, 4]), bytearray([0, 10, 100, 200])]
-    population = [open(seed_fn, "rb").read()]
-
-    while len(population) <= num:
-        new_population = []
-        for tc in population:
-            new_population.append(mutate(tc, add=False, delete=False))
-            if len(new_population) + len(population) >= num:
-                break
-        population += new_population
-    # res = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0}
-    for i, tc in enumerate(population):
-        if i >= num:
-            break
-        input_fn = os.path.join(PATH_PREFIX, "seeds", "input_" + str(i).zfill(10))
-
-        if i / num > 0.4:
-            dll['mutate'].setValueInRange(tc)
-        # dll['instrument'].setInstrValueToZero(tc)
-        input_fn = bytes(input_fn, encoding="utf8")
-        dll["mutate"].mutate(tc, input_fn, 0xffffffff)
-    return population
+    for i in range(0, num):
+        tmp = {}
+        for key in struct.keys():
+            if struct[key]["mutation"] and i != 0:
+                lower = float(struct[key]["lower"])
+                upper = float(struct[key]["upper"])
+                if len(struct[key]["enum"]) == 0:
+                    tmp[key] = random.uniform(lower, upper)
+                else:
+                    idx = random.randint(0, len(struct[key]["enum"])-1)
+                    tmp[key] = struct[key]["enum"][idx]
+            else:
+                tmp[key] = struct[key]["value"]
+        fn = os.path.join(PATH_PREFIX, "input_" + str(i).zfill(10)+".json")
+        json.dump(tmp, open(fn, "w"))
 
 
-if __name__ == "__main__":
-    """
-    fn = "D:\\fuzzing-tool-14\\example\\in\\structDict.json"
-    res = json.load(open(fn, "r"))
-    json.dump(struct2TC(res), open("D:\\fuzzing-tool-14\\tmp.json", "w"))
-    """
-    MAIdll = ctypes.cdll.LoadLibrary("D:\\fuzzing-tool-14\\example\\in\\mutate_instru.dll")
 
-    MAIdll.serialize()
+
+

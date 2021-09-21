@@ -12,3 +12,9 @@ client/util/checkCodeLibDir/checkCodeLib/main.c
 temp.py
 requirements.txt
 logs
+*.json
+*.txt
+CommuExample1/
+CommuExample2/
+CommuExample3/
+CommuExample4/

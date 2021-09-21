@@ -9,7 +9,7 @@ class Ui_Dialog(QtWidgets.QDialog):
         super(Ui_Dialog, self).__init__(parent)
         self.textBrowser = textBrowser
         self.setObjectName("Dialog")
-        self.resize(380, 400)
+        self.resize(380, 480)
         self.setWindowFlags(QtCore.Qt.MSWindowsFixedSizeDialogHint | QtCore.Qt.Tool | QtCore.Qt.WindowMinimizeButtonHint)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
@@ -17,25 +17,31 @@ class Ui_Dialog(QtWidgets.QDialog):
         self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
         self.nnOptionGroup = QtWidgets.QGroupBox(self.centralwidget)
-        self.nnOptionGroup.setGeometry(QtCore.QRect(20, 20, 340, 180))
+        self.nnOptionGroup.setGeometry(QtCore.QRect(20, 50, 340, 180))
         self.nnOptionGroup.setObjectName("stopOptionGroup")
+        self.aiEnableCheckBox = QtWidgets.QCheckBox(self)
+        self.aiEnableCheckBox.setGeometry(QtCore.QRect(20, 18, 250, 30))
+        self.aiEnableCheckBox.setChecked(False)
+        self.aiEnableCheckBox.clicked.connect(self.enableAI)
 
         self.randTS = QtWidgets.QRadioButton(self.nnOptionGroup)
-        self.randTS.setGeometry(QtCore.QRect(20, 40, 150, 19))
+        self.randTS.setGeometry(QtCore.QRect(20, 20, 150, 19))
         self.randTS.setObjectName("randTS")
         self.randTS.setChecked(True)
+        self.randTS.setEnabled(False)
         self.randTSSize = QtWidgets.QLineEdit(self.nnOptionGroup)
-        self.randTSSize.setGeometry(QtCore.QRect(240, 40, 90, 25))
+        self.randTSSize.setGeometry(QtCore.QRect(240, 20, 90, 25))
         self.randTSSize.setObjectName("randTSSize")
-        self.randTSSize.setEnabled(True)
+        self.randTSSize.setEnabled(False)
 
         self.existTS = QtWidgets.QRadioButton(self.nnOptionGroup)
-        self.existTS.setGeometry(QtCore.QRect(20, 80, 115, 19))
+        self.existTS.setGeometry(QtCore.QRect(20, 60, 115, 19))
         self.existTS.setObjectName("existTS")
+        self.existTS.setEnabled(False)
         self.tsLoc = QtWidgets.QTextBrowser(self.nnOptionGroup)
-        self.tsLoc.setGeometry(QtCore.QRect(20, 110, 310, 25))
+        self.tsLoc.setGeometry(QtCore.QRect(20, 100, 310, 25))
         self.choosBtn = QtWidgets.QPushButton(self.nnOptionGroup)
-        self.choosBtn.setGeometry(QtCore.QRect(140, 140, 80, 30))
+        self.choosBtn.setGeometry(QtCore.QRect(140, 135, 80, 30))
         self.tsLoc.setEnabled(False)
         self.choosBtn.setEnabled(False)
         self.choosBtn.setStyleSheet("")
@@ -44,7 +50,7 @@ class Ui_Dialog(QtWidgets.QDialog):
         self.choosBtn.clicked.connect(self.chooseTrainingSet)
 
         self.execOptionGroup = QtWidgets.QGroupBox(self.centralwidget)
-        self.execOptionGroup.setGeometry(QtCore.QRect(20, 210, 340, 130))
+        self.execOptionGroup.setGeometry(QtCore.QRect(20, 240, 340, 130))
         self.execOptionGroup.setObjectName("execOptionGroup")
         self.seedPerRoundLabel = QtWidgets.QLabel(self.execOptionGroup)
         self.seedPerRoundLabel.setGeometry(QtCore.QRect(20, 30, 130, 19))
@@ -64,27 +70,29 @@ class Ui_Dialog(QtWidgets.QDialog):
         self.randTSSize.setValidator(QtGui.QRegExpValidator(regex))
 
         self.yesBtn = QtWidgets.QPushButton(self)
-        self.yesBtn.setGeometry(QtCore.QRect(200, 350, 160, 30))
+        self.yesBtn.setGeometry(QtCore.QRect(200, 400, 160, 30))
         self.yesBtn.clicked.connect(self.close)
         self.retranslateUi()
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("Dialog", "基于交互接口规约的模糊测试设置"))
-        self.nnOptionGroup.setTitle(_translate("Dialog", "模型训练"))
+        self.aiEnableCheckBox.setText(_translate("Dialog", "使用AI制导的测试用例生成策略"))
+        # self.nnOptionGroup.setTitle(_translate("Dialog", "模型训练"))
         self.execOptionGroup.setTitle(_translate("Dialog", "测试执行"))
         self.randTS.setText(_translate("nnOptionGroup", "随机生成初始训练数据"))
         # self.randTSSize.setText(_translate("nnOptionGroup", "10"))
-        self.randTSSize.setPlaceholderText("100")
+        self.randTSSize.setPlaceholderText("20")
         self.existTS.setText(_translate("nnOptionGroup", "使用已有训练数据"))
         self.choosBtn.setText(_translate("nnOptionGroup", "浏览"))
         self.seedPerRoundLabel.setText(_translate("execOptionGroup", "每轮选取变异的种子数"))
         # self.seedPerRound.setText(_translate("execOptionGroup", "2"))
-        self.seedPerRound.setPlaceholderText("2")
+        self.seedPerRound.setPlaceholderText("10")
         self.mutSizeLabel.setText(_translate("execOptionGroup", "变异规模"))
         self.mutSize.setItemText(0, _translate("execOptionGroup", "小"))
         self.mutSize.setItemText(1, _translate("execOptionGroup", "中"))
         self.mutSize.setItemText(2, _translate("execOptionGroup", "大"))
+        self.mutSize.setCurrentIndex(1)
         self.yesBtn.setText(_translate("Dialog", "确 定"))
 
     def enableChooseSeed(self):
@@ -98,17 +106,34 @@ class Ui_Dialog(QtWidgets.QDialog):
         self.randTSSize.setEnabled(True)
         self.tsLoc.setText("")
 
+    def enableAI(self):
+        if self.aiEnableCheckBox.isChecked():
+            self.randTS.setEnabled(True)
+            self.randTSSize.setEnabled(True)
+            self.existTS.setEnabled(True)
+            self.choosBtn.setEnabled(True)
+        else:
+            self.randTS.setEnabled(False)
+            self.randTSSize.setEnabled(False)
+            self.existTS.setEnabled(False)
+            self.tsLoc.setEnabled(False)
+            self.choosBtn.setEnabled(False)
+
+
     def chooseTrainingSet(self):
         path = QtWidgets.QFileDialog.getExistingDirectory(None, os.curdir)
         self.tsLoc.setText(path)
 
     def getConfigInfo(self):
         info = ""
-        if self.randTS.isChecked():
-            info += "随机生成初始训练数据，规模：" + self.randTSSize.text()
+        if self.aiEnableCheckBox.isChecked():
+            info += "使用AI制导的测试用例生成策略\n"
+            if self.randTS.isChecked():
+                info += "随机生成初始训练数据，规模：" + self.randTSSize.text()
+            else:
+                info += "使用已有训练数据：\n" + self.tsLoc.toPlainText()
         else:
-            info += "使用已有训练数据：\n" + self.tsLoc.toPlainText()
-
+            info += "使用随机测试用例生成策略\n"
         info += "\n每轮选取变异的种子数：" + self.seedPerRound.text()
         info += "\n变异规模：" + self.mutSize.currentText()
         return info
@@ -118,5 +143,10 @@ class Ui_Dialog(QtWidgets.QDialog):
             self.randTSSize.setText(self.randTSSize.placeholderText())
         if self.seedPerRound.text() == "":
             self.seedPerRound.setText(self.seedPerRound.placeholderText())
+        if self.tsLoc.isEnabled() and self.tsLoc.toPlainText() == "":
+            warning = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请指定初始训练集位置！")
+            warning.exec_()
+            event.ignore()
+            return
         self.textBrowser.setText(self.getConfigInfo())
         event.accept()

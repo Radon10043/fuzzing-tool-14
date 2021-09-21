@@ -20,6 +20,7 @@ from keras.models import Sequential
 from keras.models import load_model
 
 import utils
+import json
 
 HOST = '127.0.0.1'
 PORT = 12012
@@ -75,17 +76,17 @@ class LossHistory(keras.callbacks.Callback):
 
 
 class NN():
-
-    def __init__(self, ui, ui_fuzz, fuzz_thread, input_dim, all_node, grads_cnt, program_loc, MAIdll, root_loc):
+    def __init__(self, ui, ui_fuzz, fuzz_thread, struct, all_node, program_loc, MAIdll, root_loc):
         tf.compat.v1.disable_eager_execution()
         # threading.Thread.__init__(self)
         self.ui = ui
         self.uiFuzz = ui_fuzz
         self.fuzzThread = fuzz_thread
-        self.input_dim = input_dim
+        self.struct = struct
+        self.input_dim = 0
         self.output_dim = len(all_node)
-        self.grads_cnt = grads_cnt
-        self.dir = os.path.join(root_loc, "AIFuzz")
+        self.grads_cnt = int(ui.ProtocolFuzzCfgDialog.seedPerRound.text())
+        self.dir = os.path.join(root_loc, "ProtocolFuzz")
         self.program_loc = program_loc
         self.MAIdll = MAIdll
         self.nodes_map = {}
@@ -94,51 +95,34 @@ class NN():
         self.SPLIT_RATIO = 0
         self.round_cnt = 0
         self.all_node = all_node
-
+        self.crash = False
         for idx, node in enumerate(all_node):
             self.nodes_map[node] = idx
+
+        self.idx_name = []
+        self.name_idx = {}
+        for key, value in struct.items():
+            if value["mutation"]:
+                self.idx_name.append(key)
+                self.name_idx[key] = len(self.idx_name) - 1
+                self.input_dim += 1
 
     def setExec(self, exec_module):
         self.exec_module = exec_module
 
     def crossover(self, fl1, fl2, idxx):
-        tmp1 = open(fl1, 'rb').read()
-        ret = 1
-        randd = fl2
-        while ret == 1:
-            tmp2 = open(randd, 'rb').read()
-            if len(tmp1) >= len(tmp2):
-                lenn = len(tmp2)
-                head = tmp2
-                tail = tmp1
-            else:
-                lenn = len(tmp1)
-                head = tmp1
-                tail = tmp2
-            f_diff = 0
-            l_diff = 0
-            for i in range(lenn):
-                if tmp1[i] != tmp2[i]:
-                    f_diff = i
-                    break
-            for i in reversed(range(lenn)):
-                if tmp1[i] != tmp2[i]:
-                    l_diff = i
-                    break
-            if f_diff >= 0 and l_diff > 0 and (l_diff - f_diff) >= 2:
-                splice_at = f_diff + random.randint(1, l_diff - f_diff - 1)
-                head = list(head)
-                tail = list(tail)
-                tail[:splice_at] = head[:splice_at]
-                tail = bytes(tail)
-                fn = os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx))
-                self.MAIdll["mutate"].setValueInRange(tail)
-                # self.MAIdll['instrument'].setInstrValueToZero(tail)
-                fn = bytes(fn, encoding="utf8")
-                self.MAIdll["mutate"].mutate(tail, fn, 0xffffffff)
-                ret = 0
-            print(f_diff, l_diff)
-            randd = random.choice(self.seed_list)
+        with open(fl1, "r") as fp1:
+            struct1 = json.load(fp1)
+        with open(fl2, "r") as fp2:
+            struct2 = json.load(fp2)
+        fn = os.path.join(self.dir, "input_json", 'crossovers', 'tmp_' + str(idxx) + ".json")
+        for key, value in struct2.items():
+            p = random.random()
+            if p > 0.5 and self.struct[key]["mutation"]:
+                struct1[key] = struct2[key]
+        with open(fn, "w") as fp:
+            json.dump(struct1, fp)
+
 
     def process_data(self):
         # obtain raw bitmaps
@@ -146,25 +130,33 @@ class NN():
         tmp_cnt = []
         cov = set()
         crash_cnt = 0
+
+        training_set = np.zeros((len(self.seed_list), self.input_dim), dtype="float64")
+        for i, f in enumerate(self.seed_list):
+            with open(f, "r") as fp:
+                struct = json.load(fp)
+            for idx, name in enumerate(self.idx_name):
+                training_set[i][idx] = float(struct[name])
+        self.max_ = np.max(training_set, axis=0)
+        self.min_ = np.min(training_set, axis=0)
+
         for i, f in enumerate(self.seed_list):
             tmp_list = []
             out = None
             crash = None
             self.fuzzThread.nnInfoSgn.emit("正在执行训练数据：" + f + "\n")
-            if f in self.exec_module.cov_map.keys():
-                out, crash = self.exec_module.cov_map[f]
-            else:
-                _, out, crash, _ = utils.getCoverage(open(f, "rb").read(), self.exec_module.s, self.exec_module.r,1, self.MAIdll)
+            _, out, crash, _ = utils.getCoverage(f, os.path.join(self.dir, "tmp"), self.exec_module.s, self.exec_module.r, 1,
+                                                     self.MAIdll)
             cov = cov.union(set(out))
             if crash:
-                crash_cnt += 1
+                self.crash = True
+                return
             for edge in out:
                 tmp_cnt.append(edge)
                 tmp_list.append(edge)
             raw_bitmap[f] = tmp_list
         info = "训练集信息：\n"
         info += "训练集数量：\t\t" + str(len(self.seed_list)) + "\n"
-        info += "覆盖节点数：\t\t" + str(len(cov)) + "\n"
         info += "崩溃次数：\t\t" + str(crash_cnt) + "\n"
         self.fuzzThread.nnInfoSgn.emit(info)
         counter = Counter(tmp_cnt).most_common()
@@ -184,7 +176,7 @@ class NN():
         # save training data
         self.output_dim = fit_bitmap.shape[1]
         for idx, i in enumerate(self.seed_list):
-            file_name = os.path.join(self.dir, "bitmaps", i.split('\\')[-1])
+            file_name = os.path.join(self.dir, "input_json", "bitmaps", i.split('\\')[-1])
             np.save(file_name, fit_bitmap[idx])
 
     # compute jaccard accuracy for multiple label
@@ -200,28 +192,29 @@ class NN():
 
     # get vector representation of input
     def vectorize_file(self, fl):
-        seed = np.zeros((1, self.input_dim))
-        tmp = open(fl, 'rb').read()
-        ln = len(tmp)
-        if ln < self.input_dim:
-            tmp = tmp + (self.input_dim - ln) * b'\x00'
-        seed[0] = [j for j in bytearray(tmp)]
-        seed = seed.astype('float32') / 255
-        return seed
+        vec = np.zeros((1, self.input_dim), dtype="float64")
+        with open(fl, 'r') as fp:
+            struct = json.load(fp)
+        for idx, name in enumerate(self.idx_name):
+            vec[0][idx] = float(struct[name])
+        vec = np.nan_to_num((vec - self.min_) / (self.max_ - self.min_))
+        return vec
 
     # training data generator
     def generate_training_data(self, lb, ub):
-        seed = np.zeros((ub - lb, self.input_dim))
+        seed = np.zeros((ub - lb, self.input_dim), dtype="float64")
         bitmap = np.zeros((ub - lb, self.output_dim))
         for i in range(lb, ub):
-            tmp = open(self.seed_list[i], 'rb').read()
-            ln = len(tmp)
-            if ln < self.input_dim:
-                tmp = tmp + (self.input_dim - ln) * b'\x00'
-            seed[i - lb] = [j for j in bytearray(tmp)]
+            vec = np.zeros((1, self.input_dim), dtype="float64")
+            with open(self.seed_list[i], 'r') as fp:
+                struct = json.load(fp)
+            for idx, name in enumerate(self.idx_name):
+                vec[0][idx] = float(struct[name])
+            vec = np.nan_to_num((vec - self.min_) / (self.max_ - self.min_))
+            seed[i - lb] = vec
 
         for i in range(lb, ub):
-            file_name = os.path.join(self.dir, "bitmaps", self.seed_list[i].split('\\')[-1] + ".npy")
+            file_name = os.path.join(self.dir, "input_json","bitmaps", self.seed_list[i].split('\\')[-1] + ".npy")
             bitmap[i - lb] = np.load(file_name)
         return seed, bitmap
 
@@ -233,12 +226,10 @@ class NN():
                 # load full batch
                 if (i + batch_size) > self.SPLIT_RATIO:
                     x, y = self.generate_training_data(i, self.SPLIT_RATIO)
-                    x = x.astype('float32') / 255
                 # load remaining data for last batch
                 else:
                     x, y = self.generate_training_data(i, i + batch_size)
-                    x = x.astype('float32') / 255
-                yield (x, y)
+                yield x, y
 
     # compute gradient for given input
     def gen_adv2(self, f, fl, model, layer_list, idxx, splice):
@@ -261,7 +252,7 @@ class NN():
         # do not generate spliced seed for the first round
         if splice == 1 and self.round_cnt != 0:
             if self.round_cnt % 2 == 0:
-                splice_fn = os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx))
+                splice_fn = os.path.join(self.dir, "input_json", 'crossovers', 'tmp_' + str(idxx)+".json")
                 self.crossover(fl[0], fl[1], idxx)
                 x = self.vectorize_file(splice_fn)
                 loss_value, grads_value = iterate([x])
@@ -271,7 +262,7 @@ class NN():
                 adv_list.append((idx, val, splice_fn))
             else:
                 self.crossover(fl[0], fl[1], idxx + self.grads_cnt)
-                splice_fn = os.path.join(self.dir, 'crossovers', 'tmp_' + str(idxx + self.grads_cnt))
+                splice_fn = os.path.join(self.dir, "input_json",'crossovers', 'tmp_' + str(idxx + self.grads_cnt)+".json")
                 x = self.vectorize_file(splice_fn)
                 loss_value, grads_value = iterate([x])
                 idx = np.flip(
@@ -303,7 +294,7 @@ class NN():
         # do not generate spliced seed for the first round
         if splice == 1 and self.round_cnt != 0:
             self.crossover(fl[0], fl[1], idxx)
-            splice_fn = os.path.join(self.dir, "crossovers", "tmp_" + str(idxx))
+            splice_fn = os.path.join(self.dir, "input_json","crossovers", "tmp_" + str(idxx)+".json")
             x = self.vectorize_file(splice_fn)
             loss_value, grads_value = iterate([x])
             idx = np.flip(np.argsort(np.absolute(grads_value), axis=1)[:, -self.input_dim:].reshape((self.input_dim,)),
@@ -323,18 +314,23 @@ class NN():
         else:
             new_seed_list = self.new_seeds
 
+
         if len(new_seed_list) < edge_num:
             rand_seed1 = [os.path.abspath(new_seed_list[i]) for i in
                           np.random.choice(len(new_seed_list), edge_num, replace=True)]
         else:
             rand_seed1 = [os.path.abspath(new_seed_list[i]) for i in
                           np.random.choice(len(new_seed_list), edge_num, replace=False)]
+
+        
+        
         if len(new_seed_list) < edge_num:
             rand_seed2 = [os.path.abspath(self.seed_list[i]) for i in
                           np.random.choice(len(self.seed_list), edge_num, replace=True)]
         else:
             rand_seed2 = [os.path.abspath(self.seed_list[i]) for i in
                           np.random.choice(len(self.seed_list), edge_num, replace=False)]
+
 
         # function pointer for gradient computation
         fn = self.gen_adv2 if sign else self.gen_adv3
@@ -359,7 +355,7 @@ class NN():
                 print("number of feature " + str(idxx))
                 index = int(interested_indice[idxx])
                 fl = [rand_seed1[idxx], rand_seed2[idxx]]
-                adv_list = fn(index, fl, model, layer_list, idxx, 1)
+                adv_list = fn(index, fl, model, layer_list, idxx, 0)
                 tmp_list.append(adv_list)
                 for ele in adv_list:
                     ele0 = [str(el) for el in ele[0]]
@@ -370,7 +366,6 @@ class NN():
         info = "已生成梯度信息！\n"
         info += "轮次：\t\t\t" + str(self.round_cnt + 1) + "\n"
         info += "生成梯度信息的种子数：\t\t" + str(edge_num) + "\n"
-        info += "梯度类型：\t\t\t" + ("有符号" if sign else "无符号(随机)") + "\n"
         info += "时间：\t\t\t" + "{:.2f}".format(end - start) + "秒\n"
         info += "梯度文件保存路径：\n" + grad_fn + "\n"
         info += "可以开始测试...\n"
@@ -412,12 +407,14 @@ class NN():
         return model
 
     def gen_grad(self, data):
-        seeds_dir = os.path.join(self.dir, "seeds")
+        seeds_dir = os.path.join(self.dir, "input_json", "seeds")
         self.seed_list = [os.path.join(seeds_dir, i) for i in glob.glob(os.path.join(seeds_dir, "*"))]
-        self.new_seeds = [os.path.join(seeds_dir, i) for i in glob.glob(os.path.join(seeds_dir, "id*"))]
+        self.new_seeds = [os.path.join(seeds_dir, i) for i in glob.glob(os.path.join(seeds_dir, "id_*"))]
         self.SPLIT_RATIO = len(self.seed_list)
         t0 = time.time()
         self.process_data()
+        if self.crash:
+            return
         model = self.build_model()
         self.train(model)
         # model.load_weights('hard_label.h5')
