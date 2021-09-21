@@ -126,8 +126,8 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     # 设置地址
     s = uiPrepareFuzz.senderIPLabel.text()
     r = uiPrepareFuzz.receiverIPLabel.text()
-    s = "127.0.0.1:9999"
-    r = "127.0.0.1:8888"
+    # s = "127.0.0.1:9999"
+    # r = "127.0.0.1:8888"
 
     allCoveredNode = []  # 储存了所有被覆盖到的结点
 

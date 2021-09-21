@@ -138,7 +138,7 @@ def getCoverage(fn_json, tmp_fn_bin, senderAddress, receiverAddress, maxTimeout,
         print("解析失败: ", e)
         coverNode = ["main"]
 
-    crashResult = isCrash >= 10
+    crashResult = isCrash == 10
     timeout = False
     return (data, coverNode, crashResult, crashTC)
 

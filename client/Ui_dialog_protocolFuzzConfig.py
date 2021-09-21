@@ -82,7 +82,7 @@ class Ui_Dialog(QtWidgets.QDialog):
         self.execOptionGroup.setTitle(_translate("Dialog", "测试执行"))
         self.randTS.setText(_translate("nnOptionGroup", "随机生成初始训练数据"))
         # self.randTSSize.setText(_translate("nnOptionGroup", "10"))
-        self.randTSSize.setPlaceholderText("50")
+        self.randTSSize.setPlaceholderText("20")
         self.existTS.setText(_translate("nnOptionGroup", "使用已有训练数据"))
         self.choosBtn.setText(_translate("nnOptionGroup", "浏览"))
         self.seedPerRoundLabel.setText(_translate("execOptionGroup", "每轮选取变异的种子数"))
