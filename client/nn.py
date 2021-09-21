@@ -86,7 +86,7 @@ class NN():
         self.input_dim = 0
         self.output_dim = len(all_node)
         self.grads_cnt = int(ui.ProtocolFuzzCfgDialog.seedPerRound.text())
-        self.dir = os.path.join(root_loc, "AIFuzz")
+        self.dir = os.path.join(root_loc, "ProtocolFuzz")
         self.program_loc = program_loc
         self.MAIdll = MAIdll
         self.nodes_map = {}
@@ -95,7 +95,7 @@ class NN():
         self.SPLIT_RATIO = 0
         self.round_cnt = 0
         self.all_node = all_node
-
+        self.crash = False
         for idx, node in enumerate(all_node):
             self.nodes_map[node] = idx
 
@@ -145,21 +145,18 @@ class NN():
             out = None
             crash = None
             self.fuzzThread.nnInfoSgn.emit("正在执行训练数据：" + f + "\n")
-            if f in self.exec_module.seed_cov_map.keys():
-                out, crash = self.exec_module.seed_cov_map[f]
-            else:
-                _, out, crash, _ = utils.getCoverage(f, os.path.join(self.dir, "tmp"), self.exec_module.s, self.exec_module.r, 1,
+            _, out, crash, _ = utils.getCoverage(f, os.path.join(self.dir, "tmp"), self.exec_module.s, self.exec_module.r, 1,
                                                      self.MAIdll)
             cov = cov.union(set(out))
             if crash:
-                crash_cnt += 1
+                self.crash = True
+                return
             for edge in out:
                 tmp_cnt.append(edge)
                 tmp_list.append(edge)
             raw_bitmap[f] = tmp_list
         info = "训练集信息：\n"
         info += "训练集数量：\t\t" + str(len(self.seed_list)) + "\n"
-        info += "覆盖节点数：\t\t" + str(len(cov)) + "\n"
         info += "崩溃次数：\t\t" + str(crash_cnt) + "\n"
         self.fuzzThread.nnInfoSgn.emit(info)
         counter = Counter(tmp_cnt).most_common()
@@ -255,7 +252,7 @@ class NN():
         # do not generate spliced seed for the first round
         if splice == 1 and self.round_cnt != 0:
             if self.round_cnt % 2 == 0:
-                splice_fn = os.path.join(self.dir, "input_json",'crossovers', 'tmp_' + str(idxx)+".json")
+                splice_fn = os.path.join(self.dir, "input_json", 'crossovers', 'tmp_' + str(idxx)+".json")
                 self.crossover(fl[0], fl[1], idxx)
                 x = self.vectorize_file(splice_fn)
                 loss_value, grads_value = iterate([x])
@@ -317,18 +314,23 @@ class NN():
         else:
             new_seed_list = self.new_seeds
 
+
         if len(new_seed_list) < edge_num:
             rand_seed1 = [os.path.abspath(new_seed_list[i]) for i in
                           np.random.choice(len(new_seed_list), edge_num, replace=True)]
         else:
             rand_seed1 = [os.path.abspath(new_seed_list[i]) for i in
                           np.random.choice(len(new_seed_list), edge_num, replace=False)]
+
+        
+        
         if len(new_seed_list) < edge_num:
             rand_seed2 = [os.path.abspath(self.seed_list[i]) for i in
                           np.random.choice(len(self.seed_list), edge_num, replace=True)]
         else:
             rand_seed2 = [os.path.abspath(self.seed_list[i]) for i in
                           np.random.choice(len(self.seed_list), edge_num, replace=False)]
+
 
         # function pointer for gradient computation
         fn = self.gen_adv2 if sign else self.gen_adv3
@@ -353,7 +355,7 @@ class NN():
                 print("number of feature " + str(idxx))
                 index = int(interested_indice[idxx])
                 fl = [rand_seed1[idxx], rand_seed2[idxx]]
-                adv_list = fn(index, fl, model, layer_list, idxx, 1)
+                adv_list = fn(index, fl, model, layer_list, idxx, 0)
                 tmp_list.append(adv_list)
                 for ele in adv_list:
                     ele0 = [str(el) for el in ele[0]]
@@ -364,7 +366,6 @@ class NN():
         info = "已生成梯度信息！\n"
         info += "轮次：\t\t\t" + str(self.round_cnt + 1) + "\n"
         info += "生成梯度信息的种子数：\t\t" + str(edge_num) + "\n"
-        info += "梯度类型：\t\t\t" + ("有符号" if sign else "无符号(随机)") + "\n"
         info += "时间：\t\t\t" + "{:.2f}".format(end - start) + "秒\n"
         info += "梯度文件保存路径：\n" + grad_fn + "\n"
         info += "可以开始测试...\n"
@@ -408,10 +409,12 @@ class NN():
     def gen_grad(self, data):
         seeds_dir = os.path.join(self.dir, "input_json", "seeds")
         self.seed_list = [os.path.join(seeds_dir, i) for i in glob.glob(os.path.join(seeds_dir, "*"))]
-        self.new_seeds = [os.path.join(seeds_dir, i) for i in glob.glob(os.path.join(seeds_dir, "id*"))]
+        self.new_seeds = [os.path.join(seeds_dir, i) for i in glob.glob(os.path.join(seeds_dir, "id_*"))]
         self.SPLIT_RATIO = len(self.seed_list)
         t0 = time.time()
         self.process_data()
+        if self.crash:
+            return
         model = self.build_model()
         self.train(model)
         # model.load_weights('hard_label.h5')

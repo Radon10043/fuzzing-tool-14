@@ -337,7 +337,6 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
         code += "\tdata." + dataName + " = cJSON_GetObjectItem(root_json,\"" + dataName + "\")->valuedouble;\n"
     if hasCheckCode:
         code += "\tdata = calculateCheckCode(data);\n"
-
     # 变异体写入文件
     code += "\n\tFILE* out;"
     code += "\n\tout = fopen(savePath, \"wb\");"
@@ -345,6 +344,24 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
     code += "\n\tfclose(out);\n"
     code += "\n\tfree(buf);\n"
     code += "}\n\n"
+
+
+    code += "void bytes2json(" + struct + " data, char* savePath){\n"
+    code += "\tFILE* f = fopen(savePath, \"w\");\n"
+    code += "\tfprintf(f, \"{\");\n"
+    i = 0
+    for key, value in structDict[struct].items():
+        dataName = key.split(" ")[-1].split(":")[0]
+        if "noName" in dataName:
+            continue
+        if i == 0:
+            code += "\tfprintf(f, \"\\\"" + dataName + "\\\": %u\", data." + dataName + ");\n"
+            i = 1
+        else:
+            code += "\tfprintf(f, \",\\\"" + dataName + "\\\": %u\", data." + dataName + ");\n"
+    code += "\tfprintf(f, \"}\");\n"
+    code += "\tfclose(f);\n"
+    code += "}\n"
 
     # 写一个将结构体的值设定在用户指定范围内的方法
     code += "void setValueInRange(" + struct + "* data){\n"

@@ -82,7 +82,7 @@ class Ui_Dialog(QtWidgets.QDialog):
         self.execOptionGroup.setTitle(_translate("Dialog", "测试执行"))
         self.randTS.setText(_translate("nnOptionGroup", "随机生成初始训练数据"))
         # self.randTSSize.setText(_translate("nnOptionGroup", "10"))
-        self.randTSSize.setPlaceholderText("100")
+        self.randTSSize.setPlaceholderText("50")
         self.existTS.setText(_translate("nnOptionGroup", "使用已有训练数据"))
         self.choosBtn.setText(_translate("nnOptionGroup", "浏览"))
         self.seedPerRoundLabel.setText(_translate("execOptionGroup", "每轮选取变异的种子数"))
@@ -92,6 +92,7 @@ class Ui_Dialog(QtWidgets.QDialog):
         self.mutSize.setItemText(0, _translate("execOptionGroup", "小"))
         self.mutSize.setItemText(1, _translate("execOptionGroup", "中"))
         self.mutSize.setItemText(2, _translate("execOptionGroup", "大"))
+        self.mutSize.setCurrentIndex(1)
         self.yesBtn.setText(_translate("Dialog", "确 定"))
 
     def enableChooseSeed(self):

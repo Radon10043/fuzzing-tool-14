@@ -1,4 +1,5 @@
 import ctypes
+import math
 import os
 import random
 import re
@@ -6,6 +7,7 @@ import shutil
 import socket
 import threading
 import json
+import numpy as np
 import time
 from subprocess import *
 from util.check_code import CheckCode
@@ -22,6 +24,8 @@ crashTC = bytes()  # 存储触发缺陷的测试用例
 def parse_array(text):
     # loc|sign|filename
     loc_sign_fn = text.strip().split("|")
+    if loc_sign_fn[0] == "":
+        return [], [], loc_sign_fn[2]
     loc = [int(i) for i in loc_sign_fn[0].split(',')]
     sign = [int(i) for i in loc_sign_fn[1].split(',')]
     fn = loc_sign_fn[2]
@@ -134,7 +138,7 @@ def getCoverage(fn_json, tmp_fn_bin, senderAddress, receiverAddress, maxTimeout,
         print("解析失败: ", e)
         coverNode = ["main"]
 
-    crashResult = isCrash == 10
+    crashResult = isCrash >= 10
     timeout = False
     return (data, coverNode, crashResult, crashTC)
 
@@ -178,13 +182,7 @@ def gen_training_data(PATH_PREFIX, struct, num):
                 lower = float(struct[key]["lower"])
                 upper = float(struct[key]["upper"])
                 if len(struct[key]["enum"]) == 0:
-                    p = random.random()
-                    if p < 0.1:
-                        tmp[key] = lower
-                    elif p < 0.2:
-                        tmp[key] = upper
-                    else:
-                        tmp[key] = random.uniform(lower, upper)
+                    tmp[key] = random.uniform(lower, upper)
                 else:
                     idx = random.randint(0, len(struct[key]["enum"])-1)
                     tmp[key] = struct[key]["enum"][idx]
@@ -195,67 +193,5 @@ def gen_training_data(PATH_PREFIX, struct, num):
 
 
 
-def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode):
-    check_code = CheckCode()
-    check_code.init4str(checkCodeMethod)
-    # 先设置好相关的位置信息
-    root = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "/in/"
-    if not os.path.exists(root):
-        os.mkdir(root)
-    genSeedPath = root + "genSeed.cpp"
-    # 开始写代码，先include相关内容
-    code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
-    code += "#include \"" + check_code.header_file_path + "\"\n"
-    # 把用户选择的头文件位置也include
-    for header in header_loc_list:
-        code += "#include \"" + header + "\"\n"
-    code += "using namespace std;\n\n"
-    code += "int main(){\n"
-    checkCodePart = ""
-    count_check_code = 0
-    checkFieldName = ""
-    # 新建结构体变量，并向它的成员变量赋值
-    code += "\t" + struct + " data;\n"
-    for key, value in structDict[struct].items():
-        dataName = key.split(" ")[-1].split(":")[0]
-        if "noName" in dataName:  # 跳过无名变量
-            continue
-        if hasCheckCode:  # 存在校验码就搞这些
-            if value["checkField"]:  # 这个是校验字段，添加主代码，然后将这个值方法checkList里
-                code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
-                checkCodePart += "\tcheckList[" + str(count_check_code) + "] = " + str(value["value"]) + ";\n"
-                count_check_code += 1
-                continue
-            elif value["checkCode"]:
-                checkFieldName = dataName
-                continue
-        code += "\tdata." + dataName + " = " + str(value["value"]) + ";\n"
-    if hasCheckCode:
-        code += "\tunsigned int checkList[" + str(count_check_code) + "];\n"
-        code += checkCodePart
-        code += "\tdata." + checkFieldName + " = " + check_code.code + "\n"
-    # 赋值结束后，向seed文件中写入内容
-    code += "\n\tofstream f(\"seed\");"
-    code += "\n\tf.write((char*)&data, sizeof(data));"
-    code += "\n\tf.close();"
-    code += "\n\treturn 0;\n}"
-    # 写完代码后，编译并执行，在第一个头文件的同目录下会生成seed，它就是种子测试用例
-    f = open(genSeedPath, mode="w")
-    f.write(code)
-    f.close()
-    # 编辑命令集合
-    cmds = []
-    cmds.append("g++ -o genSeed.exe genSeed.cpp")
-    cmds.append("genSeed.exe")
-    # 切换目录并执行命令
-    os.chdir(root)
-    for cmd in cmds:
-        os.system(cmd)
-    header_loc_list_save_file_path = root + "header_loc_list.txt"
-    header_loc_list_save_file_file = open(header_loc_list_save_file_path, mode="w", encoding="utf")
-    for one_header in header_loc_list:
-        header_loc_list_save_file_file.write(one_header)
-        header_loc_list_save_file_file.write("\n")
-    header_loc_list_save_file_file.close()
 
 
