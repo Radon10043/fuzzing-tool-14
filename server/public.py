@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-09-14 17:02:46
+LastEditTime: 2021-09-23 15:41:10
 Description: Some public function
 '''
 
@@ -100,8 +100,12 @@ def preorderTraverseToGetAllFunctions(cursor, funcList, source_loc_list):
     """
 
     for cur in cursor.get_children():
-        if (cur.kind == clang.cindex.CursorKind.CXX_METHOD or cur.kind == clang.cindex.CursorKind.FUNCTION_DECL) and cur.location.file.name in source_loc_list:
-            funcList.append(cur.spelling)
+        try:
+            if cur.location.file and cur.location.file.name in source_loc_list:
+                if cur.kind == clang.cindex.CursorKind.CXX_METHOD or cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
+                    funcList.append(cur.spelling)
+        except:
+            pass
         preorderTraverseToGetAllFunctions(cur, funcList, source_loc_list)
 
 

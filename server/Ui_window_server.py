@@ -271,6 +271,7 @@ class Ui_MainWindow(object):
         self.SAByManBtn.clicked.connect(self.popTargetDialog)
         self.SAResultGenBtn.clicked.connect(self.genSAResult)
         self.instrumentMethod1Btn.clicked.connect(self.instrumentM2)
+        self.instrumentMethod2Btn.clicked.connect(self.instrumentM2)
         self.instrumentMethod3Btn.clicked.connect(self.instrumentM3)
         self.compileMethod1Btn.clicked.connect(self.compileInstrFiles)
         self.compileMethod2Btn.clicked.connect(self.compileInstrFiles)

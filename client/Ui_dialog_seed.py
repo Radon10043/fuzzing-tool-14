@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-17 14:28:38
+LastEditTime: 2021-09-25 15:17:53
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -467,6 +467,14 @@ class Ui_Dialog(object):
             if float(text) < minLower or float(text) > maxUpper:
                 outOfRangeBox.exec_()
                 lineEdit.clear()
+            elif float(text) >= structDict[struct][memVal]["upper"]:
+                lineEdit.clear()
+                illegalLowerBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "下限需要小于上限")
+                illegalLowerBox.exec_()
+            elif float(text) > structDict[struct][memVal]["value"]:
+                lineEdit.clear()
+                illegalLowerBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "下限需要小于当前值")
+                illegalLowerBox.exec_()
             else:
                 if "float" in dataType or "double" in dataType:
                     structDict[struct][memVal][whatThing] = float(text)
@@ -478,6 +486,14 @@ class Ui_Dialog(object):
             if float(text) < minLower or float(text) > maxUpper:
                 lineEdit.clear()
                 outOfRangeBox.exec_()
+            elif float(text) <= structDict[struct][memVal]["lower"]:
+                lineEdit.clear()
+                illegalUpperBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "上限需要大于下限")
+                illegalUpperBox.exec_()
+            elif float(text) < structDict[struct][memVal]["value"]:
+                lineEdit.clear()
+                illegalUpperBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "上限需要大于当前值")
+                illegalUpperBox.exec_()
             else:
                 if "float" in dataType or "double" in dataType:
                     structDict[struct][memVal][whatThing] = float(text)
