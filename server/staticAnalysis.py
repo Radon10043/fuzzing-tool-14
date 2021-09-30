@@ -5,7 +5,7 @@ import re
 import subprocess
 import uuid
 
-import pycparser
+import pycparser.c_ast
 import clang.cindex
 
 
@@ -76,7 +76,7 @@ def getSuspFunction(suspLoc, source_loc_list):
     suspFunction = []
     for loc in suspLoc:
         for source in source_loc_list:
-            if loc.split(":")[0] == source.split("/")[-1]:
+            if loc.split(":")[0] == os.path.basename(source):
                 suspFunction.append(findFunction(int(loc.split(":")[1]), source))
     return suspFunction
 
@@ -104,23 +104,21 @@ def analyze(source_loc_str):
         if not os.path.exists(source):
             return "被测文件不存在!"
 
-    source = source_loc_list[0].split("/")[-1]
-    path = re.sub(source, "", source_loc_list[0])  # 设定存储位置
-    if not os.path.exists(path + "in"):
-        os.mkdir(path + "in")
+    source = os.path.basename(source_loc_list[0])
+    path = os.path.dirname(source_loc_list[0])  # 设定存储位置
+    if not os.path.exists(os.path.join(path, "in")):
+        os.mkdir(os.path.join(path, "in"))
 
     suspCode = []
     suspLoc = []
-    cmd = "cppcheck --output-file=" + path + \
-        "in/AnalyzeResult.txt " + re.sub("\n", " ", source_loc_str)
+    cmd = "cppcheck --output-file=" + os.path.join(path, "in", "AnalyzeResult.txt") + " " + re.sub("\n", " ", source_loc_str)
     os.system(cmd)
-    f = open(path + "in/AnalyzeResult.txt")
+    f = open(os.path.join(path, "in", "AnalyzeResult.txt"))
     lines = f.readlines()
     f.close()
     for line in lines:
-        line = line.replace("\\", "/")
         if "error:" in line:
-            suspLoc.append(line.split(" error:")[0].split("/")[-1])
+            suspLoc.append(os.path.basename(line.split(" error:")[0]))
     suspFunction = getSuspFunction(suspLoc, source_loc_list)
     suspFunction = list(set(suspFunction))
     return suspFunction
@@ -146,7 +144,7 @@ def getAllStruct_clang(header_loc_list):
     """
     # 加载dll
     libclangPath = subprocess.getstatusoutput("where clang")[1]
-    libclangPath = re.sub(libclangPath.split("\\")[-1], "", libclangPath) + "libclang.dll"
+    libclangPath = os.path.join(os.path.dirname(libclangPath), "libclang.dll")
     if clang.cindex.Config.loaded == True:
         print("clang.cindex.Config.loaded == True:")
     else:
@@ -216,8 +214,8 @@ def getAllStruct(header_loc_list):
     [description]
     """
     allStruct = list()
-    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
-    fake_lib_loc += "/fake_lib/fake_libc_include"
+    fake_lib_loc = os.path.dirname(os.path.abspath(__file__))
+    fake_lib_loc = os.path.join(fake_lib_loc, "fake_lib", "fake_libc_include")
 
     # 获取所有头文件中结构体的名称
     for header in header_loc_list:
@@ -225,6 +223,7 @@ def getAllStruct(header_loc_list):
         for decl in ast:
             # 如果当前decl不是结构体，则跳过
             try:
+                decl.type.type.coord.file = decl.type.type.coord.file.replace("\\\\", "\\")
                 if isinstance(decl.type.type, pycparser.c_ast.Struct) and decl.type.type.coord.file == header:
                     allStruct.append(decl.name)
             except:
@@ -255,8 +254,8 @@ def getTypedefDict(header_loc_list):
     typedefDict = dict()
 
     # 获取typedef相关信息
-    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
-    fake_lib_loc += "/fake_lib/fake_libc_include"
+    fake_lib_loc = os.path.dirname(os.path.abspath(__file__))
+    fake_lib_loc = os.path.join(fake_lib_loc, "fake_lib", "fake_libc_include")
     for header in header_loc_list:
         ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', '-I' + fake_lib_loc])
         for decl in ast:
@@ -293,8 +292,8 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
     [description]
     """
     structInfo = list()
-    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
-    fake_lib_loc += "/fake_lib/fake_libc_include"
+    fake_lib_loc = os.path.dirname(os.path.abspath(__file__))
+    fake_lib_loc = os.path.join(fake_lib_loc, "fake_lib", "fake_libc_include")
 
     for header in header_loc_list:
         ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', '-I' + fake_lib_loc])
@@ -439,7 +438,7 @@ def analyzeHeader(header_loc_list):
     """
     infoList = []
     for header in header_loc_list:
-        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils/fake_libc_include'])
+        ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', r'-Iutils\fake_libc_include'])
         # ast.show()
         info = ""
         for decl in ast:

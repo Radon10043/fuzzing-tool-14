@@ -6,8 +6,8 @@ import crcmod.predefined
 
 class CheckCode:
     def __init__(self):
-        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).replace("\\", "/")
-        self.header_file_path = base_path + "/util/checkCodeLibDir/checkCodeLib/CheckCodeLib.c"
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.header_file_path = os.path.join(base_path, "util", "checkCodeLibDir", "checkCodeLib", "CheckCodeLib.c")
         self.algorithmName = ""
         self.option = ""
         self.code = ""

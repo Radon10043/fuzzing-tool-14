@@ -1,7 +1,7 @@
 '''
 Author: Radon
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-17 14:46:11
+LastEditTime: 2021-09-30 14:23:17
 Description: 数据类型设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -324,7 +324,7 @@ class Ui_Dialog(object):
         [description]
         """
         global dataTypeDict
-        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", "C:/Users/Radon/Desktop", "json file(*.json)")
+        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", r"C:\Users\Radon\Desktop", "json file(*.json)")
         # 如果savePath[0]是空字符串的话，表示用户按了右上角的X
         if savePath[0] == "":
             return

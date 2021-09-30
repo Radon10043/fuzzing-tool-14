@@ -204,7 +204,7 @@ def getDirContent(position):
     content = []
     files = os.listdir(position)  # 读取position下的文件列表
     for file in files:  # 挨个读取txt文件
-        position2 = position + "/" + file
+        position2 = os.path.join(position, file)
         with open(position2, "r", encoding="utf-8") as f:  # 用with open as的话不必加close()
             content.append(f.read())
     return content
@@ -403,9 +403,9 @@ def generateReport(header_loc_list, fuzzInfoDict):
     -----
     [description]
     """
-    basic_loc = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0])
+    basic_loc = os.path.dirname(header_loc_list[0])
     allCoveredNode = fuzzInfoDict["已覆盖结点"]
-    report_loc = basic_loc + "out/测试报告.txt"
+    report_loc = os.path.join(basic_loc, "out", "测试报告.txt")
 
     reportContent = "=============================测试报告============================\n"
     reportContent += "测试对象: "
@@ -467,17 +467,17 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     """
 
     # 当前所在目录
-    now_loc = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0])
+    now_loc = os.path.dirname(header_loc_list[0])
     # 可执行文件位置
-    program_loc = now_loc + "instrument.exe"
+    program_loc = os.path.join(now_loc, "instrument.exe")
     # 初始测试用例位置
-    seed_loc = now_loc + "in/seed"
+    seed_loc = os.path.join(now_loc, "in", "seed")
     # 调用图位置
-    graph_loc = now_loc + "in/callgraph.txt"
+    graph_loc = os.path.join(now_loc, "in", "callgraph.txt")
 
     # 加载所需的DLL文件，并将CDLL存入一个字典，以便调用
-    mutateDll = ctypes.cdll.LoadLibrary(now_loc + "in/mutate.dll")
-    instrumentDll = ctypes.cdll.LoadLibrary(now_loc + "in/insFunc.dll")
+    mutateDll = ctypes.cdll.LoadLibrary(os.path.join(now_loc, "in", "mutate.dll"))
+    instrumentDll = ctypes.cdll.LoadLibrary(os.path.join(now_loc, "in", "insFunc.dll"))
     dllDict = {"mutate": mutateDll, "instrument": instrumentDll}
 
     # 设置地址
@@ -485,8 +485,8 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     receiverAddress = uiPrepareFuzz.receiverIPLabel.text()
 
     # 如果已经有out了, 就删掉它
-    if os.path.exists(now_loc + "/out"):
-        shutil.rmtree(now_loc + "/out")
+    if os.path.exists(os.path.join(now_loc, "out")):
+        shutil.rmtree(os.path.join(now_loc, "out"))
 
     coverage = [0, 0]
     allCoveredNode = []  # 储存了所有被覆盖到的结点
@@ -528,9 +528,9 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     # 读取初始种子测试用例
     testcase.append(open(seed_loc, mode="rb").read())
     # testcase[0] = [str(data) for data in testcase[0]]
-    mkdir(now_loc + "/out/testcases")
-    mkdir(now_loc + "/out/crash")
-    mkdir(now_loc + "/out/timeout")
+    mkdir(os.path.join(now_loc, "out", "testcases"))
+    mkdir(os.path.join(now_loc, "out", "crash"))
+    mkdir(os.path.join(now_loc, "out", "timeout"))
 
     # 设置终止条件
     if ui.stopByCrash.isChecked():
@@ -564,14 +564,14 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
             crash = returnData[4]
             timeout = returnData[5]
             if crash:
-                crashFile = open(now_loc + "/out/crash/crash" + str(uniq_crash), mode="wb")
+                crashFile = open(os.path.join(now_loc, "out", "crash", "crash" + str(uniq_crash)), mode="wb")
                 crashFile.write(crashTC)
                 crashFile.close()
-                dllDict["mutate"].testcaseVisualization(crashTC, bytes(now_loc + "/out/crash/crash" + str(uniq_crash) + ".txt", encoding="utf8"))
+                dllDict["mutate"].testcaseVisualization(crashTC, bytes(os.path.join(now_loc, "out", "crash", "crash" + str(uniq_crash) + ".txt"), encoding="utf8"))
                 uniq_crash += 1
                 crashes += 1
             if timeout:
-                timeoutFile = open(now_loc + "/out/timeout/timeout" + str(count_timeout), mode="wb")
+                timeoutFile = open(os.path.join(now_loc, "out", "timeout", "timeout" + str(count_timeout)), mode="wb")
                 timeoutFile.write(testcase[i])
                 timeoutFile.close()
                 count_timeout += 1
@@ -583,7 +583,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
             if coverage[1] > coverage[0]:
                 # 把能让覆盖率增加的测试用例保存到output\testcase文件夹中
                 coverage[0] = coverage[1]
-                testcaseSavePath = now_loc + "/out/testcases/test" + str(count_test).zfill(6)
+                testcaseSavePath = os.path.join(now_loc, "out", "testcases", "test" + str(count_test).zfill(6))
                 testN = open(testcaseSavePath, mode="wb")
                 testN.write(testcase[i])
                 testN.close()
@@ -594,7 +594,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         # testcaseData存储了测试用例及所对应的距离、适应度和覆盖到的点，是一个二维列表，并根据距离从小到大进行排序
         executeEnd = time.time()
         testcaseData = sorted(testcaseData, key=itemgetter(1))
-        mkdir(now_loc + "/out/mutate/cycle" + str(cycle))
+        mkdir(os.path.join(now_loc, "out", "mutate", "cycle" + str(cycle)))
 
         checkpoint = mutateNum
         mutateAndCheckTime = list()
@@ -609,7 +609,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
             pm = 98.0
             for data in testcaseData:
                 if random.randint(0, 100) < pm:  # 小于阈值就进行下列变异操作
-                    mutateSavePath = now_loc + "/out/mutate/cycle" + str(cycle) + "/mutate" + str(mutateNum).zfill(6)
+                    mutateSavePath = os.path.join(now_loc, "out", "mutate", "cycle" + str(cycle), "mutate" + str(mutateNum).zfill(6))
                     mutateAndCheckTime.append(mutate(data[0], mutateSavePath, dllDict, isMutateInRange))
                     mutateNum += 1
                 pTargetMutate -= (98.0 / maxMutateTC)
@@ -618,22 +618,22 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
 
         testcase.clear()
         # 读取测试用例池中的测试用例
-        files = os.listdir(now_loc + "/out/testcases/")
+        files = os.listdir(os.path.join(now_loc, "out", "testcases"))
         for file in files:
             if "." in file:
                 continue
-            f = open(now_loc + "/out/testcases/" + file, mode="rb")
+            f = open(os.path.join(now_loc, "out", "testcases", file), mode="rb")
             testcase.append(f.read())
             f.close()
 
         # 读取文件夹下的变异的测试用例, 赋值到testcase
-        mutateSavePath = now_loc + "/out/mutate/cycle" + str(cycle) + "/"
+        mutateSavePath = os.path.join(now_loc, "out", "mutate", "cycle" + str(cycle))
         files = os.listdir(mutateSavePath)
         for file in files:
             # 跳过后缀名为txt的可视化文件
             if "." in file:
                 continue
-            f = open(mutateSavePath + file, mode="rb")
+            f = open(os.path.join(mutateSavePath, file), mode="rb")
             testcase.append(f.read())
             f.close()
         cycle += 1

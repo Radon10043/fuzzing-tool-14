@@ -315,13 +315,15 @@ class Ui_MainWindow(object):
         -----
         [description]
         """
-        temp = QtWidgets.QFileDialog.getOpenFileNames(None, "choose file", "C:/Users/Radon/Desktop/", "h files (*.h)")
+        temp = QtWidgets.QFileDialog.getOpenFileNames(None, "choose file", r"C:\Users\Radon\Desktop", "h files (*.h)")
         path = ""
         if len(temp[0]) == 0:
             return
         for i in range(len(temp[0])):
             path += temp[0][i] + "\n"
         path = path.rstrip("\n")
+        if "win" in sys.platform:       # Windows下需要将斜杠换为反斜杠
+            path = path.replace("/", "\\")
         self.HFileLoc.setText(path)
 
     def chooseJSONFile(self):
@@ -331,7 +333,7 @@ class Ui_MainWindow(object):
         -----
         [description]
         """
-        path = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", "C:/Users/Radon/Desktop/", "json files (*.json)")
+        path = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", r"C:\Users\Radon\Desktop", "json files (*.json)")
         self.dataTypeDictLoc.setText(path[0])
 
     def popProtocolFuzzConfigDialog(self):
@@ -391,7 +393,7 @@ class Ui_MainWindow(object):
                 return
 
         if item == "读取测试用例JSON文件":
-            selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", "C:/Users/Radon/Desktop/", filter="json file (*.json)")
+            selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "choose file", r"C:\Users\Radon\Desktop", filter="json file (*.json)")
             seedJSONPath = selectedFile[0]
             try:
                 # 如果seedJSONPath是空字符串，表示用户点击了右上角的X
@@ -466,7 +468,7 @@ class Ui_MainWindow(object):
             helpBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息",
                                             "读取测试用例二进制文件并使用默认数据类型字典, 流程如下:\n" + "1.选择无扩展名的二进制文件作为读取对象\n" + "2.选择测试用例对应的结构体\n" + "3.等待读取结果")
             helpBox.exec_()
-            selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "选择种子文件", "C:/Users/Radon/Desktop/", filter="All file (*)")
+            selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "选择种子文件", r"C:\Users\Radon\Desktop", filter="All file (*)")
             seedBinaryPath = selectedFile[0]
             if len(seedBinaryPath) == 0:
                 return
@@ -505,7 +507,7 @@ class Ui_MainWindow(object):
                 typeJSONNotExistBox.exec_()
                 if typeJSONNotExistBox.clickedButton() == no:
                     return
-            selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "选择种子二进制文件", "C:/Users/Radon/Desktop/", filter="All file (*)")
+            selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "选择种子二进制文件", r"C:\Users\Radon\Desktop", filter="All file (*)")
             seedBinaryPath = selectedFile[0]
             if len(seedBinaryPath) == 0:
                 return

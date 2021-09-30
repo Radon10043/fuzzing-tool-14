@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-09-23 15:41:10
+LastEditTime: 2021-09-30 15:10:39
 Description: Some public function
 '''
 
@@ -12,40 +12,6 @@ import os
 import re
 import subprocess
 import clang.cindex
-
-
-def deleteNote(source):
-    """删除程序中的注释
-
-    Parameters
-    ----------
-    source : list
-        源文件地址
-
-    Returns
-    -------
-    [type]
-        [description]
-
-    Notes
-    -----
-    [description]
-    """
-    skip = False
-    for i in range(len(source)):
-        if "//" in source[i]:
-            source[i] = source[i].split("//")[0] + "\n"
-        if "/*" in source[i]:
-            skip = True
-            if "*/" in source[i]:
-                skip = False
-                source[i] = source[i].split("/*")[0] + "\n"
-        elif "*/" in source[i]:
-            skip = False
-            source[i] = "\n"
-        if skip == True:
-            source[i] = "\n"
-    return source
 
 
 def getAllFunctions(source_loc_list):
@@ -67,7 +33,7 @@ def getAllFunctions(source_loc_list):
     """
     # 加载dll
     libclangPath = subprocess.getstatusoutput("where clang")[1]
-    libclangPath = re.sub(libclangPath.split("\\")[-1], "", libclangPath) + "libclang.dll"
+    libclangPath = os.path.join(os.path.dirname(libclangPath), "libclang.dll")
     if clang.cindex.Config.loaded == True:
         print("clang.cindex.Config.loaded == True:")
     else:
@@ -109,12 +75,12 @@ def preorderTraverseToGetAllFunctions(cursor, funcList, source_loc_list):
         preorderTraverseToGetAllFunctions(cur, funcList, source_loc_list)
 
 
-def genSeed(header_loc, struct, structDict):
+def genSeed(header_loc_list, struct, structDict):
     """写一个生成初始种子的cpp文件，并编译和执行它
 
     Parameters
     ----------
-    header_loc : list
+    header_loc_list : list
         里面存储了所有头文件的路径
     struct : str
         用户所选择的结构体名称
@@ -131,14 +97,14 @@ def genSeed(header_loc, struct, structDict):
     [description]
     """
     # 先设置好相关的位置信息
-    root = re.sub(header_loc[0].split("/")[-1], "", header_loc[0]) + "/in/"
+    root = os.path.join(os.path.dirname(header_loc_list[0]), "in")
     if not os.path.exists(root):
         os.mkdir(root)
-    genSeedPath = root + "genSeed.cpp"
+    genSeedPath = os.path.join(root, "genSeed.cpp")
     # 开始写代码，先include相关内容
     code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
     # 把用户选择的头文件位置也include
-    for header in header_loc:
+    for header in header_loc_list:
         code += "#include \"" + header + "\"\n"
     code += "using namespace std;\n\n"
     code += "int main(){\n"
@@ -166,20 +132,20 @@ def genSeed(header_loc, struct, structDict):
     os.chdir(root)
     for cmd in cmds:
         os.system(cmd)
-    header_loc_save_file_path = root + "header_loc_list.txt"
+    header_loc_save_file_path = os.path.join(root, "header_loc_list.txt")
     header_loc_save_file_file = open(header_loc_save_file_path, mode="w", encoding="utf")
-    for one_header in header_loc:
+    for one_header in header_loc_list:
         header_loc_save_file_file.write(one_header)
         header_loc_save_file_file.write("\n")
     header_loc_save_file_file.close()
 
 
-def gen_test_case_from_structDict(header_loc, struct, structDict, path):
+def gen_test_case_from_structDict(header_loc_list, struct, structDict, path):
     """根据structDict中的value，生成指定测试用例
 
     Parameters
     ----------
-    header_loc : list
+    header_loc_list : list
         里面存储了所有头文件的路径
     struct : str
         用户所选择的结构体名称
@@ -203,7 +169,7 @@ def gen_test_case_from_structDict(header_loc, struct, structDict, path):
     # 开始写代码，先include相关内容
     code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
     # 把用户选择的头文件位置也include
-    for header in header_loc:
+    for header in header_loc_list:
         code += "#include \"" + header.strip() + "\"\n"
     code += "using namespace std;\n\n"
     code += "int main(){\n"

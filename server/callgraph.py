@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2020-09-28 13:18:56
 LastEditors: Radon
-LastEditTime: 2021-09-14 17:15:59
+LastEditTime: 2021-09-30 13:59:42
 Description: 调用图相关的函数
 '''
 from PyQt5 import QtWidgets
@@ -10,6 +10,7 @@ import sys
 import re
 import subprocess
 import clang.cindex
+import os
 
 import public
 
@@ -30,7 +31,7 @@ def createCallGraph(source_loc_list, graph_loc):
     """
     # 加载dll
     libclangPath = subprocess.getstatusoutput("where clang")[1]
-    libclangPath = re.sub(libclangPath.split("\\")[-1], "", libclangPath) + "libclang.dll"
+    libclangPath = os.path.dirname(libclangPath) + "libclang.dll"
     if clang.cindex.Config.loaded == True:
         print("clang.cindex.Config.loaded == True:")
     else:
@@ -49,7 +50,7 @@ def createCallGraph(source_loc_list, graph_loc):
         for key, value in callgraph.items():
             f.write(key + "," + str(value) + "\n")
     nodes = public.getAllFunctions(source_loc_list)
-    nodes_loc = re.sub(graph_loc.split("/")[-1], "", graph_loc) + "nodes.txt"
+    nodes_loc = os.path.join(os.path.dirname(graph_loc), "nodes.txt")
     with open(nodes_loc, mode="w") as f:
         for node in nodes:
             f.write(node + "\n")

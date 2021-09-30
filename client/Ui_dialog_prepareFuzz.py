@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-08-12 17:22:34
 LastEditors: Radon
-LastEditTime: 2021-08-25 16:47:56
+LastEditTime: 2021-09-30 15:06:36
 Description: Hi, say something
 '''
 # -*- coding: utf-8 -*-
@@ -107,7 +107,7 @@ class Ui_Dialog(object):
         self.ui = ui
         self.header_loc_list = header_loc_list
 
-        root_loc = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "in/"
+        root_loc = os.path.join(os.path.dirname(header_loc_list[0]), "in")
         self.textBrowser.clear()
 
         # 查看是否已设置IP地址
@@ -135,10 +135,10 @@ class Ui_Dialog(object):
         ]
         noTargetFilesValidation = True
         for file in filesForNoTarget:
-            if os.path.exists(root_loc + file):
+            if os.path.exists(os.path.join(root_loc, file)):
                 self.textBrowser.append("<font color='green'>√ %s</font>" % ("已检测到" + file))
                 if file == "mutate.c":
-                    os.system("gcc -shared -o " + root_loc + "mutate.dll " + root_loc + "mutate.c " + root_loc + "cJSON.c")
+                    os.system("gcc -shared -o " + os.path.join(root_loc, "mutate.dll") + " " + os.path.join(root_loc, "mutate.c") + " " + os.path.join(root_loc, "cJSON.c"))
             else:
                 self.textBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))
                 noTargetFilesValidation = False
@@ -147,7 +147,7 @@ class Ui_Dialog(object):
         filesForTarget = ["saresult.txt"]
         targetFilesValidation = True
         for file in filesForTarget:
-            if os.path.exists(root_loc + file):
+            if os.path.exists(os.path.join(root_loc, file)):
                 self.textBrowser.append("<font color='green'>√ %s</font>" % ("已检测到" + file))
             else:
                 self.textBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))
@@ -165,10 +165,10 @@ class Ui_Dialog(object):
 
                 self.startAIFuzzBtn.setEnabled(True)
                 # 设置目标
-                self.targetSet = open(root_loc + "saresult.txt").read().split("\n")
+                self.targetSet = open(os.path.join(root_loc, "saresult.txt")).read().split("\n")
                 self.targetSet.pop(-1)
                 # 所有函数结点
-                self.allNodes = open(root_loc + "nodes.txt").read().split("\n")
+                self.allNodes = open(os.path.join(root_loc, "nodes.txt")).read().split("\n")
                 self.allNodes.pop(-1)
             elif noTargetFilesValidation and not targetFilesValidation:
                 self.textBrowser.append("<font color='orange'>- %s</font>" % ("可以开始无目标制导的模糊测试"))
@@ -181,9 +181,9 @@ class Ui_Dialog(object):
             self.textBrowser.append("<font color='red'>- %s</font>" % ("请填写IP地址"))
 
     def startTargetFuzz(self):
-        root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0])
+        root_loc = os.path.dirname(self.header_loc_list[0])
         # 检查是否存在out文件夹
-        if os.path.exists(root_loc + "/out"):
+        if os.path.exists(os.path.join(root_loc, "out")):
             outFolderExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, "消息", "当前目录下存在out文件夹，是否覆盖?")
             yes = outFolderExistBox.addButton("是", QtWidgets.QMessageBox.YesRole)
             no = outFolderExistBox.addButton("否", QtWidgets.QMessageBox.NoRole)
@@ -218,9 +218,9 @@ class Ui_Dialog(object):
             fuzzErrBox.show()
 
     def startNoTargetFuzz(self):
-        root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0])
+        root_loc = os.path.dirname(self.header_loc_list[0])
         # 检查是否存在out文件夹
-        if os.path.exists(root_loc + "/out"):
+        if os.path.exists(os.path.join(root_loc, "out")):
             outFolderExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, "消息", "当前目录下存在out文件夹，是否覆盖?")
             yes = outFolderExistBox.addButton("是", QtWidgets.QMessageBox.YesRole)
             no = outFolderExistBox.addButton("否", QtWidgets.QMessageBox.NoRole)
@@ -258,7 +258,7 @@ class Ui_Dialog(object):
     # ==========定义功能================================================================
 
     def startAIFuzz(self):
-        root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0])
+        root_loc = os.path.dirname(self.header_loc_list[0])
 
         if self.ui.ProtocolFuzzCfgDialog is None:
             fuzzErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "请正确配置测试参数！")

@@ -2,7 +2,7 @@ import os
 import re
 import uuid
 
-import pycparser
+import pycparser.c_ast
 
 
 # 变量无名异常
@@ -72,7 +72,7 @@ def getSuspFunction(suspLoc, source_loc_list):
     suspFunction = []
     for loc in suspLoc:
         for source in source_loc_list:
-            if loc.split(":")[0] == source.split("/")[-1]:
+            if loc.split(":")[0] == os.path.basename(source):
                 suspFunction.append(findFunction(int(loc.split(":")[1]), source))
     return suspFunction
 
@@ -100,18 +100,17 @@ def analyze(source_loc_str):
             return "被测文件不存在!"
     suspCode = []
     suspLoc = []
-    source = source_loc_list[0].split("/")[-1]
-    path = re.sub(source, "", source_loc_list[0])  # 设定存储位置
-    cmd = "cppcheck --output-file=" + path + "AnalyzeResult.txt " + re.sub("\n", " ", source_loc_str)
+    source = os.path.basename(source_loc_list[0])
+    path = os.path.dirname(source_loc_list[0])  # 设定存储位置
+    cmd = "cppcheck --output-file=" + os.path.join(path, "AnalyzeResult.txt") + " " + re.sub("\n", " ", source_loc_str)
     print("cppcheck cmd:", cmd)
     os.system(cmd)
     f = open(path + "AnalyzeResult.txt")
     lines = f.readlines()
     f.close()
     for line in lines:
-        line = line.replace("\\", "/")
         if "error:" in line:
-            suspLoc.append(line.split(" error:")[0].split("/")[-1])
+            suspLoc.append(os.path.basename(line.split(" error:")[0]))
     suspFunction = getSuspFunction(suspLoc, source_loc_list)
     suspFunction = list(set(suspFunction))
     return suspFunction
@@ -135,8 +134,8 @@ def getAllStruct(header_loc_list):
     [description]
     """
     allStruct = []
-    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
-    fake_lib_loc += "/fake_lib/fake_libc_include"
+    fake_lib_loc = os.path.dirname(os.path.abspath(__file__))
+    fake_lib_loc = os.path.join(fake_lib_loc, "fake_lib", "fake_libc_include")
 
     # 获取所有头文件中结构体的名称
     for header in header_loc_list:
@@ -144,6 +143,7 @@ def getAllStruct(header_loc_list):
         for decl in ast:
             # 如果当前decl不是结构体，则跳过
             try:
+                decl.type.type.coord.file = decl.type.type.coord.file.replace("\\\\", "\\")
                 if isinstance(decl.type.type, pycparser.c_ast.Struct) and decl.type.type.coord.file == header:
                     allStruct.append(decl.name)
             except:
@@ -174,8 +174,8 @@ def getTypedefDict(header_loc_list):
     typedefDict = dict()
 
     # 获取typedef相关信息
-    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
-    fake_lib_loc += "/fake_lib/fake_libc_include"
+    fake_lib_loc = os.path.dirname(os.path.abspath(__file__))
+    fake_lib_loc = os.path.join(fake_lib_loc, "fake_lib", "fake_libc_include")
     for header in header_loc_list:
         ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', '-I' + fake_lib_loc])
         for decl in ast:
@@ -212,8 +212,8 @@ def getOneStruct(header_loc_list, struct, prefix, allStruct):
     [description]
     """
     structInfo = []
-    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
-    fake_lib_loc += "/fake_lib/fake_libc_include"
+    fake_lib_loc = os.path.dirname(os.path.abspath(__file__))
+    fake_lib_loc = os.path.join(fake_lib_loc, "fake_lib", "fake_libc_include")
 
     for header in header_loc_list:
         ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', '-I' + fake_lib_loc])
@@ -357,8 +357,8 @@ def analyzeHeader(header_loc_list):
     [description]
     """
     infoList = []
-    fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
-    fake_lib_loc += "/fake_lib/fake_libc_include"
+    fake_lib_loc = os.path.dirname(os.path.abspath(__file__))
+    fake_lib_loc = os.path.join(fake_lib_loc, "fake_lib", "fake_libc_include")
     for header in header_loc_list:
         ast = pycparser.parse_file(header, use_cpp=True, cpp_path='clang', cpp_args=['-E', '-I' + fake_lib_loc])
         # ast.show()

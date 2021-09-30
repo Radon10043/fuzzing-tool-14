@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-09-17 10:48:13
+LastEditTime: 2021-09-30 15:10:26
 Description: Some public function
 '''
 
@@ -103,10 +103,10 @@ def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode, 
     check_code = CheckCode()
     check_code.init4str(checkCodeMethod)
     # 先设置好相关的位置信息
-    root = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "/in/"
+    root = os.path.join(os.path.dirname(header_loc_list[0]), "in")
     if not os.path.exists(root):
         os.mkdir(root)
-    genSeedPath = root + "genSeed.cpp"
+    genSeedPath = os.path.join(root, "genSeed.cpp")
     # 开始写代码，先include相关内容
     code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
     code += "#include \"" + check_code.header_file_path + "\"\n"
@@ -173,7 +173,7 @@ def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode, 
     os.chdir(root)
     for cmd in cmds:
         os.system(cmd)
-    header_loc_list_save_file_path = root + "header_loc_list.txt"
+    header_loc_list_save_file_path = os.path.join(root, "header_loc_list.txt")
     header_loc_list_save_file_file = open(header_loc_list_save_file_path, mode="w", encoding="utf")
     for one_header in header_loc_list:
         header_loc_list_save_file_file.write(one_header)
@@ -237,7 +237,7 @@ def gen_test_case_from_structDict(header_loc_list, struct, structDict, path):
     for cmd in cmds:
         os.system(cmd)
     # 切换目录至in，不占用mutate/cycle目录
-    in_path = cycle_path.split("out")[0] + "in/"
+    in_path = os.path.join(os.path.dirname(cycle_path), "in")
     os.chdir(in_path)
 
 
@@ -270,10 +270,10 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
     check_code.init4str(checkCodeMethod)
 
     # 先设置好相关的位置信息
-    root = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "/in/"
+    root = os.path.join(os.path.dirname(header_loc_list[0]), "in")
     if not os.path.exists(root):
         os.mkdir(root)
-    genMutatePath = root + "mutate.c"
+    genMutatePath = os.path.join(root, "mutate.c")
 
     # 开始写代码，先include相关内容
     code = "#include <stdio.h>\n#include <stdbool.h>\n#include \"cJSON.h\"\n" \

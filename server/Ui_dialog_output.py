@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-14 17:05:07
+LastEditTime: 2021-09-30 15:05:06
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -264,7 +264,7 @@ class Ui_Dialog(object):
         [description]
         """
         global structDict
-        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", "C:/Users/Radon/Desktop", "json file(*.json)")
+        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", r"C:\Users\Radon\Desktop", "json file(*.json)")
         # 如果savePath[0]是空字符串的话，表示用户按了右上角的X
         if savePath[0] == "":
             return
@@ -408,20 +408,20 @@ class Ui_Dialog(object):
         outputStruct.txt: 记录了输出结构体的名称
         """
         # 1.生成instrument.txt
-        root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0]) + "in/"
+        root_loc = os.path.join(os.path.dirname(self.header_loc_list[0]), "in")
         if not os.path.exists(root_loc):
             os.mkdir(root_loc)
-        f = open(root_loc + "instrument.txt", mode="w")
+        f = open(os.path.join(root_loc, "instrument.txt"), mode="w")
         instrumentFlag = False
         for key, value in structDict[self.struct].items():
             if value["instrument"]:
-                with open(root_loc + "instrument.txt", mode="w") as f:
+                with open(os.path.join(root_loc, "instrument.txt"), mode="w") as f:
                     f.write(key)
                 instrumentFlag = True
                 break
 
         # 创建outputStruct.txt
-        f = open(root_loc + "outputStruct.txt", mode="w")
+        f = open(os.path.join(root_loc, "outputStruct.txt"), mode="w")
         f.write(self.struct)
         f.close()
 

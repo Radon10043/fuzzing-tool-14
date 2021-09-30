@@ -203,9 +203,9 @@ class Ui_Dialog(object):
         """
         out_loc = self.header_loc_list[0]
         if self.fuzz_ai:
-            out_loc = re.sub(out_loc.split("/")[-1], "", out_loc) + "ProtocolFuzz"
+            out_loc = os.path.join(out_loc, "ProtocolFuzz")
         else:
-            out_loc = re.sub(out_loc.split("/")[-1], "", out_loc) + "out"
+            out_loc = os.path.join(out_loc, "out")
         out_loc = out_loc.replace("/", "\\")
         print(out_loc)
         if os.path.exists(out_loc):

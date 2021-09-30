@@ -33,22 +33,22 @@ class Ui_MainWindow(object):
         self.title.setGeometry(QtCore.QRect(300, 30, 161, 16))
         self.title.setObjectName("title")
         self.fileSelectGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.fileSelectGroupBox.setGeometry(QtCore.QRect(70, 50, 651, 201))
+        self.fileSelectGroupBox.setGeometry(QtCore.QRect(70, 50, 651, 241))
         self.fileSelectGroupBox.setObjectName("fileSelectGroupBox")
         self.chooseCBtn = QtWidgets.QPushButton(self.fileSelectGroupBox)
-        self.chooseCBtn.setGeometry(QtCore.QRect(510, 70, 131, 28))
+        self.chooseCBtn.setGeometry(QtCore.QRect(510, 90, 131, 28))
         self.chooseCBtn.setObjectName("chooseCBtn")
         self.CFileLoc = QtWidgets.QTextBrowser(self.fileSelectGroupBox)
-        self.CFileLoc.setGeometry(QtCore.QRect(10, 20, 631, 41))
+        self.CFileLoc.setGeometry(QtCore.QRect(10, 20, 631, 61))
         self.CFileLoc.setObjectName("CFileLoc")
         self.HFileLoc = QtWidgets.QTextBrowser(self.fileSelectGroupBox)
-        self.HFileLoc.setGeometry(QtCore.QRect(10, 110, 631, 41))
+        self.HFileLoc.setGeometry(QtCore.QRect(10, 130, 631, 61))
         self.HFileLoc.setObjectName("HFileLoc")
         self.chooseHBtn = QtWidgets.QPushButton(self.fileSelectGroupBox)
-        self.chooseHBtn.setGeometry(QtCore.QRect(510, 160, 131, 28))
+        self.chooseHBtn.setGeometry(QtCore.QRect(510, 200, 131, 28))
         self.chooseHBtn.setObjectName("chooseHBtn")
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(400, 260, 321, 171))
+        self.tabWidget.setGeometry(QtCore.QRect(400, 300, 321, 171))
         self.tabWidget.setStyleSheet("background-color:rgb(235, 235, 235)")
         self.tabWidget.setObjectName("tabWidget")
         self.codeStructTab = QtWidgets.QWidget()
@@ -68,16 +68,16 @@ class Ui_MainWindow(object):
         self.SAResultGenBtn.setObjectName("SAResultGenBtn")
         self.tabWidget.addTab(self.codeStructTab, "")
         self.selectInstrVarGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.selectInstrVarGroupBox.setGeometry(QtCore.QRect(70, 270, 291, 61))
+        self.selectInstrVarGroupBox.setGeometry(QtCore.QRect(70, 310, 291, 81))
         self.selectInstrVarGroupBox.setObjectName("selectInstrVarGroupBox")
         self.selectInstrVarBtn = QtWidgets.QPushButton(self.selectInstrVarGroupBox)
-        self.selectInstrVarBtn.setGeometry(QtCore.QRect(80, 20, 141, 28))
+        self.selectInstrVarBtn.setGeometry(QtCore.QRect(80, 30, 141, 28))
         self.selectInstrVarBtn.setObjectName("selectInstrVarBtn")
         self.startServerBtn = QtWidgets.QPushButton(self.centralwidget)
         self.startServerBtn.setGeometry(QtCore.QRect(70, 740, 651, 71))
         self.startServerBtn.setObjectName("startServerBtn")
         self.callGraphGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.callGraphGroupBox.setGeometry(QtCore.QRect(400, 460, 321, 80))
+        self.callGraphGroupBox.setGeometry(QtCore.QRect(400, 480, 321, 80))
         self.callGraphGroupBox.setObjectName("callGraphGroupBox")
         self.genCallGraphBtn = QtWidgets.QPushButton(self.callGraphGroupBox)
         self.genCallGraphBtn.setGeometry(QtCore.QRect(90, 30, 151, 28))
@@ -252,16 +252,6 @@ class Ui_MainWindow(object):
         self.assignCodeTipLabel.setGeometry(QtCore.QRect(10, 230, 81, 31))
         self.assignCodeTipLabel.setObjectName("assignCodeTipLabel")
         self.instrTabWidget.addTab(self.method3Tab, "")
-        self.CStandardGroupBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.CStandardGroupBox.setGeometry(QtCore.QRect(70, 340, 291, 51))
-        self.CStandardGroupBox.setObjectName("CStandardGroupBox")
-        self.C89RadioBtn = QtWidgets.QRadioButton(self.CStandardGroupBox)
-        self.C89RadioBtn.setGeometry(QtCore.QRect(60, 20, 61, 19))
-        self.C89RadioBtn.setChecked(True)
-        self.C89RadioBtn.setObjectName("C89RadioBtn")
-        self.C99RadioBtn = QtWidgets.QRadioButton(self.CStandardGroupBox)
-        self.C99RadioBtn.setGeometry(QtCore.QRect(170, 20, 61, 19))
-        self.C99RadioBtn.setObjectName("C99RadioBtn")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 788, 26))
@@ -383,9 +373,6 @@ class Ui_MainWindow(object):
         self.instrGlobalVarTypeTipLabel.setText(_translate("MainWindow", "插装全局变\n" "量类型"))
         self.assignCodeTipLabel.setText(_translate("MainWindow", "赋值代码"))
         self.instrTabWidget.setTabText(self.instrTabWidget.indexOf(self.method3Tab), _translate("MainWindow", "方式3"))
-        self.CStandardGroupBox.setTitle(_translate("MainWindow", "C语言标准"))
-        self.C89RadioBtn.setText(_translate("MainWindow", "C89"))
-        self.C99RadioBtn.setText(_translate("MainWindow", "C99"))
 
     # ==========定义功能================================================================
 
@@ -446,7 +433,7 @@ class Ui_MainWindow(object):
         for i in range(len(temp[0])):
             path += temp[0][i] + "\n"
         path = path.rstrip("\n")
-        if "win" in sys.platform:  # 如果是windows平台，则将路径中的斜杠替换为反斜杠
+        if "win" in sys.platform:       # 如果是windows平台，则将路径中的斜杠替换为反斜杠
             path = path.replace("/", "\\")
         self.CFileLoc.setText(path)
 
@@ -468,7 +455,7 @@ class Ui_MainWindow(object):
         for i in range(len(temp[0])):
             path += temp[0][i] + "\n"
         path = path.rstrip("\n")
-        if "win" in sys.platform:  # 如果是windows平台，则将路径中的斜杠替换为反斜杠
+        if "win" in sys.platform:       # 如果是windows平台，则将路径中的斜杠替换为反斜杠
             path = path.replace("/", "\\")
         self.HFileLoc.setText(path)
 
@@ -735,16 +722,10 @@ class Ui_MainWindow(object):
             # instrVarType是插装变量的类型
             instrVarType = self.instrVarTypeLabel.text()
             # 插装与生成dll
-            if self.C89RadioBtn.isChecked():
-                obj = instr.instrumentMethod2BaseC89()
-                obj.instrument(source_loc_list, instrTemplate)
-                obj.genInstrCFile(header_loc_list, source_loc_list, instrVarType, instrVarName)
-                del obj
-            else:
-                obj = instr.instrumentMethod2BaseC99()
-                obj.instrument(source_loc_list, instrTemplate)
-                obj.genInstrCFile(header_loc_list, source_loc_list, instrVarType, instrVarName)
-                del obj
+            obj = instr.instrumentMethod2BaseC99()
+            obj.instrument(source_loc_list, instrTemplate)
+            obj.genInstrCFile(header_loc_list, source_loc_list, instrVarType, instrVarName)
+            del obj
             os.system("gcc -shared -o " + os.path.join(root_loc, "in", "insFunc.dll") + " " + os.path.join(root_loc, "in", "insFunc.c"))
             instrSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "插装成功!")
             instrSuccBox.exec_()
@@ -777,6 +758,7 @@ class Ui_MainWindow(object):
                 return
 
         try:
+            obj = instr.instrumentMethod3BaseC99()
             source_loc_list = self.CFileLoc.toPlainText().split("\n")
             dataType = self.instrGlobalVarTypeComboBox.currentText()
             dataName = self.instrGlobalVarNameLineEdit.text()
@@ -789,15 +771,9 @@ class Ui_MainWindow(object):
             instrVarType.pop(-1)
             instrVarType = " ".join(instrVarType)
             instrVarName = instrText.split(" ")[-1].split(":")[0]
-            if self.C89RadioBtn.isChecked():
-                workingBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "施工中...")
-                workingBox.exec_()
-                return
-            else:
-                obj = instr.instrumentMethod3BaseC99()
-                obj.instrument(source_loc_list, dataType, dataName)
-                obj.insertAssignCode(source_loc_list, "ins_" + targetSource, nthLine, assignCode)
-                obj.genInstrCFile(header_loc_list, source_loc_list, instrVarType, instrVarName)
+            obj.instrument(source_loc_list, dataType, dataName)
+            obj.insertAssignCode(source_loc_list, "ins_" + targetSource, nthLine, assignCode)
+            obj.genInstrCFile(header_loc_list, source_loc_list, instrVarType, instrVarName)
             os.system("gcc -shared -o " + os.path.join(root_loc, "in", "insFunc.dll") + " " + os.path.join(root_loc, "in", "insFunc.c"))
             del obj
             instrSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "插装成功!")

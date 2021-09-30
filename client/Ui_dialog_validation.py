@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-08-12 14:33:16
 LastEditors: Radon
-LastEditTime: 2021-08-12 22:01:05
+LastEditTime: 2021-09-30 15:08:21
 Description: Hi, say something
 '''
 # -*- coding: utf-8 -*-
@@ -51,7 +51,7 @@ class Ui_Dialog(object):
         self.closeBtn.setText(_translate("Dialog", "关闭页面"))
 
     def startValidate(self, header_loc_list):
-        root_loc = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0]) + "in/"
+        root_loc = os.path.join(os.path.dirname(header_loc_list[0]), "in")
         self.validateResultTextBrowser.clear()
 
         # 查看当前目录下是否有in文件夹
@@ -69,7 +69,7 @@ class Ui_Dialog(object):
             if os.path.exists(root_loc + file):
                 self.validateResultTextBrowser.append("<font color='green'>√ %s</font>" % ("已检测到" + file))
                 if file == "mutate.c":
-                    os.system("gcc -shared -o " + root_loc + "mutate.dll " + root_loc + "mutate.c")
+                    os.system("gcc -shared -o " + os.path.join(root_loc, "mutate.dll") + " " + os.path.join(root_loc, "mutate.c"))
             else:
                 self.validateResultTextBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))
                 noTargetFilesValidation = False

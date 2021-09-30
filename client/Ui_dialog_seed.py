@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-25 15:17:53
+LastEditTime: 2021-09-30 15:11:50
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -558,7 +558,7 @@ class Ui_Dialog(object):
         [description]
         """
         global structDict
-        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", "C:/Users/Radon/Desktop", "json file(*.json)")
+        savePath = QtWidgets.QFileDialog.getSaveFileName(None, "save file", r"C:\Users\Radon\Desktop", "json file(*.json)")
         # 如果savePath[0]是空字符串的话，表示用户按了右上角的X
         if savePath[0] == "":
             return
@@ -898,13 +898,13 @@ class Ui_Dialog(object):
             # 生成变异所需C文件
             self.genMutate()
             # 将用户所选的结构体的分析结果保存为input.json
-            root_loc = re.sub(self.header_loc_list[0].split("/")[-1], "", self.header_loc_list[0]) + "/in/"
-            jsonFile = open(root_loc + "input.json", "w")
+            root_loc = os.path.join(os.path.dirname(self.header_loc_list[0]), "in")
+            jsonFile = open(os.path.join(root_loc, "input.json"), "w")
             self.delCheckBox()
             json.dump(structDict, jsonFile)
             jsonFile.close()
             self.setTableContent()
-            check_code_method_save_file_path = root_loc + "checkCodeMethod.txt"
+            check_code_method_save_file_path = os.path.join(root_loc, "checkCodeMethod.txt")
             check_code_method_save_file = open(check_code_method_save_file_path, mode="w", encoding="utf")
             check_code_method_save_file.write(self.checkCodeComboBox.currentText())
             check_code_method_save_file.close()

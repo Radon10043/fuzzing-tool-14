@@ -108,19 +108,19 @@ def write_to_testcase(fn, buf, dll):
 
 def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     # 当前所在目录
-    now_loc = re.sub(header_loc_list[0].split("/")[-1], "", header_loc_list[0])
+    now_loc = os.path.dirname(header_loc_list[0])
     # 可执行文件位置
-    program_loc = now_loc + "instrument.exe"
+    program_loc = os.path.join(now_loc, "instrument.exe")
     # 初始测试用例位置
-    seed_loc = now_loc + "in/seed"
+    seed_loc = os.path.join(now_loc, "in", "seed")
     # 调用图位置
-    graph_loc = now_loc + "in/callgraph.txt"
+    graph_loc = os.path.join(now_loc, "in", "callgraph.txt")
 
-    input_json_loc = now_loc + "in/input.json"
+    input_json_loc = os.path.join(now_loc, "in", "input.json")
 
     # 加载所需的DLL文件，并将CDLL存入一个字典，以便调用
-    mutateDll = ctypes.cdll.LoadLibrary(now_loc + "in/mutate.dll")
-    instrumentDll = ctypes.cdll.LoadLibrary(now_loc + "in/insFunc.dll")
+    mutateDll = ctypes.cdll.LoadLibrary(os.path.join(now_loc, "in", "mutate.dll"))
+    instrumentDll = ctypes.cdll.LoadLibrary(os.path.join(now_loc, "in", "insFunc.dll"))
     dllDict = {"mutate": mutateDll, "instrument": instrumentDll}
 
     # 设置地址
