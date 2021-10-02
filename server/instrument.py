@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-09-30 15:25:45
+LastEditTime: 2021-10-02 14:08:19
 Description: Hi, say something
 '''
 from PyQt5 import QtWidgets
@@ -87,10 +87,8 @@ class instrumentMethod2BaseC89(instrumentMethod):
         [description]
         """
         # 获取所有函数中最后的声明变量语句的位置
-        lastVarDeclDict = dict()    # <string, <string, int>>: <函数名称, <所在文件, 所在行>>
-        codeDict = dict()           # <string, list>: <源文件地址, [源文件内容]>
-        for i in range(len(source_loc_list)):   # XXX TEMP
-            source_loc_list[i] = source_loc_list[i]
+        lastVarDeclDict = dict()  # <string, <string, int>>: <函数名称, <所在文件, 所在行>>
+        codeDict = dict()  # <string, list>: <源文件地址, [源文件内容]>
         for source in source_loc_list:
             try:
                 f = open(source, mode="r", encoding="utf8")
@@ -100,21 +98,21 @@ class instrumentMethod2BaseC89(instrumentMethod):
                 f = open(source, mode="r", encoding="utf-8")
                 codeList = f.readlines()
                 f.close()
-            except  BaseException as e:
+            except BaseException as e:
                 print("\033[1;31m")
                 traceback.print_exc()
                 print("\033[0m")
                 return
-            codeDict[os.path.abspath(source)] = codeList    # 存储源代码内容
-            index = clang.cindex.Index.create()             # 遍历AST获取所有函数中最后的声明变量语句的位置
+            codeDict[os.path.abspath(source)] = codeList  # 存储源代码内容
+            index = clang.cindex.Index.create()  # 遍历AST获取所有函数中最后的声明变量语句的位置
             tu = index.parse(source)
             allFuncList = public.getAllFunctions(source_loc_list)
             self.traverseASTToGetLastVarDeclDict(tu.cursor, allFuncList, source_loc_list, lastVarDeclDict)
 
         for key, value in lastVarDeclDict.items():
-            if key == "main":               # main函数一定会执行，所以不对它进行插装应该也行
+            if key == "main":  # main函数一定会执行，所以不对它进行插装应该也行
                 continue
-            idx = allFuncList.index(key)    # 根据func的id生成插装语句
+            idx = allFuncList.index(key)  # 根据func的id生成插装语句
             instrCode = instrTemplate + "|=" + str(idx) + ";"
             line = codeDict[value["file"]][value["lastVarDeclLine"] - 1].split(";")
             if len(line) > 1:
@@ -153,10 +151,11 @@ class instrumentMethod2BaseC89(instrumentMethod):
             if cur.spelling in allFuncList and cur.location.file.name in source_loc_list:
                 lastVarDeclLine = self.traverseFuncCursor(cur)
                 if cur.spelling in lastVarDeclDict.keys():
-                    lastVarDeclDict[cur.spelling]["lastVarDeclLine"] = max(lastVarDeclDict[cur.spelling]["lastVarDeclLine"], lastVarDeclLine)   # 如果遍历到新的声明语句，更新信息
+                    lastVarDeclDict[cur.spelling]["lastVarDeclLine"] = max(lastVarDeclDict[cur.spelling]["lastVarDeclLine"],
+                                                                           lastVarDeclLine)  # 如果遍历到新的声明语句，更新信息
                 else:
                     lastVarDeclDict[cur.spelling] = dict()
-                    lastVarDeclDict[cur.spelling]["file"] = cur.location.file.name      # 记录函数中最后一个声明变量语句的位置信息，包含所在文件和其所在行
+                    lastVarDeclDict[cur.spelling]["file"] = cur.location.file.name  # 记录函数中最后一个声明变量语句的位置信息，包含所在文件和其所在行
                     lastVarDeclDict[cur.spelling]["lastVarDeclLine"] = lastVarDeclLine
             self.traverseASTToGetLastVarDeclDict(cur, allFuncList, source_loc_list, lastVarDeclDict)
 
@@ -179,10 +178,10 @@ class instrumentMethod2BaseC89(instrumentMethod):
         """
         lastVarDeclLine = -1
         for cur in cursor.get_children():
-            if cur.kind.is_declaration():       # 如果该节点是声明变量的结点, 更新位置信息
+            if cur.kind.is_declaration():  # 如果该节点是声明变量的结点, 更新位置信息
                 lastVarDeclLine = cur.location.line
             newDeclLine = self.traverseFuncCursor(cur)  # 有时候在递归遍历时会遍历到最后一句声明语句，但有时候也遍历不到
-            if newDeclLine != -1:                       # 如果遍历到了，则更新位置信息
+            if newDeclLine != -1:  # 如果遍历到了，则更新位置信息
                 lastVarDeclLine = max(lastVarDeclLine, newDeclLine)
         if cursor.kind == clang.cindex.CursorKind.FUNCTION_DECL and lastVarDeclLine == -1:  # 如果函数只有一行，可能会导致分析结果为-1
             lastVarDeclLine = cursor.location.line
@@ -190,104 +189,84 @@ class instrumentMethod2BaseC89(instrumentMethod):
 
 
 class instrumentMethod2BaseC99(instrumentMethod):
-    # TODO extern "C" { ... }
     def instrument(self, source_loc_list, instrTemplate):
-        """插装
+        """根据C99标准对源文件进行插装
 
         Parameters
         ----------
         source_loc_list : list
-            源文件地址
+            存储了源文件地址的列表
         instrTemplate : str
-            插装语句模板
+            插装代码模板
 
         Notes
         -----
         [description]
         """
-        root_loc = os.path.dirname(source_loc_list[0])
-
-        # 获取所有函数，下标决定了它的id
-        # TODO 如果函数数量超过插装变量的位数量
-        allFuncList = public.getAllFunctions(source_loc_list)
-        instr_loc_list = list()
-        for source in source_loc_list:
+        instrTemplate += " |= 1<<"  # 插装代码模板
+        allFuncList = public.getAllFunctions(source_loc_list)  # 所有函数列表
+        allFuncLocDict = dict()  # 记录所有函数位置信息的字典
+        for source in source_loc_list:  # 遍历AST, 获取所有函数的位置信息
             index = clang.cindex.Index.create()
             tu = index.parse(source)
-            instr_loc_list.append(self.instrumentBaseAST(tu.cursor, allFuncList, source, instrTemplate))
+            self.traverseASTToGetAllFuncLoc(tu.cursor, allFuncList, allFuncLocDict)
 
-    def instrumentBaseAST(self, cursor, allFuncList, source, instrTemplate):
-        """根据AST的内容进行插装
+        codeDict = dict()  # <str, list>: <文件地址, 源码内容>
+        for source in source_loc_list:  # 读取文件源码内容
+            try:
+                f = open(source, mode="r", encoding="utf8")
+                codeDict[source] = f.readlines()
+                f.close()
+            except UnicodeDecodeError:
+                f = open(source, mode="r", encoding="gbk")
+                codeDict[source] = f.readlines()
+                f.close()
+            except BaseException as e:
+                print("\033[1;31m")
+                traceback.print_exc()
+                print("\033[0m")
+                return
+        for key, value in allFuncLocDict.items():  # 插入插装代码
+            idx = allFuncList.index(key)
+            instrCode = instrTemplate + str(idx) + ";"
+            originLine = codeDict[value["file"]][value["line"] - 1]
+            newLine = originLine.split("{")
+            newLine[-1] = instrCode + newLine[-1]
+            newLine = "{".join(newLine)
+            codeDict[value["file"]][value["line"] - 1] = newLine
+
+        for key, value in codeDict.items():  # 将插装后的代码写入文件
+            instrFilePath = os.path.join(os.path.dirname(key), "ins_" + os.path.basename(key))
+            f = open(instrFilePath, mode="w")
+            for line in value:
+                f.write(line)
+            f.close()
+
+    def traverseASTToGetAllFuncLoc(self, cursor, allFuncList, allFuncLocDict):
+        """遍历AST获取所有函数的位置信息
 
         Parameters
         ----------
         cursor : clang.cindex.Cursor
             根节点
         allFuncList : list
-            全部函数
-        source : str
-            源文件地址
-        instrTemplate : str
-            插装模板
-
-        Returns
-        -------
-        [type]
-            [description]
+            存储所有函数的列表
+        allFuncLocDict : dict
+            存储所有函数位置信息的字典
 
         Notes
         -----
         [description]
         """
-        instrTemplate += " |= 1 << "
-        instr = False
-        brace = 0
-        try:
-            f = open(source, mode="r", encoding="utf-8")
-            codeList = f.readlines()
-            f.close()
-        except UnicodeDecodeError:
-            f = open(source, mode="r", encoding="gbk")
-            codeList = f.readlines()
-            f.close()
-        except:
-            print("err!")
-            return
-
-        for token in cursor.get_tokens():
-            if token.spelling in allFuncList:
-                if token.spelling == "main":
+        for cur in cursor.get_children():
+            if cur.spelling in allFuncList and cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:  # 如果是函数声明且是自己写的函数
+                if cur.spelling == "main":  # main函数一定会执行，跳过
                     continue
-                idx = allFuncList.index(token.spelling)
-                instrCode = instrTemplate + str(idx) + ";"
-                instr = True
-                print(token.spelling, ",", token.location.file.name + "?" + str(token.location.line))
-            if token.spelling == ";":
-                instr = False
-            if token.spelling == "{":
-                if instr and brace == 0:
-                    temp = codeList[token.location.line - 1].split("{")
-                    temp[1] = instrCode + temp[1]
-                    codeList[token.location.line - 1] = "{".join(temp)
-                    instr = False
-                brace += 1
-            if token.spelling == "}":
-                brace -= 1
-
-        newSource = os.path.join(os.path.dirname(source), "ins_" + os.path.basename(source))
-        try:
-            f = open(newSource, mode="w", encoding="utf-8")
-            for code in codeList:
-                f.write(code)
-            f.close()
-        except UnicodeEncodeError:
-            f = open(newSource, mode="w", encoding="gbk")
-            for code in codeList:
-                f.write(code)
-            f.close()
-        except BaseException as e:
-            print("Error occured in instrumentBaseAST:", e)
-        return newSource
+                if not cur.spelling in allFuncLocDict.keys():  # 记录函数位置信息，包括所在文件和所在行
+                    allFuncLocDict[cur.spelling] = dict()
+                allFuncLocDict[cur.spelling]["file"] = cur.location.file.name
+                allFuncLocDict[cur.spelling]["line"] = cur.location.line
+            self.traverseASTToGetAllFuncLoc(cur, allFuncList, allFuncLocDict)  # 递归遍历AST
 
 
 class instrumentMethod3BaseC99(instrumentMethod):
