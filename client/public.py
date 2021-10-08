@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-09-30 15:10:26
+LastEditTime: 2021-10-08 13:32:22
 Description: Some public function
 '''
 
@@ -305,8 +305,14 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
     for key, value in structDict[struct].items():
         if not value["mutation"]:
             continue
-        dataName = key.split(" ")[-1].split(":")[0]
-        code += "\tdata." + dataName + " ^= r;\n"
+        dataType = key.split(" ")       # 数据类型
+        dataType.pop(-1)
+        dataType = " ".join(dataType)
+        dataName = key.split(" ")[-1].split(":")[0] # 数据名称
+        if dataType in ["float", "double"]:
+            code += "\tdata." + dataName + " = (int)data." + dataName + "^r;"
+        else:
+            code += "\tdata." + dataName + " ^= r;\n"
     if hasCheckCode:
         code += "\tdata = calculateCheckCode(data);\n"
     # 变异体写入文件
@@ -366,11 +372,18 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
     # 写一个将结构体的值设定在用户指定范围内的方法
     code += "void setValueInRange(" + struct + "* data){\n"
     for key, value in structDict[struct].items():
-        dataName = key.split(" ")[-1].split(":")[0]
+        dataType = key.split(" ")       # 数据类型
+        dataType.pop(-1)
+        dataType = " ".join(dataType)
+        dataName = key.split(" ")[-1].split(":")[0] # 数据名称
         if "noName" in dataName:
             continue
-        code += "\tdata->" + dataName + " = (data->" + dataName + " % ((" + str(value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(
-            value["lower"]) + ");\n"
+        if dataType in ["float", "double"]:
+            code += "\tdata->" + dataName + " = ((int)data->" + dataName + " % (int)((" + str(value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(
+                value["lower"]) + ");\n"
+        else:
+            code += "\tdata->" + dataName + " = (data->" + dataName + " % ((" + str(value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(
+                value["lower"]) + ");\n"
     code += "}\n\n"
 
     # 写一个将结构体可视化的方法，savePath需要以.txt结尾

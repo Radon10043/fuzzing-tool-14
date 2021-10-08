@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-08-12 14:33:16
 LastEditors: Radon
-LastEditTime: 2021-09-30 15:08:21
+LastEditTime: 2021-10-08 13:37:17
 Description: Hi, say something
 '''
 # -*- coding: utf-8 -*-
@@ -66,10 +66,10 @@ class Ui_Dialog(object):
         ]
         noTargetFilesValidation = True
         for file in filesForNoTarget:
-            if os.path.exists(root_loc + file):
+            if os.path.exists(os.path.join(root_loc, file)):
                 self.validateResultTextBrowser.append("<font color='green'>√ %s</font>" % ("已检测到" + file))
                 if file == "mutate.c":
-                    os.system("gcc -shared -o " + os.path.join(root_loc, "mutate.dll") + " " + os.path.join(root_loc, "mutate.c"))
+                    os.system("gcc -shared -o " + os.path.join(root_loc, "mutate.dll") + " " + os.path.join(root_loc, "mutate.c") + " " + os.path.join(root_loc, "cJSON.c"))
             else:
                 self.validateResultTextBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))
                 noTargetFilesValidation = False
@@ -78,7 +78,7 @@ class Ui_Dialog(object):
         filesForTarget = ["saresult.txt"]
         targetFilesValidation = True
         for file in filesForTarget:
-            if os.path.exists(root_loc + file):
+            if os.path.exists(os.path.join(root_loc, file)):
                 self.validateResultTextBrowser.append("<font color='green'>√ %s</font>" % ("已检测到" + file))
             else:
                 self.validateResultTextBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))

@@ -790,9 +790,10 @@ class Ui_MainWindow(object):
             instrVarType = " ".join(instrVarType)
             instrVarName = instrText.split(" ")[-1].split(":")[0]
             if self.C89RadioBtn.isChecked():
-                workingBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "施工中...")
-                workingBox.exec_()
-                return
+                obj = instr.instrumentMethod3BaseC89()
+                obj.instrument(source_loc_list, dataType, dataName)
+                obj.insertAssignCode(source_loc_list, "ins_" + targetSource, nthLine, assignCode)
+                obj.genInstrCFile(header_loc_list, source_loc_list, instrVarType, instrVarName)
             else:
                 obj = instr.instrumentMethod3BaseC99()
                 obj.instrument(source_loc_list, dataType, dataName)

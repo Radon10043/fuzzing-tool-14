@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-10-02 14:08:19
+LastEditTime: 2021-10-08 12:56:19
 Description: Hi, say something
 '''
 from PyQt5 import QtWidgets
@@ -267,6 +267,138 @@ class instrumentMethod2BaseC99(instrumentMethod):
                 allFuncLocDict[cur.spelling]["file"] = cur.location.file.name
                 allFuncLocDict[cur.spelling]["line"] = cur.location.line
             self.traverseASTToGetAllFuncLoc(cur, allFuncList, allFuncLocDict)  # 递归遍历AST
+
+
+class instrumentMethod3BaseC89(instrumentMethod2BaseC89):
+    def instrument(self, source_loc_list, dataType, dataName):
+        """基于C89标准对程序进行插装
+
+        Parameters
+        ----------
+        source_loc_list : list
+            源文件地址列表
+        instrTemplate : str
+            插装代码模板
+
+        Notes
+        -----
+        [description]
+        """
+        # 获取所有函数中最后的声明变量语句的位置
+        lastVarDeclDict = dict()  # <string, <string, int>>: <函数名称, <所在文件, 所在行>>
+        codeDict = dict()  # <string, list>: <源文件地址, [源文件内容]>
+        allFuncList = public.getAllFunctions(source_loc_list)   # 存储了所有函数的列表
+        initGlobalVar = True # 是否初始化全局变量的标志
+        for source in source_loc_list:
+            try:
+                f = open(source, mode="r", encoding="utf8")
+                codeList = f.readlines()
+                f.close()
+            except UnicodeDecodeError:
+                f = open(source, mode="r", encoding="utf-8")
+                codeList = f.readlines()
+                f.close()
+            except BaseException as e:
+                print("\033[1;31m")
+                traceback.print_exc()
+                print("\033[0m")
+                return
+            codeDict[os.path.abspath(source)] = codeList  # 存储源代码内容
+            index = clang.cindex.Index.create()  # 遍历AST获取所有函数中最后的声明变量语句的位置
+            tu = index.parse(source)
+            self.traverseASTToGetLastVarDeclDict(tu.cursor, allFuncList, source_loc_list, lastVarDeclDict)
+            self.initInstrVar(tu.cursor, codeList, allFuncList, initGlobalVar, dataType, dataName)
+            initGlobalVar = False
+
+        for key, value in lastVarDeclDict.items():
+            if key == "main":  # main函数一定会执行，所以不对它进行插装应该也行
+                continue
+            idx = allFuncList.index(key)  # 根据func的id生成插装语句
+            instrCode = dataName + "|=" + str(idx) + ";"
+            line = codeDict[value["file"]][value["lastVarDeclLine"] - 1].split(";")
+            if len(line) > 1:
+                line[-1] = instrCode + line[-1]
+                codeDict[value["file"]][value["lastVarDeclLine"] - 1] = ";".join(line)
+            else:
+                codeDict[value["file"]][value["lastVarDeclLine"] - 1] += instrCode
+
+        for key, value in codeDict.items():
+            newSource = "ins_" + os.path.basename(key)
+            newSource = os.path.join(os.path.dirname(key), newSource)
+            f = open(newSource, mode="w")
+            for data in value:
+                f.write(data)
+            f.close()
+
+    def initInstrVar(self, cursor, lines, funcList, initGlobalVar, dataType, dataName):
+        """初始化插装全局变量为0
+
+        Parameters
+        ----------
+        cursor : clang.cindex.Cursor
+            根节点
+        lines : list
+            源码内容
+        funcList : list
+            全部函数
+        initGlobalVar : bool
+            是否初始化全局变量
+        dataType : str
+            插装变量数据类型
+        dataName : str
+            插装变量数据名称
+
+        Notes
+        -----
+        [description]
+        """
+        for cur in cursor.get_children():
+            if cur.kind == clang.cindex.CursorKind.FUNCTION_DECL and cur.spelling in funcList and os.path.splitext(cur.location.file.name)[-1] != ".h":
+                if initGlobalVar:
+                    lines[cur.location.line - 1] = dataType + " " + \
+                        dataName + " = 0;" + lines[cur.location.line - 1]
+                else:
+                    lines[cur.location.line - 1] = "extern " + dataType + \
+                        " " + dataName + ";" + lines[cur.location.line - 1]
+                return
+
+    def insertAssignCode(self, source_loc_list, targetSource, nthLine, assignCode):
+        """向已插入全局变量的语句中插入插装变量赋值语句
+
+        Parameters
+        ----------
+        source_loc_list : list
+            源文件列表
+        targetSource : str
+            目标源文件名称
+        nthLine : int
+            要插入的行数
+        assignCode : str
+            要插入的赋值语句
+
+        Notes
+        -----
+        [description]
+        """
+        targetSource = os.path.join(os.path.dirname(source_loc_list[0]), targetSource)
+        try:
+            f = open(targetSource, mode="r", encoding="utf-8")
+            lines = f.readlines()
+            f.close()
+        except UnicodeDecodeError:
+            f = open(targetSource, mode="r", encoding="gbk")
+            lines = f.readlines()
+            f.close()
+        except:
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
+
+        f = open(targetSource, mode="w")
+        lines[nthLine - 1] = assignCode + lines[nthLine - 1]
+        for line in lines:
+            f.write(line)
+        f.close()
 
 
 class instrumentMethod3BaseC99(instrumentMethod):
