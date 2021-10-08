@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2020-09-28 13:18:56
 LastEditors: Radon
-LastEditTime: 2021-09-30 13:59:42
+LastEditTime: 2021-10-08 14:10:05
 Description: 调用图相关的函数
 '''
 from PyQt5 import QtWidgets
@@ -73,14 +73,17 @@ def preorderTraverseToGetCallgraph(cursor, start, callgraph):
     [description]
     """
     for cur in cursor.get_children():
-        if cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
-            start = cur.spelling
-        if cur.kind == clang.cindex.CursorKind.CALL_EXPR:
-            call = start + "," + cur.spelling
-            if call in callgraph.keys():
-                callgraph[call] += 1
-            else:
-                callgraph[call] = 1
+        try:
+            if cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
+                start = cur.spelling
+            if cur.kind == clang.cindex.CursorKind.CALL_EXPR:
+                call = start + "," + cur.spelling
+                if call in callgraph.keys():
+                    callgraph[call] += 1
+                else:
+                    callgraph[call] = 1
+        except:
+            pass
         preorderTraverseToGetCallgraph(cur, start, callgraph)
 
 
