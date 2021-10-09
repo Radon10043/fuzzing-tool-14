@@ -122,6 +122,9 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
     mutateDll = ctypes.cdll.LoadLibrary(os.path.join(now_loc, "in", "mutate.dll"))
     instrumentDll = ctypes.cdll.LoadLibrary(os.path.join(now_loc, "in", "insFunc.dll"))
     dllDict = {"mutate": mutateDll, "instrument": instrumentDll}
+    instrVarEndian = ui.instrValueEndianComboBox.currentText()
+    instrVarBitsize = ui.instrValueBitsizeComboBox.currentText()
+    instrVarSetTuple = (instrVarEndian, instrVarBitsize)
 
     # 设置地址
     s = uiPrepareFuzz.senderIPLabel.text()
@@ -204,8 +207,8 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
         condition = "self.exec_cnt >= " + str(stopNum)
 
     condition += " or self.uiFuzz.stop"
-    n = nn.NN(ui, uiFuzz, fuzzThread, in_struct, allNode, program_loc, dllDict, now_loc)
-    e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, dllDict, allNode, n, condition, now_loc, s, r, in_struct)
+    n = nn.NN(ui, uiFuzz, fuzzThread, in_struct, allNode, program_loc, dllDict, now_loc,instrVarSetTuple)
+    e = FuzzExec(ui, uiFuzz, fuzzThread, program_loc, dllDict, allNode, n, condition, now_loc, s, r, in_struct, instrVarSetTuple)
     n.setExec(e)
     start = time.time()
     e.run()
@@ -257,7 +260,7 @@ def fuzz(header_loc_list, ui, uiPrepareFuzz, uiFuzz, fuzzThread):
 
 class FuzzExec():
     def __init__(self, ui, ui_fuzz, fuzz_thread, program_loc, MAIdll, all_nodes, nn, cond, root_loc, s, r,
-                 struct):
+                 struct,instrVarSetTuple):
         self.ui = ui
         self.uiFuzz = ui_fuzz
         self.fuzzThread = fuzz_thread
@@ -279,6 +282,7 @@ class FuzzExec():
         self.cond = cond
         self.start = time.time()
         self.stop = False
+        self.instrVarSetTuple = instrVarSetTuple
 
         if ui.ProtocolFuzzCfgDialog.mutSize.currentText() == "小":
             self.mut_size = 50
@@ -350,7 +354,7 @@ class FuzzExec():
         for i, f in enumerate(files):
             fn_json = os.path.join(os.path.abspath(dir), f)
             tmp_fn_bin = os.path.join(self.dir, "tmp")
-            _, cur_cov, crash, data = utils.getCoverage(fn_json, tmp_fn_bin, self.s, self.r, 1, self.MAIdll)
+            _, cur_cov, crash, data = utils.getCoverage(fn_json, tmp_fn_bin, self.s, self.r, 1, self.MAIdll, self.instrVarSetTuple)
             if stage != 2:
                 if len(set(cur_cov)) in self.total_cov_map.keys():
                     self.total_cov_map[len(set(cur_cov))] += 1
@@ -465,8 +469,10 @@ class FuzzExec():
                 if enum == 0:
                     upper = float(self.struct[name]["upper"])
                     lower = float(self.struct[name]["lower"])
-                    if lower <= seed_up[name] + sign[i] <= upper:
-                        seed_up[name] = float(seed_up[name] + sign[i])
+                    if sign[i] == 1:
+                        seed_up[name] = random.uniform(seed_up[name], upper)
+                    else:
+                        seed_up[name] = random.uniform(lower, seed_up[name])
                 else:
                     seed_up[name] = self.struct[name]["enum"][random.randint(0, enum - 1)]
 
@@ -494,8 +500,10 @@ class FuzzExec():
                 if enum == 0:
                     upper = float(self.struct[name]["upper"])
                     lower = float(self.struct[name]["lower"])
-                    if lower <= seed_down[name] - sign[i] <= upper:
-                        seed_down[name] = float(seed_down[name] - sign[i])
+                    if sign[i] == -1:
+                        seed_up[name] = random.uniform(seed_up[name], upper)
+                    else:
+                        seed_up[name] = random.uniform(lower, seed_up[name])
                 else:
                     seed_down[name] = self.struct[name]["enum"][random.randint(0, enum - 1)]
 
