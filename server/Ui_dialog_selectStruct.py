@@ -82,7 +82,7 @@ class Ui_Dialog(object):
         item = self.structTableWidget.horizontalHeaderItem(0)
         item.setText(_translate("Dialog", "结构体"))
         item = self.structTableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("Dialog", "用于输入"))
+        item.setText(_translate("Dialog", "用于输出"))
         __sortingEnabled = self.structTableWidget.isSortingEnabled()
         self.structTableWidget.setSortingEnabled(False)
         # item = self.structTableWidget.item(0, 0)

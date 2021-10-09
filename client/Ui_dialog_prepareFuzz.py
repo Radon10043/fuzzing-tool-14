@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-08-12 17:22:34
 LastEditors: Radon
-LastEditTime: 2021-09-30 15:06:36
+LastEditTime: 2021-10-09 14:14:40
 Description: Hi, say something
 '''
 # -*- coding: utf-8 -*-
@@ -138,6 +138,9 @@ class Ui_Dialog(object):
             if os.path.exists(os.path.join(root_loc, file)):
                 self.textBrowser.append("<font color='green'>√ %s</font>" % ("已检测到" + file))
                 if file == "mutate.c":
+                    cJSONRootPath = os.path.dirname(os.path.abspath(__file__))      # 使用copy命令将cJSON.c与cJSON.h复制到in目录下
+                    copyCmd = "copy " + os.path.join(cJSONRootPath, "*cJSON*") + " " + root_loc
+                    os.system(copyCmd)
                     os.system("gcc -shared -o " + os.path.join(root_loc, "mutate.dll") + " " + os.path.join(root_loc, "mutate.c") + " " + os.path.join(root_loc, "cJSON.c"))
             else:
                 self.textBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))
@@ -152,7 +155,6 @@ class Ui_Dialog(object):
             else:
                 self.textBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))
                 targetFilesValidation = False
-        print(Ui_dialog_seed.structDict)
         # 如果没有填IP，就没法开始测试
         if IPAddressValidation:
             # 如果客户端与服务端的完整性验证均通过，则可以开始目标制导的模糊测试

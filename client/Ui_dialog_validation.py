@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-08-12 14:33:16
 LastEditors: Radon
-LastEditTime: 2021-10-08 13:37:17
+LastEditTime: 2021-10-09 14:14:59
 Description: Hi, say something
 '''
 # -*- coding: utf-8 -*-
@@ -69,6 +69,9 @@ class Ui_Dialog(object):
             if os.path.exists(os.path.join(root_loc, file)):
                 self.validateResultTextBrowser.append("<font color='green'>√ %s</font>" % ("已检测到" + file))
                 if file == "mutate.c":
+                    cJSONRootPath = os.path.dirname(os.path.abspath(__file__))      # 使用copy命令将cJSON.c与cJSON.h复制到in目录下
+                    copyCmd = "copy " + os.path.join(cJSONRootPath, "*cJSON*") + " " + root_loc
+                    os.system(copyCmd)
                     os.system("gcc -shared -o " + os.path.join(root_loc, "mutate.dll") + " " + os.path.join(root_loc, "mutate.c") + " " + os.path.join(root_loc, "cJSON.c"))
             else:
                 self.validateResultTextBrowser.append("<font color='red'>X %s</font>" % ("未检测到" + file))

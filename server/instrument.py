@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-10-08 12:56:19
+LastEditTime: 2021-10-09 13:46:47
 Description: Hi, say something
 '''
 from PyQt5 import QtWidgets
@@ -230,8 +230,11 @@ class instrumentMethod2BaseC99(instrumentMethod):
             idx = allFuncList.index(key)
             instrCode = instrTemplate + str(idx) + ";"
             originLine = codeDict[value["file"]][value["line"] - 1]
+            while (not "{" in originLine):      # 如果同行里没有 {, 向下寻找
+                value["line"] += 1
+                originLine = codeDict[value["file"]][value["line"] - 1]
             newLine = originLine.split("{")
-            newLine[-1] = instrCode + newLine[-1]
+            newLine[1] = instrCode + newLine[1]
             newLine = "{".join(newLine)
             codeDict[value["file"]][value["line"] - 1] = newLine
 
@@ -259,7 +262,7 @@ class instrumentMethod2BaseC99(instrumentMethod):
         [description]
         """
         for cur in cursor.get_children():
-            if cur.spelling in allFuncList and cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:  # 如果是函数声明且是自己写的函数
+            if cur.spelling in allFuncList and cur.kind == clang.cindex.CursorKind.FUNCTION_DECL and os.path.splitext(cur.location.file.name)[-1] != ".h":  # 如果是函数声明且是自己写的函数
                 if cur.spelling == "main":  # main函数一定会执行，跳过
                     continue
                 if not cur.spelling in allFuncLocDict.keys():  # 记录函数位置信息，包括所在文件和所在行
