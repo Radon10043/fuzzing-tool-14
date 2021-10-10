@@ -6,11 +6,11 @@ import math
 import os
 import random
 import socket
-import sys
+
 import time
 from collections import Counter
 from subprocess import *
-
+import sys
 import keras
 import keras.backend as K
 import numpy as np
@@ -76,7 +76,7 @@ class LossHistory(keras.callbacks.Callback):
 
 
 class NN():
-    def __init__(self, ui, ui_fuzz, fuzz_thread, struct, all_node, program_loc, MAIdll, root_loc):
+    def __init__(self, ui, ui_fuzz, fuzz_thread, struct, all_node, program_loc, MAIdll, root_loc,instrVarSetTuple):
         tf.compat.v1.disable_eager_execution()
         # threading.Thread.__init__(self)
         self.ui = ui
@@ -106,6 +106,8 @@ class NN():
                 self.idx_name.append(key)
                 self.name_idx[key] = len(self.idx_name) - 1
                 self.input_dim += 1
+
+        self.instrVarSetTuple = instrVarSetTuple
 
     def setExec(self, exec_module):
         self.exec_module = exec_module
@@ -146,7 +148,7 @@ class NN():
             crash = None
             self.fuzzThread.nnInfoSgn.emit("正在执行训练数据：" + f + "\n")
             _, out, crash, _ = utils.getCoverage(f, os.path.join(self.dir, "tmp"), self.exec_module.s, self.exec_module.r, 1,
-                                                     self.MAIdll)
+                                                     self.MAIdll, self.instrVarSetTuple)
             cov = cov.union(set(out))
             if crash:
                 self.crash = True
