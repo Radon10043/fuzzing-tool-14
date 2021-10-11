@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-10-08 13:32:22
+LastEditTime: 2021-10-10 15:39:51
 Description: Some public function
 '''
 
@@ -381,9 +381,11 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
         if dataType in ["float", "double"]:
             code += "\tdata->" + dataName + " = ((int)data->" + dataName + " % (int)((" + str(value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(
                 value["lower"]) + ");\n"
+            # code += "\tdata->" + dataName + " = ((int)data->" + dataName + "% (int)" + str(value["upper"]) + ");\n"
         else:
             code += "\tdata->" + dataName + " = (data->" + dataName + " % ((" + str(value["upper"]) + ") - (" + str(value["lower"]) + "))) + (" + str(
                 value["lower"]) + ");\n"
+            # code += "\tdata->" + dataName + " = data->" + dataName + " % " + str(value["upper"]) + ";\n"
     code += "}\n\n"
 
     # 写一个将结构体可视化的方法，savePath需要以.txt结尾

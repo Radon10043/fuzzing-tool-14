@@ -38,7 +38,7 @@ class Ui_Dialog(object):
             self.text_browser_nn.setGeometry(QtCore.QRect(35, 41, 321, 271))
             self.text_browser_exec.setGeometry(QtCore.QRect(400, 41, 321, 271))
         else:
-            Dialog.resize(494, 357)
+            Dialog.resize(494, 387)
             self.textBrowser = QtWidgets.QTextBrowser(Dialog)
             self.textBrowser.setGeometry(QtCore.QRect(35, 21, 421, 271))
             self.textBrowser.setObjectName("textBrowser")
@@ -201,7 +201,7 @@ class Ui_Dialog(object):
         -----
         [description]
         """
-        out_loc = self.header_loc_list[0]
+        out_loc = os.path.dirname(self.header_loc_list[0])
         if self.fuzz_ai:
             out_loc = os.path.join(out_loc, "ProtocolFuzz")
         else:

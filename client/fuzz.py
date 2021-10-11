@@ -278,6 +278,7 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
 
     # 测试用例是bytes
     data = testcase
+    timeout = False
 
     # 发送测试用例
     global isCrash
@@ -294,6 +295,7 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
     except BaseException as e:
         print("测试用例发送失败:", e)
         isCrash += 1
+        timeout = True
     # 等待线程2结束
     thread2.join(maxTimeout)
 
@@ -324,7 +326,6 @@ def getFitness(testcase, targetSet, senderAddress, receiverAddress, callGraph, m
         distance = 1
     fitness = 1 / distance
     crashResult = isCrash == 10
-    timeout = False
     return (testcase, distance, fitness, coverNode, crashResult, timeout)
 
 

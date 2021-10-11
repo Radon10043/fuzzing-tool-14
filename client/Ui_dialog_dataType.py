@@ -1,7 +1,7 @@
 '''
 Author: Radon
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-30 14:23:17
+LastEditTime: 2021-10-10 14:07:37
 Description: 数据类型设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -240,7 +240,7 @@ class Ui_Dialog(object):
         lineEdit = QtWidgets.QLineEdit()
         if isNumber:
             # 输入框文本验证-start
-            reg = QRegExp("^(\+)?\d+(\.\d+)?$")  # 正数、负数、小数-正则
+            reg = QRegExp("^(\-|\+)?\d+(\.\d+)?$")  # 正数、负数、小数-正则
             pValidator = QRegExpValidator()
             pValidator.setRegExp(reg)
             # 输入框文本验证-end
@@ -248,11 +248,16 @@ class Ui_Dialog(object):
 
         lineEdit.setPlaceholderText(placeholderText)
 
-        lineEdit.editingFinished.connect(lambda: self.editFinish(lineEdit.text(), whatThing, dataTypeName))  # 编辑-活动
+        lineEdit.editingFinished.connect(lambda: self.editFinish(lineEdit.text(), whatThing, dataTypeName, lineEdit))  # 编辑-活动
         return lineEdit
 
-    def editFinish(self, text, whatThing, dataTypeName):
+    def editFinish(self, text, whatThing, dataTypeName, lineEdit):
         global dataTypeDict
+        if whatThing == "bitsize" and int(text) <= 0:
+            bitsizePositiveBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "位必须是正数!")
+            bitsizePositiveBox.exec_()
+            lineEdit.clear()
+            return
         try:
             dataTypeDict[dataTypeName][whatThing] = int(text)
         except BaseException as e:
@@ -438,15 +443,15 @@ class Ui_Dialog(object):
         self.setTableContent()
 
 
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
-    headerNotExistBox.exec_()
-
 # if __name__ == "__main__":
 #     app = QtWidgets.QApplication(sys.argv)
-#     dialog = QtWidgets.QDialog()
-#     ui = Ui_Dialog()
-#     ui.setupUi(dialog)
-#     dialog.show()
-#     sys.exit(app.exec_())
+#     headerNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "请运行Ui_window.py :)")
+#     headerNotExistBox.exec_()
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    dialog = QtWidgets.QDialog()
+    ui = Ui_Dialog()
+    ui.setupUi(dialog)
+    dialog.show()
+    sys.exit(app.exec_())
