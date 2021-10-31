@@ -29,7 +29,7 @@ import Ui_dialog_protocolFuzzConfig as pfcfgDialogPY
 logDir = os.path.join(os.path.dirname(__file__), "logs")
 if not os.path.exists(logDir):
     os.mkdir(logDir)
-logger.add(os.path.join(logDir, "runtime_{time}.log"))
+logger.add(os.path.join(logDir, "runtime_{time}.log"), retention="3 days")
 logger.info("Start running...\n")
 # ============
 

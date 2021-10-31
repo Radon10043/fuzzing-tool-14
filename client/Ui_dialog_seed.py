@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-30 15:11:50
+LastEditTime: 2021-10-30 17:20:17
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -892,6 +892,8 @@ class Ui_Dialog(object):
         for key in structDict:
             struct = key
         structDict, hasCheckCode = self.gen_check_code(structDict, struct)  # 根据校验方法，计算校验值，并存放到structDict.value里，用于初始化种子
+        if len(self.typedefDict) == 0:
+            self.typedefDict = sa.getTypedefDict(self.header_loc_list)
         public.genSeed(self.header_loc_list, struct, structDict, self.checkCodeComboBox.currentText(), hasCheckCode, self.typedefDict)
         # 生成变异所需的C文件
         try:

@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-09-30 15:05:06
+LastEditTime: 2021-10-30 15:16:11
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -367,6 +367,7 @@ class Ui_Dialog(object):
                 tempDict[structInfo[i][0]]["loc"] = structInfo[i][1]
                 # 如果用户指定了位大小
                 if ":" in structInfo[i][0]:
+                    tempDict[structInfo[i][0]]["bitsize"] = self.getBitsize(structInfo[i][0])
                     if "unsigned" in structInfo[i][0]:
                         tempDict[structInfo[i][0]]["upper"] = 2**tempDict[structInfo[i][0]]["bitsize"] - 1
                         tempDict[structInfo[i][0]]["lower"] = 0

@@ -18,3 +18,11 @@ CommuExample1/
 CommuExample2/
 CommuExample3/
 CommuExample4/
+*.ui
+*.spec
+client/build/
+client/dist
+*.spec
+server/build/
+server/dist
+*.png

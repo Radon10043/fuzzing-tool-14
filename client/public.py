@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-10-10 15:39:51
+LastEditTime: 2021-10-30 12:01:41
 Description: Some public function
 '''
 
@@ -107,9 +107,10 @@ def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode, 
     if not os.path.exists(root):
         os.mkdir(root)
     genSeedPath = os.path.join(root, "genSeed.cpp")
-    # 开始写代码，先include相关内容
+    # 开始写代码，先include, define相关内容
     code = "#include <iostream>\n#include <Windows.h>\n#include <fstream>\n"
     code += "#include \"" + check_code.header_file_path + "\"\n"
+    code += "#define True true\n#define False false\n"
     # 把用户选择的头文件位置也include
     for header in header_loc_list:
         code += "#include \"" + header + "\"\n"

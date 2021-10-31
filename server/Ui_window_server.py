@@ -559,11 +559,19 @@ class Ui_MainWindow(object):
                 sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
                 sourceNotExistBox.exec_()
                 return
-        self.targetDialog = QtWidgets.QDialog()
-        self.uiTarget = targetDialogPY.Ui_Dialog()
-        self.uiTarget.setupUi(self.targetDialog)
-        self.uiTarget.setValues(ui, source_loc_list, [])
-        self.targetDialog.show()
+
+        try:
+            self.targetDialog = QtWidgets.QDialog()
+            self.uiTarget = targetDialogPY.Ui_Dialog()
+            self.uiTarget.setupUi(self.targetDialog)
+            self.uiTarget.setValues(ui, source_loc_list, [])
+            self.targetDialog.show()
+        except BaseException as e:
+            print("\033[1;31m")
+            traceback.print_exc()
+            print("\033[0m")
+            popErrorMsgBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析出错:" + str(e))
+            popErrorMsgBox.exec_()
 
     def SAByCppcheck(self):
         """通过CPPCHECK进行静态分析获取可能有缺陷的地方

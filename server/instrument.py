@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-10-09 13:46:47
+LastEditTime: 2021-10-30 13:49:55
 Description: Hi, say something
 '''
 from PyQt5 import QtWidgets
@@ -298,7 +298,7 @@ class instrumentMethod3BaseC89(instrumentMethod2BaseC89):
                 codeList = f.readlines()
                 f.close()
             except UnicodeDecodeError:
-                f = open(source, mode="r", encoding="utf-8")
+                f = open(source, mode="r", encoding="gbk")
                 codeList = f.readlines()
                 f.close()
             except BaseException as e:
