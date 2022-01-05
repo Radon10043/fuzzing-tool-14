@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-08-26 11:20:37
 LastEditors: Radon
-LastEditTime: 2022-01-05 15:50:35
+LastEditTime: 2022-01-05 16:43:20
 Description: Hi, say something
 '''
 
@@ -262,7 +262,7 @@ def traverse(cursor, allFuncList, allFuncLocDict):
 
 
 class analyzeCppBaseC99:
-    def getAllCppFuncs(self, source_loc_list: list) -> list:
+    def getAllCppFuncs(self, source_loc_list: list):
         """分析cpp文件，获得所有函数
 
         Parameters
@@ -272,8 +272,9 @@ class analyzeCppBaseC99:
 
         Returns
         -------
-        list
-            所有函数名
+        list, dict
+            list: 所有函数名
+            dict: 函数信息字典, <函数名, <所在文件, 行>>
 
         Notes
         -----
@@ -289,15 +290,16 @@ class analyzeCppBaseC99:
             print("install path")
 
         funcSet = set() # 存储所有函数的集合
+        funcDict = dict()   # 存储函数信息的字典 <函数名, <所在文件, 行>>
         index = clang.cindex.Index.create()
         for source in source_loc_list:
             tu = index.parse(source)
-            self.preorderTraverse(tu.cursor, source, funcSet)   # 前序遍历AST获得所有函数名称
+            self.preorderTraverse(tu.cursor, source, funcSet, funcDict)   # 前序遍历AST获得所有函数名称
         funcList = sorted(list(funcSet))    # 函数名称存入funcList
-        return funcList
+        return funcList, funcDict
 
 
-    def preorderTraverse(self, cursor: clang.cindex.Cursor, source: str, funcSet: set):
+    def preorderTraverse(self, cursor: clang.cindex.Cursor, source: str, funcSet: set, funcDict: dict):
         """前序遍历AST，更新函数集合funcSet
 
         Parameters
@@ -305,9 +307,11 @@ class analyzeCppBaseC99:
         cursor : clang.cindex.Cursor
             根节点
         source : str
-            源文件位置
+            源文件
         funcSet : set
             函数集合
+        funcDict : dict
+            函数字典, <函数名, <所在文件, 行>>
 
         Notes
         -----
@@ -318,7 +322,9 @@ class analyzeCppBaseC99:
             if cur.location.file and cur.location.file.name == source:
                 if cur.kind == clang.cindex.CursorKind.CXX_METHOD or cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
                     funcSet.add(cur.spelling)
-            self.preorderTraverse(cur, source, funcSet)
+                    funcDict[cur.spelling] = dict()
+                    funcDict[cur.spelling][cur.location.file.name] = cur.location.line
+            self.preorderTraverse(cur, source, funcSet, funcDict)
 
 
 if __name__ == "__main__":
@@ -328,7 +334,7 @@ if __name__ == "__main__":
     source_loc_list = [r"C:\Users\Radon\Desktop\fuzztest\CommuExample4\main.cpp"]
 
     obj = analyzeCppBaseC99()
-    funcList = obj.getAllCppFuncs(source_loc_list)
+    funcList, funcDict = obj.getAllCppFuncs(source_loc_list)
     print(funcList)
     # instrumentMethod2(source_loc_list, "unsigned long long", "instr")
     # getAllStruct(header_loc_list)
