@@ -9,7 +9,7 @@ cmake-build-debug/
 CMakeLists.txt
 client/util/checkCodeLibDir/checkCodeLib/main.c
 *.exe
-temp.py
+# temp.py
 requirements.txt
 logs
 *.json
