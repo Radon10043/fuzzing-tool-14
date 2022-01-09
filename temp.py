@@ -2,12 +2,13 @@
 Author: Radon
 Date: 2021-08-26 11:20:37
 LastEditors: Radon
-LastEditTime: 2022-01-05 16:43:20
+LastEditTime: 2022-01-09 12:36:04
 Description: Hi, say something
 '''
 
 from client.staticAnalysis import analyze
 import server.public
+import server.callgraph
 
 import clang.cindex
 import subprocess
@@ -261,7 +262,7 @@ def traverse(cursor, allFuncList, allFuncLocDict):
         traverse(cur, allFuncList, allFuncLocDict)
 
 
-class analyzeCppBaseC99:
+class analyzeCpp:
     def getAllCppFuncs(self, source_loc_list: list):
         """分析cpp文件，获得所有函数
 
@@ -317,7 +318,6 @@ class analyzeCppBaseC99:
         -----
         [description]
         """
-        # TODO: 用map存储函数名与所在文件、位置，方便后续插桩?
         for cur in cursor.get_children():
             if cur.location.file and cur.location.file.name == source:
                 if cur.kind == clang.cindex.CursorKind.CXX_METHOD or cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
@@ -327,15 +327,19 @@ class analyzeCppBaseC99:
             self.preorderTraverse(cur, source, funcSet, funcDict)
 
 
+
 if __name__ == "__main__":
     fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
     fake_lib_loc += "/fake_lib/fake_libc_include"
     header_loc_list = ["C:/Users/Radon/Desktop/fuzztest/test/Datagram.h", "C:/Users/Radon/Desktop/fuzztest/test/Trajectory.h"]
-    source_loc_list = [r"C:\Users\Radon\Desktop\fuzztest\CommuExample4\main.cpp"]
+    # source_loc_list = [r"C:\Users\Radon\Desktop\fuzztest\CommuExample4\main.cpp"]
+    source_loc_list = ["test.cpp"]
 
-    obj = analyzeCppBaseC99()
+    obj = analyzeCpp()
     funcList, funcDict = obj.getAllCppFuncs(source_loc_list)
+    del obj
     print(funcList)
+
     # instrumentMethod2(source_loc_list, "unsigned long long", "instr")
     # getAllStruct(header_loc_list)
     # analyzeStruct(header_loc_list, "Trajectory")

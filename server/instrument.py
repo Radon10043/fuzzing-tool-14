@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2021-10-30 13:49:55
+LastEditTime: 2022-01-09 14:34:06
 Description: Hi, say something
 '''
 from PyQt5 import QtWidgets
@@ -17,6 +17,7 @@ import public
 
 
 class instrumentMethod(object):
+
     def __init__(self):
         """构造函数，加载dll
 
@@ -72,6 +73,7 @@ class instrumentMethod(object):
 
 
 class instrumentMethod2BaseC89(instrumentMethod):
+
     def instrument(self, source_loc_list, instrTemplate):
         """基于C89标准对程序进行插装
 
@@ -151,8 +153,7 @@ class instrumentMethod2BaseC89(instrumentMethod):
             if cur.spelling in allFuncList and cur.location.file.name in source_loc_list:
                 lastVarDeclLine = self.traverseFuncCursor(cur)
                 if cur.spelling in lastVarDeclDict.keys():
-                    lastVarDeclDict[cur.spelling]["lastVarDeclLine"] = max(lastVarDeclDict[cur.spelling]["lastVarDeclLine"],
-                                                                           lastVarDeclLine)  # 如果遍历到新的声明语句，更新信息
+                    lastVarDeclDict[cur.spelling]["lastVarDeclLine"] = max(lastVarDeclDict[cur.spelling]["lastVarDeclLine"], lastVarDeclLine)  # 如果遍历到新的声明语句，更新信息
                 else:
                     lastVarDeclDict[cur.spelling] = dict()
                     lastVarDeclDict[cur.spelling]["file"] = cur.location.file.name  # 记录函数中最后一个声明变量语句的位置信息，包含所在文件和其所在行
@@ -183,12 +184,13 @@ class instrumentMethod2BaseC89(instrumentMethod):
             newDeclLine = self.traverseFuncCursor(cur)  # 有时候在递归遍历时会遍历到最后一句声明语句，但有时候也遍历不到
             if newDeclLine != -1:  # 如果遍历到了，则更新位置信息
                 lastVarDeclLine = max(lastVarDeclLine, newDeclLine)
-        if cursor.kind == clang.cindex.CursorKind.FUNCTION_DECL and lastVarDeclLine == -1:  # 如果函数只有一行，可能会导致分析结果为-1
+        if (cursor.kind == clang.cindex.CursorKind.FUNCTION_DECL or cursor.kind == clang.cindex.CursorKind.CXX_METHOD) and lastVarDeclLine == -1:  # 如果函数只有一行，可能会导致分析结果为-1
             lastVarDeclLine = cursor.location.line
         return lastVarDeclLine
 
 
 class instrumentMethod2BaseC99(instrumentMethod):
+
     def instrument(self, source_loc_list, instrTemplate):
         """根据C99标准对源文件进行插装
 
@@ -230,7 +232,7 @@ class instrumentMethod2BaseC99(instrumentMethod):
             idx = allFuncList.index(key)
             instrCode = instrTemplate + str(idx) + ";"
             originLine = codeDict[value["file"]][value["line"] - 1]
-            while (not "{" in originLine):      # 如果同行里没有 {, 向下寻找
+            while (not "{" in originLine):  # 如果同行里没有 {, 向下寻找
                 value["line"] += 1
                 originLine = codeDict[value["file"]][value["line"] - 1]
             newLine = originLine.split("{")
@@ -262,7 +264,7 @@ class instrumentMethod2BaseC99(instrumentMethod):
         [description]
         """
         for cur in cursor.get_children():
-            if cur.spelling in allFuncList and cur.kind == clang.cindex.CursorKind.FUNCTION_DECL and os.path.splitext(cur.location.file.name)[-1] != ".h":  # 如果是函数声明且是自己写的函数
+            if cur.spelling in allFuncList and (cur.kind == clang.cindex.CursorKind.FUNCTION_DECL or cur.kind == clang.cindex.CursorKind.CXX_METHOD) and os.path.splitext(cur.location.file.name)[-1] != ".h":  # 如果是函数声明且是自己写的函数
                 if cur.spelling == "main":  # main函数一定会执行，跳过
                     continue
                 if not cur.spelling in allFuncLocDict.keys():  # 记录函数位置信息，包括所在文件和所在行
@@ -273,6 +275,7 @@ class instrumentMethod2BaseC99(instrumentMethod):
 
 
 class instrumentMethod3BaseC89(instrumentMethod2BaseC89):
+
     def instrument(self, source_loc_list, dataType, dataName):
         """基于C89标准对程序进行插装
 
@@ -290,8 +293,8 @@ class instrumentMethod3BaseC89(instrumentMethod2BaseC89):
         # 获取所有函数中最后的声明变量语句的位置
         lastVarDeclDict = dict()  # <string, <string, int>>: <函数名称, <所在文件, 所在行>>
         codeDict = dict()  # <string, list>: <源文件地址, [源文件内容]>
-        allFuncList = public.getAllFunctions(source_loc_list)   # 存储了所有函数的列表
-        initGlobalVar = True # 是否初始化全局变量的标志
+        allFuncList = public.getAllFunctions(source_loc_list)  # 存储了所有函数的列表
+        initGlobalVar = True  # 是否初始化全局变量的标志
         for source in source_loc_list:
             try:
                 f = open(source, mode="r", encoding="utf8")
@@ -310,7 +313,6 @@ class instrumentMethod3BaseC89(instrumentMethod2BaseC89):
             index = clang.cindex.Index.create()  # 遍历AST获取所有函数中最后的声明变量语句的位置
             tu = index.parse(source)
             self.traverseASTToGetLastVarDeclDict(tu.cursor, allFuncList, source_loc_list, lastVarDeclDict)
-            self.initInstrVar(tu.cursor, codeList, allFuncList, initGlobalVar, dataType, dataName)
             initGlobalVar = False
 
         for key, value in lastVarDeclDict.items():
@@ -325,6 +327,9 @@ class instrumentMethod3BaseC89(instrumentMethod2BaseC89):
             else:
                 codeDict[value["file"]][value["lastVarDeclLine"] - 1] += instrCode
 
+        # 设置全局变量
+        self.initInstrVar(source_loc_list, tu.cursor, codeList, allFuncList, initGlobalVar, dataType, dataName)
+
         for key, value in codeDict.items():
             newSource = "ins_" + os.path.basename(key)
             newSource = os.path.join(os.path.dirname(key), newSource)
@@ -333,7 +338,7 @@ class instrumentMethod3BaseC89(instrumentMethod2BaseC89):
                 f.write(data)
             f.close()
 
-    def initInstrVar(self, cursor, lines, funcList, initGlobalVar, dataType, dataName):
+    def initInstrVar(self, source_loc_list, cursor, lines, funcList, initGlobalVar, dataType, dataName):
         """初始化插装全局变量为0
 
         Parameters
@@ -356,14 +361,15 @@ class instrumentMethod3BaseC89(instrumentMethod2BaseC89):
         [description]
         """
         for cur in cursor.get_children():
-            if cur.kind == clang.cindex.CursorKind.FUNCTION_DECL and cur.spelling in funcList and os.path.splitext(cur.location.file.name)[-1] != ".h":
-                if initGlobalVar:
-                    lines[cur.location.line - 1] = dataType + " " + \
-                        dataName + " = 0;" + lines[cur.location.line - 1]
-                else:
-                    lines[cur.location.line - 1] = "extern " + dataType + \
-                        " " + dataName + ";" + lines[cur.location.line - 1]
-                return
+            if cur.location.file.name in source_loc_list:
+                if cur.kind == clang.cindex.CursorKind.FUNCTION_DECL and cur.spelling in funcList and os.path.splitext(cur.location.file.name)[-1] != ".h":
+                    if initGlobalVar:
+                        lines[cur.location.line - 1] = dataType + " " + \
+                            dataName + " = 0;" + lines[cur.location.line - 1]
+                    else:
+                        lines[cur.location.line - 1] = "extern " + dataType + \
+                            " " + dataName + ";" + lines[cur.location.line - 1]
+                    return
 
     def insertAssignCode(self, source_loc_list, targetSource, nthLine, assignCode):
         """向已插入全局变量的语句中插入插装变量赋值语句
@@ -405,6 +411,7 @@ class instrumentMethod3BaseC89(instrumentMethod2BaseC89):
 
 
 class instrumentMethod3BaseC99(instrumentMethod):
+
     def instrument(self, source_loc_list, dataType, dataName):
         """插装函数
 
@@ -439,11 +446,11 @@ class instrumentMethod3BaseC99(instrumentMethod):
                 return
             index = clang.cindex.Index.create()
             tu = index.parse(source)
-            self.initInstrVar(tu.cursor, lines, funcList, initGlobalVar, dataType, dataName)
+            self.initInstrVar(source_loc_list, tu.cursor, lines, funcList, initGlobalVar, dataType, dataName)
             self.instrumentSource(tu.cursor, source, lines, funcList, dataName)
             initGlobalVar = False
 
-    def initInstrVar(self, cursor, lines, funcList, initGlobalVar, dataType, dataName):
+    def initInstrVar(self, source_loc_list, cursor, lines, funcList, initGlobalVar, dataType, dataName):
         """初始化插装全局变量为0
 
         Parameters
@@ -466,14 +473,15 @@ class instrumentMethod3BaseC99(instrumentMethod):
         [description]
         """
         for cur in cursor.get_children():
-            if cur.kind == clang.cindex.CursorKind.FUNCTION_DECL and cur.spelling in funcList and os.path.splitext(cur.location.file.name)[-1] != ".h":
-                if initGlobalVar:
-                    lines[cur.location.line - 1] = dataType + " " + \
-                        dataName + " = 0;" + lines[cur.location.line - 1]
-                else:
-                    lines[cur.location.line - 1] = "extern " + dataType + \
-                        " " + dataName + ";" + lines[cur.location.line - 1]
-                return
+            if cur.location.file.name in source_loc_list:
+                if cur.kind == clang.cindex.CursorKind.FUNCTION_DECL and cur.spelling in funcList and os.path.splitext(cur.location.file.name)[-1] != ".h":
+                    if initGlobalVar:
+                        lines[cur.location.line - 1] = dataType + " " + \
+                            dataName + " = 0;" + lines[cur.location.line - 1]
+                    else:
+                        lines[cur.location.line - 1] = "extern " + dataType + \
+                            " " + dataName + ";" + lines[cur.location.line - 1]
+                    return
 
     def instrumentSource(self, cursor, source, lines, funcList, dataName):
         """对源码进行插装
@@ -504,7 +512,7 @@ class instrumentMethod3BaseC99(instrumentMethod):
             if token.spelling == ";":
                 instr = False
             if token.spelling == "{":
-                if instr and brace == 0:
+                if instr:   # TODO: if instr and brace == 0?
                     temp = lines[token.location.line - 1].split("{")
                     temp[1] = instrCode + temp[1]
                     lines[token.location.line - 1] = "{".join(temp)

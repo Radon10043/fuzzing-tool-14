@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2020-09-28 13:18:56
 LastEditors: Radon
-LastEditTime: 2021-10-08 14:10:05
+LastEditTime: 2022-01-09 12:31:10
 Description: 调用图相关的函数
 '''
 from PyQt5 import QtWidgets
@@ -31,7 +31,7 @@ def createCallGraph(source_loc_list, graph_loc):
     """
     # 加载dll
     libclangPath = subprocess.getstatusoutput("where clang")[1]
-    libclangPath = os.path.dirname(libclangPath) + "libclang.dll"
+    libclangPath = os.path.join(os.path.dirname(libclangPath), "libclang.dll")
     if clang.cindex.Config.loaded == True:
         print("clang.cindex.Config.loaded == True:")
     else:
@@ -43,7 +43,7 @@ def createCallGraph(source_loc_list, graph_loc):
     for source in source_loc_list:
         index = clang.cindex.Index.create()
         tu = index.parse(source)
-        preorderTraverseToGetCallgraph(tu.cursor, "", callgraph)
+        preorderTraverseToGetCallgraph(source_loc_list, tu.cursor, "", callgraph)
 
     # 将调用图与所有结点写入文件
     with open(graph_loc, mode="w") as f:
@@ -56,7 +56,7 @@ def createCallGraph(source_loc_list, graph_loc):
             f.write(node + "\n")
 
 
-def preorderTraverseToGetCallgraph(cursor, start, callgraph):
+def preorderTraverseToGetCallgraph(source_loc_list, cursor, start, callgraph):
     """遍历获得调用关系
 
     Parameters
@@ -74,17 +74,18 @@ def preorderTraverseToGetCallgraph(cursor, start, callgraph):
     """
     for cur in cursor.get_children():
         try:
-            if cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
-                start = cur.spelling
-            if cur.kind == clang.cindex.CursorKind.CALL_EXPR:
-                call = start + "," + cur.spelling
-                if call in callgraph.keys():
-                    callgraph[call] += 1
-                else:
-                    callgraph[call] = 1
+            if cur.location.file.name in source_loc_list:
+                if cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
+                    start = cur.spelling
+                if cur.kind == clang.cindex.CursorKind.CALL_EXPR:
+                    call = start + "," + cur.spelling
+                    if call in callgraph.keys():
+                        callgraph[call] += 1
+                    else:
+                        callgraph[call] = 1
         except:
             pass
-        preorderTraverseToGetCallgraph(cur, start, callgraph)
+        preorderTraverseToGetCallgraph(source_loc_list, cur, start, callgraph)
 
 
 if __name__ == "__main__":
