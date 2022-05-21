@@ -30,7 +30,7 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.title = QtWidgets.QLabel(self.centralwidget)
-        self.title.setGeometry(QtCore.QRect(300, 30, 161, 16))
+        self.title.setGeometry(QtCore.QRect(300, 30, 200, 16))
         self.title.setObjectName("title")
         self.fileSelectGroupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.fileSelectGroupBox.setGeometry(QtCore.QRect(70, 50, 651, 201))

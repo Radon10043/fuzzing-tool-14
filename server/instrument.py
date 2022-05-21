@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2022-01-09 14:34:06
+LastEditTime: 2022-04-21 17:01:26
 Description: Hi, say something
 '''
 from PyQt5 import QtWidgets
@@ -93,11 +93,11 @@ class instrumentMethod2BaseC89(instrumentMethod):
         codeDict = dict()  # <string, list>: <源文件地址, [源文件内容]>
         for source in source_loc_list:
             try:
-                f = open(source, mode="r", encoding="utf8")
+                f = open(source, mode="r", encoding="utf-8")
                 codeList = f.readlines()
                 f.close()
             except UnicodeDecodeError:
-                f = open(source, mode="r", encoding="utf-8")
+                f = open(source, mode="r", encoding="gbk")
                 codeList = f.readlines()
                 f.close()
             except BaseException as e:

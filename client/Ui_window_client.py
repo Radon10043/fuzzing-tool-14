@@ -41,7 +41,7 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(290, 30, 161, 16))
+        self.label.setGeometry(QtCore.QRect(290, 30, 200, 16))
         self.label.setObjectName("label")
         self.fileSelectGroupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.fileSelectGroupBox.setGeometry(QtCore.QRect(79, 70, 561, 231))
