@@ -10,10 +10,10 @@ CMakeLists.txt
 client/util/checkCodeLibDir/checkCodeLib/main.c
 *.exe
 # temp.py
-requirements.txt
 logs
 *.json
 *.txt
+!requirements.txt
 CommuExample1/
 CommuExample2/
 CommuExample3/

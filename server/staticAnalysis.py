@@ -54,35 +54,9 @@ def findFunction(lineNum, source):
     return function
 
 
-def getSuspFunction(suspLoc, source_loc_list):
-    """获取可疑函数列表
-
-    Parameters
-    ----------
-    suspLoc : str
-        可疑位置，格式形如main.c:14:15
-    source_loc_list : str
-        存储所有源文件位置的一个列表
-
-    Returns
-    -------
-    list
-        返回可疑函数的列表
-
-    Notes
-    -----
-    [description]
-    """
-    suspFunction = []
-    for loc in suspLoc:
-        for source in source_loc_list:
-            if loc.split(":")[0] == os.path.basename(source):
-                suspFunction.append(findFunction(int(loc.split(":")[1]), source))
-    return suspFunction
-
-
 def analyze(source_loc_str):
     """通过cppcheck进行静态分析，获取可能有缺陷的代码及其所在行
+    根据可疑代码所在行遍历AST获取可疑函数
 
     Parameters
     ----------
@@ -91,25 +65,23 @@ def analyze(source_loc_str):
 
     Returns
     -------
-    [type]
-        [description]
+    list
+        可疑函数列表
 
     Notes
     -----
     [description]
     """
-    # TODO 或许可以根据clang分析出的AST的行号获取函数位置
     source_loc_list = source_loc_str.split("\n")
     for source in source_loc_list:
         if not os.path.exists(source):
             return "被测文件不存在!"
 
-    source = os.path.basename(source_loc_list[0])
     path = os.path.dirname(source_loc_list[0])  # 设定存储位置
     if not os.path.exists(os.path.join(path, "in")):
         os.mkdir(os.path.join(path, "in"))
 
-    suspCode = []
+    # 运行cppcheck
     suspLoc = []
     cmd = "cppcheck --output-file=" + os.path.join(path, "in", "AnalyzeResult.txt") + " " + re.sub("\n", " ", source_loc_str)
     os.system(cmd)
@@ -118,10 +90,28 @@ def analyze(source_loc_str):
     f.close()
     for line in lines:
         if "error:" in line:
-            suspLoc.append(os.path.basename(line.split(" error:")[0]))
-    suspFunction = getSuspFunction(suspLoc, source_loc_list)
-    suspFunction = list(set(suspFunction))
-    return suspFunction
+            suspLoc.append(line.split(": error:")[0])
+
+    # 遍历ast, 获取可疑函数
+    obj = analyzeCpp()
+    funcList, funcDict = obj.getAllCppFuncs(source_loc_list)
+    suspFuncList = list()  # 可疑函数列表
+    for loc in suspLoc:
+        suspFunc = "ERROR!"
+        splitList = loc.split(":")
+        path = splitList[0] + ":" + splitList[1]  # 可疑代码所在文件路径
+        lineNum = int(splitList[2])  # 可疑代码行号
+        minDistance = -1  # 取函数行号小于可疑代码行号，且距离可疑代码最短的函数为可疑代码所在函数
+        for key, value in funcDict.items():
+            if path in value.keys():
+                if value[path] < lineNum and minDistance == -1:
+                    minDistance = lineNum - value[path]
+                    suspFunc = key
+                elif value[path] < lineNum and lineNum - value[path] < minDistance:
+                    minDistance = lineNum - value[path]
+                    suspFunc = key
+        suspFuncList.append(suspFunc)
+    return suspFuncList
 
 
 def getAllStruct_clang(header_loc_list):
@@ -479,6 +469,70 @@ def analyzeHeader(header_loc_list):
                     tempList.extend(info)
             infoList.append(tuple(tempList))
     return infoList
+
+
+class analyzeCpp:
+    def getAllCppFuncs(self, source_loc_list: list):
+        """分析cpp文件，获得所有函数
+
+        Parameters
+        ----------
+        source_loc_list : list
+            源文件
+
+        Returns
+        -------
+        list, dict
+            list: 所有函数名
+            dict: 函数信息字典, <函数名, <所在文件, 行>>
+
+        Notes
+        -----
+        [description]
+        """
+        libclangPath = subprocess.getstatusoutput("where clang")[1]
+        libclangPath = os.path.dirname(libclangPath)
+        libclangPath = os.path.join(libclangPath, "libclang.dll")  # 获得libclang的地址
+        if clang.cindex.Config.loaded == True:
+            print("clang.cindex.Config.loaded == True:")
+        else:
+            clang.cindex.Config.set_library_file(libclangPath)
+            print("install path")
+
+        funcSet = set()  # 存储所有函数的集合
+        funcDict = dict()  # 存储函数信息的字典 <函数名, <所在文件, 行>>
+        index = clang.cindex.Index.create()
+        for source in source_loc_list:
+            tu = index.parse(source)
+            self.preorderTraverse(tu.cursor, source, funcSet, funcDict)  # 前序遍历AST获得所有函数名称
+        funcList = sorted(list(funcSet))  # 函数名称存入funcList
+        return funcList, funcDict
+
+    def preorderTraverse(self, cursor: clang.cindex.Cursor, source: str, funcSet: set, funcDict: dict):
+        """前序遍历AST，更新函数集合funcSet
+
+        Parameters
+        ----------
+        cursor : clang.cindex.Cursor
+            根节点
+        source : str
+            源文件
+        funcSet : set
+            函数集合
+        funcDict : dict
+            函数字典, <函数名, <所在文件, 行>>
+
+        Notes
+        -----
+        [description]
+        """
+        for cur in cursor.get_children():
+            if cur.location.file and cur.location.file.name == source:
+                if cur.kind == clang.cindex.CursorKind.CXX_METHOD or cur.kind == clang.cindex.CursorKind.FUNCTION_DECL:
+                    funcSet.add(cur.spelling)
+                    funcDict[cur.spelling] = dict()
+                    funcDict[cur.spelling][cur.location.file.name] = cur.location.line
+            self.preorderTraverse(cur, source, funcSet, funcDict)
 
 
 if __name__ == "__main__":

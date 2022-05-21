@@ -2,13 +2,12 @@
 Author: Radon
 Date: 2021-08-26 11:20:37
 LastEditors: Radon
-LastEditTime: 2022-01-09 12:36:04
+LastEditTime: 2022-01-10 10:26:35
 Description: Hi, say something
 '''
 
 from client.staticAnalysis import analyze
 import server.public
-import server.callgraph
 
 import clang.cindex
 import subprocess
@@ -332,8 +331,8 @@ if __name__ == "__main__":
     fake_lib_loc = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
     fake_lib_loc += "/fake_lib/fake_libc_include"
     header_loc_list = ["C:/Users/Radon/Desktop/fuzztest/test/Datagram.h", "C:/Users/Radon/Desktop/fuzztest/test/Trajectory.h"]
-    # source_loc_list = [r"C:\Users\Radon\Desktop\fuzztest\CommuExample4\main.cpp"]
-    source_loc_list = ["test.cpp"]
+    source_loc_list = [r"C:\Users\Radon\Desktop\fuzztest\CommuExample4\main.cpp"]
+    # source_loc_list = ["test.cpp"]
 
     obj = analyzeCpp()
     funcList, funcDict = obj.getAllCppFuncs(source_loc_list)
