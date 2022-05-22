@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2022-04-12 11:56:47
 LastEditors: Radon
-LastEditTime: 2022-05-21 14:54:33
+LastEditTime: 2022-05-22 15:22:09
 Description: Hi, say something
 '''
 import clang.cindex
@@ -178,18 +178,42 @@ def preTravOneStruct(cursor: clang.cindex.Cursor):
 
     for cur in cursor.get_children():
 
+        # 判断变量是否为数组
+        varTypeList = cur.type.spelling.split()
+        arrLen = 0
+        if cur.type.kind == clang.cindex.TypeKind.CONSTANTARRAY:
+            arrLen = varTypeList.pop(-1)
+            arrLen = arrLen.lstrip("[").rstrip("]")     # arrLen是数组长度
+
+        # 将arrLen转换为int类型, 目前只支持一维数组
+        try:
+            arrLen = int(arrLen)
+        except:
+            print("High dim arr?")
+            continue
+
         # 查看一个变量是不是结构体变量
-        varType = cur.type.spelling.split()[-1]  # 获取变量类型
+        varType = varTypeList[-1]  # 获取变量类型
         isStructVar = False
         for k, v in GLB_STRUCT_DICT.items():  # 查看变量类型是否能在GLB_STRUCT_DICT中找到
             if varType in v:  # 如果能找到, 证明是结构体变量, 加入队列作为待分析的对象
-                GLB_STRUCT_QUEUE.put((k, GLB_PREFIX + cur.spelling))
+
+                if arrLen:  # 如果是结构体数组的话, 依次加入队列
+                    for i in range(arrLen):
+                        GLB_STRUCT_QUEUE.put((k, GLB_PREFIX + cur.spelling + "[" + str(i) + "]"))
+                else:
+                    GLB_STRUCT_QUEUE.put((k, GLB_PREFIX + cur.spelling))
+
                 isStructVar = True
 
         # 若不是结构体变量, 正常分析
         if not isStructVar and cur.kind == clang.cindex.CursorKind.FIELD_DECL:
-            var = cur.type.spelling + " " + GLB_PREFIX + cur.spelling
-            GLB_STRUCT_INFO.append(var)
+            var = varType + " " + GLB_PREFIX + cur.spelling
+            if arrLen:  # 如果是数组的话, 依次加入GLB_STRUCT_INFO
+                for i in range(arrLen):
+                    GLB_STRUCT_INFO.append(var + "[" + str(i) + "]")
+            else:
+                GLB_STRUCT_INFO.append(var)
 
 
 def findStruct(cursor: clang.cindex.Cursor, structHash: int):
