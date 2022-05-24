@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2022-04-12 11:56:47
 LastEditors: Radon
-LastEditTime: 2022-05-22 15:22:09
+LastEditTime: 2022-05-24 16:38:35
 Description: Hi, say something
 '''
 import clang.cindex
@@ -284,16 +284,52 @@ def analyzeOneStruct(structDict: dict, structHash: int) -> list:
     return structInfo
 
 
+def getAllHeaders(root: str) -> list:
+    """获取根目录下所有头文件的绝对地址
+
+    Parameters
+    ----------
+    root : str
+        根目录地址
+
+    Returns
+    -------
+    list
+        存储所有头文件绝对地址的列表
+
+    Notes
+    -----
+    _description_
+    """
+    headerList = list()
+
+    q = queue.Queue()   # 队列用于存储文件夹的地址
+    q.put(root)
+
+    while not q.empty():
+        path = q.get()
+        for f in os.listdir(path):
+            nf = os.path.join(path, f)
+            if os.path.isdir(nf):   # 如果遍历到的东西是文件夹, 加入队列, 遍历它里面的内容寻找头文件
+                q.put(nf)
+            elif nf.endswith(".h"): # 遍历到的东西是头文件的话, 加入列表
+                headerList.append(nf)
+
+    return headerList
+
+
 # TODO: 初始化
 def init():
-    pass
+    GLB_AST_LIST = list()
 
 
 if __name__ == '__main__':
-    GLB_AST_LIST = list()
+    init()
+
+    root = r"C:\Users\77257\Desktop\LocalFiles\Project_VSCode\python\fuzzing-tool-14\example"
 
     srcList = []
-    headerList = [r"C:\Users\77257\Desktop\LocalFiles\Project_VSCode\python\fuzzing-tool-14\example\test.h"]
+    headerList = getAllHeaders(root)
 
     # STEP 0: init
     libclangPath = subprocess.getstatusoutput("where clang")[1]
@@ -314,7 +350,7 @@ if __name__ == '__main__':
     structList, structDict = getAllStruct(headerList)
 
     # STEP 2: 获取指定结构体内容
-    struct = "ms"
+    struct = "MS1"
     sHash = 114514
 
     for k, v in structDict.items():
