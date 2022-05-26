@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2022-04-12 11:56:47
 LastEditors: Radon
-LastEditTime: 2022-05-24 16:38:35
+LastEditTime: 2022-05-26 17:12:23
 Description: Hi, say something
 '''
 import clang.cindex
@@ -318,6 +318,40 @@ def getAllHeaders(root: str) -> list:
     return headerList
 
 
+def getAllSrcs(root: str) -> list:
+    """获取根目录下所有头文件的绝对地址
+
+    Parameters
+    ----------
+    root : str
+        根目录地址
+
+    Returns
+    -------
+    list
+        存储所有[.cc],[.cpp],[.cxx]文件绝对地址的列表
+
+    Notes
+    -----
+    _description_
+    """
+    srcList = list()
+
+    q = queue.Queue()   # 队列用于存储文件夹的地址
+    q.put(root)
+
+    while not q.empty():
+        path = q.get()
+        for f in os.listdir(path):
+            nf = os.path.join(path, f)
+            if os.path.isdir(nf):   # 如果遍历到的东西是文件夹, 加入队列, 遍历它里面的内容寻找头文件
+                q.put(nf)
+            elif nf.endswith(".cpp") or nf.endswith(".cxx") or nf.endswith(".cc"): # 遍历到的东西是头文件的话, 加入列表
+                srcList.append(nf)
+
+    return srcList
+
+
 # TODO: 初始化
 def init():
     GLB_AST_LIST = list()
@@ -328,7 +362,7 @@ if __name__ == '__main__':
 
     root = r"C:\Users\77257\Desktop\LocalFiles\Project_VSCode\python\fuzzing-tool-14\example"
 
-    srcList = []
+    srcList = getAllSrcs(root)
     headerList = getAllHeaders(root)
 
     # STEP 0: init
@@ -358,3 +392,5 @@ if __name__ == '__main__':
             sHash = k
 
     analyzeOneStruct(structDict, sHash)
+
+    print("Hm?")
