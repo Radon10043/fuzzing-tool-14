@@ -36,6 +36,7 @@ logger.info("Start running...\n")
 
 
 class Ui_MainWindow(object):
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(722, 764)
@@ -264,7 +265,8 @@ class Ui_MainWindow(object):
         self.isMutateInRangeCheckBox.setText(_translate("MainWindow", "变异体在范围内"))
         self.validationGroupBox.setTitle(_translate("MainWindow", "完整性验证"))
         self.startValidateBtn.setText(_translate("MainWindow", "开始验证"))
-        self.validateTipLabel.setText(_translate("MainWindow", "验证目前是否已持有进行\n" "模糊测试的必要文件"))
+        self.validateTipLabel.setText(_translate("MainWindow", "验证目前是否已持有进行\n"
+                                                 "模糊测试的必要文件"))
         self.addressSetGroupBox.setTitle(_translate("MainWindow", "地址设置"))
         self.senderIPLineEdit.setToolTip(_translate("MainWindow", "通常为本机IP地址"))
         self.senderIPLineEdit.setPlaceholderText(_translate("MainWindow", "发送方IP地址"))
@@ -432,8 +434,7 @@ class Ui_MainWindow(object):
                 analyzeStructErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
                 analyzeStructErrBox.exec_()
                 # 提示用户解决方案
-                analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示",
-                                                            "推荐解决方案:\n" + "1.请确认代码无误\n" + "2.请给结构体定义别名，否则可能会导致显示不全\n" + "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
+                analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" + "1.请确认代码无误\n" + "2.请给结构体定义别名，否则可能会导致显示不全\n" + "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
                 analyzeStructTipBox.exec_()
                 print("\033[1;31m")
                 traceback.print_exc()
@@ -462,8 +463,7 @@ class Ui_MainWindow(object):
                 analyzeStructErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
                 analyzeStructErrBox.exec_()
                 # 提示用户解决方案
-                analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示",
-                                                            "推荐解决方案:\n" + "1.请确认代码无误\n" + "2.请给结构体定义别名，否则可能会导致显示不全\n" + "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
+                analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" + "1.请确认代码无误\n" + "2.请给结构体定义别名，否则可能会导致显示不全\n" + "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
                 analyzeStructTipBox.exec_()
                 print("\033[1;31m")
                 traceback.print_exc()
@@ -472,8 +472,7 @@ class Ui_MainWindow(object):
             # 获得测试用例二进制文件路径
             # 弹出结构体选择界面，选择测试用例对应的结构体
             # 显示测试用例中每个变量的内容
-            helpBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息",
-                                            "读取测试用例二进制文件并使用默认数据类型字典, 流程如下:\n" + "1.选择无扩展名的二进制文件作为读取对象\n" + "2.选择测试用例对应的结构体\n" + "3.等待读取结果")
+            helpBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "读取测试用例二进制文件并使用默认数据类型字典, 流程如下:\n" + "1.选择无扩展名的二进制文件作为读取对象\n" + "2.选择测试用例对应的结构体\n" + "3.等待读取结果")
             helpBox.exec_()
             selectedFile = QtWidgets.QFileDialog.getOpenFileName(None, "选择种子文件", r"C:\Users\Radon\Desktop", filter="All file (*)")
             seedBinaryPath = selectedFile[0]
@@ -494,8 +493,7 @@ class Ui_MainWindow(object):
                     analyzeStructErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
                     analyzeStructErrBox.exec_()
                     # 提示用户解决方案
-                    analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示",
-                                                                "推荐解决方案:\n" + "1.请确认代码无误\n" + "2.请给结构体定义别名，否则可能会导致显示不全\n" + "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
+                    analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" + "1.请确认代码无误\n" + "2.请给结构体定义别名，否则可能会导致显示不全\n" + "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
                     analyzeStructTipBox.exec_()
                     print("\033[1;31m")
                     traceback.print_exc()
@@ -504,8 +502,7 @@ class Ui_MainWindow(object):
             # 获得测试用例二进制文件路径，数据类型字典JSON文件路径
             # 弹出结构体选择界面，选择测试用例对应的结构体
             # 显示测试用例中每个变量的内容
-            helpBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息",
-                                            "读取测试用例二进制文件并使用数据类型字典JSON文件, 流程如下:\n" + "1.选择无扩展名的二进制文件作为读取对象\n" + "2.选择测试用例对应的结构体\n" + "3.等待读取结果")
+            helpBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "读取测试用例二进制文件并使用数据类型字典JSON文件, 流程如下:\n" + "1.选择无扩展名的二进制文件作为读取对象\n" + "2.选择测试用例对应的结构体\n" + "3.等待读取结果")
             helpBox.exec_()
             if not os.path.exists(typeJSONPath):
                 typeJSONNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, "消息", "未检测到数据类型JSON文件，是否使用默认设置?")
@@ -533,8 +530,7 @@ class Ui_MainWindow(object):
                     analyzeStructErrBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "分析结构体时出错:" + str(e))
                     analyzeStructErrBox.exec_()
                     # 提示用户解决方案
-                    analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示",
-                                                                "推荐解决方案:\n" + "1.请确认代码无误\n" + "2.请给结构体定义别名，否则可能会导致显示不全\n" + "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
+                    analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" + "1.请确认代码无误\n" + "2.请给结构体定义别名，否则可能会导致显示不全\n" + "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
                     analyzeStructTipBox.exec_()
                     print("\033[1;31m")
                     traceback.print_exc()

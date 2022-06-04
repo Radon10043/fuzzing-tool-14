@@ -353,14 +353,18 @@ class Ui_MainWindow(object):
         self.structParameterName.setText(_translate("MainWindow", "out_global"))
         self.structParameterName.setPlaceholderText(_translate("MainWindow", "结构体实参名"))
         self.pointStyleRadioBtn.setText(_translate("MainWindow", "."))
-        self.method1TipLabel.setText(_translate("MainWindow", "方式1: 源代码中已存在输出结构体的\n" "全局变量, 使用系统自动生成的插装语\n" "句进行插装"))
+        self.method1TipLabel.setText(_translate("MainWindow", "方式1: 源代码中已存在输出结构体的\n"
+                                                "全局变量, 使用系统自动生成的插装语\n"
+                                                "句进行插装"))
         self.instrumentMethod1Btn.setText(_translate("MainWindow", "插装"))
         self.compileMethod1Btn.setText(_translate("MainWindow", "编译"))
         self.instrTabWidget.setTabText(self.instrTabWidget.indexOf(self.method1Tab), _translate("MainWindow", "方式1"))
         self.manualInputInstrCodeLineEdit.setToolTip(_translate("MainWindow", "手动输入插装语句，输入等号前的内容即可"))
         self.manualInputInstrCodeLineEdit.setText(_translate("MainWindow", "struct->example"))
         self.manualInputInstrCodeLineEdit.setPlaceholderText(_translate("MainWindow", "手动输入插装语句"))
-        self.method2TipLabel.setText(_translate("MainWindow", "方式2: 源码中已存在输出结构体的\n" "全局变量, 手动输入插装语句进行插\n" "装"))
+        self.method2TipLabel.setText(_translate("MainWindow", "方式2: 源码中已存在输出结构体的\n"
+                                                "全局变量, 手动输入插装语句进行插\n"
+                                                "装"))
         self.instrVarTypeComboBox.setToolTip(_translate("MainWindow", "插装变量类型"))
         self.instrVarTypeComboBox.setItemText(0, _translate("MainWindow", "char"))
         self.instrVarTypeComboBox.setItemText(1, _translate("MainWindow", "short"))
@@ -377,9 +381,13 @@ class Ui_MainWindow(object):
         self.instrumentMethod2Btn.setText(_translate("MainWindow", "插装"))
         self.compileMethod2Btn.setText(_translate("MainWindow", "编译"))
         self.instrTabWidget.setTabText(self.instrTabWidget.indexOf(self.method2Tab), _translate("MainWindow", "方式2"))
-        self.method3TipLabel.setText(_translate("MainWindow", "方式3: 源码中没有全局变量, 系统\n" "生成全局变量并插装, 用户需要指定\n" "发回报文所在位置"))
-        self.sendBackCodeFileTipLabel.setText(_translate("MainWindow", "发回报文代\n" "码所在文件"))
-        self.sendBackCodeLocTipLabel.setText(_translate("MainWindow", "发回报文代\n" "码所在行"))
+        self.method3TipLabel.setText(_translate("MainWindow", "方式3: 源码中没有全局变量, 系统\n"
+                                                "生成全局变量并插装, 用户需要指定\n"
+                                                "发回报文所在位置"))
+        self.sendBackCodeFileTipLabel.setText(_translate("MainWindow", "发回报文代\n"
+                                                         "码所在文件"))
+        self.sendBackCodeLocTipLabel.setText(_translate("MainWindow", "发回报文代\n"
+                                                        "码所在行"))
         self.instrumentMethod3Btn.setText(_translate("MainWindow", "插装"))
         self.compileMethod3Btn.setText(_translate("MainWindow", "编译"))
         self.instrGlobalVarTypeComboBox.setToolTip(_translate("MainWindow", "插装变量类型"))
@@ -395,8 +403,8 @@ class Ui_MainWindow(object):
         self.instrGlobalVarTypeComboBox.setItemText(9, _translate("MainWindow", "unsigned int"))
         self.instrGlobalVarTypeComboBox.setItemText(10, _translate("MainWindow", "unsigned long"))
         self.instrGlobalVarTypeComboBox.setItemText(11, _translate("MainWindow", "unsigned long long"))
-        self.instrGlobalVarNameTipLabel.setText(_translate("MainWindow", "插装全局变\n" "量名称"))
-        self.instrGlobalVarTypeTipLabel.setText(_translate("MainWindow", "插装全局变\n" "量类型"))
+        self.instrGlobalVarNameTipLabel.setText(_translate("MainWindow", "插装全局变\n量名称"))
+        self.instrGlobalVarTypeTipLabel.setText(_translate("MainWindow", "插装全局变\n量类型"))
         self.assignCodeTipLabel.setText(_translate("MainWindow", "赋值代码"))
         self.instrTabWidget.setTabText(self.instrTabWidget.indexOf(self.method3Tab), _translate("MainWindow", "方式3"))
         self.CStandardGroupBox.setTitle(_translate("MainWindow", "C语言标准"))
@@ -572,8 +580,7 @@ class Ui_MainWindow(object):
                 analyzeStructErrBox.exec_()
 
                 # 提示用户解决方案
-                analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示",
-                                                            "推荐解决方案:\n" + "1.请确认代码无误\n" + "2.请给结构体定义别名，否则可能会导致显示不全\n" + "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
+                analyzeStructTipBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "提示", "推荐解决方案:\n" + "1.请确认代码无误\n" + "2.请给结构体定义别名，否则可能会导致显示不全\n" + "3.目前仅支持C语言, 请确认代码中仅有C语言的关键字")
                 analyzeStructTipBox.exec_()
 
                 print("\033[1;31m")
