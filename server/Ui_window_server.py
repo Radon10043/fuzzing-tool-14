@@ -22,8 +22,11 @@ import staticAnalysis as sa
 import instrument as instr
 import callgraph as cg
 
+import cppProj
+
 
 class Ui_MainWindow(object):
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(788, 853)
@@ -35,9 +38,22 @@ class Ui_MainWindow(object):
         self.fileSelectGroupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.fileSelectGroupBox.setGeometry(QtCore.QRect(70, 50, 651, 201))
         self.fileSelectGroupBox.setObjectName("fileSelectGroupBox")
-        self.chooseCBtn = QtWidgets.QPushButton(self.fileSelectGroupBox)
-        self.chooseCBtn.setGeometry(QtCore.QRect(510, 70, 131, 28))
-        self.chooseCBtn.setObjectName("chooseCBtn")
+        self.chooseSrcBtn = QtWidgets.QPushButton(self.fileSelectGroupBox)
+        self.chooseSrcBtn.setGeometry(QtCore.QRect(510, 70, 131, 28))
+        self.chooseSrcBtn.setObjectName("chooseSrcBtn")
+
+        # CRadioBtn in file selection
+        self.CRadioBtn = QtWidgets.QRadioButton(self.fileSelectGroupBox)
+        self.CRadioBtn.setGeometry(QtCore.QRect(350, 72, 61, 19))
+        self.CRadioBtn.setChecked(True)
+        self.CRadioBtn.setObjectName("CRadioBtn")
+
+        # CppRadioBtn in file Selection
+        self.CppRadioBtn = QtWidgets.QRadioButton(self.fileSelectGroupBox)
+        self.CppRadioBtn.setGeometry(QtCore.QRect(430, 72, 61, 19))
+        self.CppRadioBtn.setChecked(False)
+        self.CppRadioBtn.setObjectName("CRadioBtn")
+
         self.CFileLoc = QtWidgets.QTextBrowser(self.fileSelectGroupBox)
         self.CFileLoc.setGeometry(QtCore.QRect(10, 20, 631, 41))
         self.CFileLoc.setObjectName("CFileLoc")
@@ -272,8 +288,8 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         # ==========connect================================================
-        self.chooseCBtn.clicked.connect(self.chooseCFile)
-        self.chooseHBtn.clicked.connect(self.chooseHFile)
+        self.chooseSrcBtn.clicked.connect(self.chooseSrcDir)
+        self.chooseHBtn.clicked.connect(self.chooseHeaderDir)
         self.selectInstrVarBtn.clicked.connect(self.popStructDialog)
         self.pointerStyleRadioBtn.clicked.connect(self.setInstrumentCode)
         self.pointStyleRadioBtn.clicked.connect(self.setInstrumentCode)
@@ -313,10 +329,10 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "模糊测试工具 - 服务端"))
         self.title.setText(_translate("MainWindow", "模糊测试工具 - 服务端"))
         self.fileSelectGroupBox.setTitle(_translate("MainWindow", "文件选择"))
-        self.chooseCBtn.setText(_translate("MainWindow", "选择C文件"))
-        self.CFileLoc.setPlaceholderText(_translate("MainWindow", "C文件位置"))
-        self.HFileLoc.setPlaceholderText(_translate("MainWindow", "头文件位置"))
-        self.chooseHBtn.setText(_translate("MainWindow", "选择头文件"))
+        self.chooseSrcBtn.setText(_translate("MainWindow", "选择文件夹"))
+        self.CFileLoc.setPlaceholderText(_translate("MainWindow", "选择文件夹后, 程序会自动获得该文件夹下所有的C/Cpp文件位置"))
+        self.HFileLoc.setPlaceholderText(_translate("MainWindow", "选择文件夹后, 程序会自动获得该文件夹下所有的头文件位置"))
+        self.chooseHBtn.setText(_translate("MainWindow", "选择文件夹"))
         self.SAByCppcheckBtn.setText(_translate("MainWindow", "cppcheck"))
         self.SAByManBtn.setText(_translate("MainWindow", "手动选择"))
         self.targetSetInfo.setPlaceholderText(_translate("MainWindow", "目标集信息"))
@@ -387,6 +403,9 @@ class Ui_MainWindow(object):
         self.C89RadioBtn.setText(_translate("MainWindow", "C89"))
         self.C99RadioBtn.setText(_translate("MainWindow", "C99"))
 
+        self.CRadioBtn.setText(_translate("MainWindow", "C"))
+        self.CppRadioBtn.setText(_translate("MainWindow", "Cpp"))
+
     # ==========定义功能================================================================
 
     def updateInstrPreviewContent(self):
@@ -433,22 +452,37 @@ class Ui_MainWindow(object):
             else:
                 self.assignCodePreviewLabel.setText(self.assignCodeLineEdit.text())
 
-    def chooseCFile(self):
-        """选择C文件
+    def chooseSrcDir(self):
+        """选择获取选择的文件夹下的所有源文件地址
 
         Notes
         -----
-        现在可以选择C或CPP文件
+        _description_
         """
-        # 注意！getOpenFileNames()中的filter如果想选择多个文件的话，需要用两个分号隔开！
-        temp = QtWidgets.QFileDialog.getOpenFileNames(None, "choose file", r"C:\Users\Radon\Desktop", filter="cpp files(*.cpp);;c files(*.c)")
-        path = ""
-        for i in range(len(temp[0])):
-            path += temp[0][i] + "\n"
-        path = path.rstrip("\n")
-        if "win" in sys.platform:  # 如果是windows平台，则将路径中的斜杠替换为反斜杠
-            path = path.replace("/", "\\")
-        self.CFileLoc.setText(path)
+        # 获取用户选择的文件夹
+        srcDir = QtWidgets.QFileDialog.getExistingDirectory(None, "选择文件夹(src)", os.getcwd())
+        srcList = list()
+
+        # getExistingDirectory获得的文件夹路径默认的是/, win下要换成\\ ?
+        if "win" in sys.platform:
+            srDir = srDir.replace("/", "\\")
+
+        # 若文件夹不存在, 返回
+        if not os.path.exists(srcDir):
+            print("Not exist?")
+            return
+
+        # 若选中了C, 则获得文件夹下所有.c文件的路径
+        # 若选中了Cpp, 则获得文件夹下所有.cpp, .cxx, .cc文件的路径
+        if self.CRadioBtn.isChecked():
+            srcList = cppProj.getAllCSrcs(srcDir)
+        elif self.CppRadioBtn.isChecked():
+            srcList = cppProj.getAllCppSrcs(srcDir)
+        else:
+            print("Hum?")
+
+        show = "\n".join(srcList)
+        self.CFileLoc.setText(show)
 
         # 设置插装方式3中的comboBox
         self.sendBackCodeFileComboBox.clear()
@@ -456,21 +490,29 @@ class Ui_MainWindow(object):
         files = [os.path.basename(file) for file in self.CFileLoc.toPlainText().split("\n")]
         self.sendBackCodeFileComboBox.addItems(files)
 
-    def chooseHFile(self):
-        """选择头文件
+    def chooseHeaderDir(self):
+        """获得指定文件夹下的所有头文件路径
 
         Notes
         -----
-        [description]
+        _description_
         """
-        temp = QtWidgets.QFileDialog.getOpenFileNames(None, "choose file", r"C:\Users\Radon\Desktop", "h files (*.h)")
-        path = ""
-        for i in range(len(temp[0])):
-            path += temp[0][i] + "\n"
-        path = path.rstrip("\n")
-        if "win" in sys.platform:  # 如果是windows平台，则将路径中的斜杠替换为反斜杠
-            path = path.replace("/", "\\")
-        self.HFileLoc.setText(path)
+        headerDir = QtWidgets.QFileDialog.getExistingDirectory(None, "选择文件夹(header)", os.getcwd())
+        headerList = list()
+
+        # getExistingDirectory获得的文件夹路径默认的是/, win下要换成\\ ?
+        if "win" in sys.platform:
+            headerDir = headerDir.replace("/", "\\")
+
+        if not os.path.exists(headerDir):
+            print("Hum?")
+            return
+
+        # 获取所有头文件路径
+        headerList = cppProj.getAllHeaders(headerDir)
+
+        show = "\n".join(headerList)
+        self.HFileLoc.setText(show)
 
     def popStructDialog(self):
         """弹出选择结构体的对话框

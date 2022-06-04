@@ -22,6 +22,7 @@ import Ui_dialog_seed as seedDialogPY
 import Ui_dialog_selectStruct as selectStructDialogPY
 import Ui_dialog_validation as validateDialogPY
 import Ui_dialog_prepareFuzz as prepareFuzzDialogPY
+import cppProj
 
 import Ui_dialog_protocolFuzzConfig as pfcfgDialogPY
 
@@ -209,7 +210,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         # ==========connect========================================================
-        self.chooseHFileBtn.clicked.connect(self.chooseHFile)
+        self.chooseHFileBtn.clicked.connect(self.chooseHeaderDir)
         self.seedInputBtn.clicked.connect(self.popStructDialog)
         self.startValidateBtn.clicked.connect(self.popValidateDialog)
         self.startFuzzBtn.clicked.connect(self.popPrepareFuzzDialog)
@@ -308,23 +309,29 @@ class Ui_MainWindow(object):
 
     # ==========定义功能================================================================
 
-    def chooseHFile(self):
-        """选择头文件
+    def chooseHeaderDir(self):
+        """获得指定文件夹下的所有头文件路径
 
         Notes
         -----
-        [description]
+        _description_
         """
-        temp = QtWidgets.QFileDialog.getOpenFileNames(None, "choose file", r"C:\Users\Radon\Desktop", "h files (*.h)")
-        path = ""
-        if len(temp[0]) == 0:
+        headerDir = QtWidgets.QFileDialog.getExistingDirectory(None, "选择文件夹(header)", os.getcwd())
+        headerList = list()
+
+        # getExistingDirectory获得的文件夹路径默认的是/, win下要换成\\ ?
+        if "win" in sys.platform:
+            headerDir = headerDir.replace("/", "\\")
+
+        if not os.path.exists(headerDir):
+            print("Hum?")
             return
-        for i in range(len(temp[0])):
-            path += temp[0][i] + "\n"
-        path = path.rstrip("\n")
-        if "win" in sys.platform:       # Windows下需要将斜杠换为反斜杠
-            path = path.replace("/", "\\")
-        self.HFileLoc.setText(path)
+
+        # 获取所有头文件路径
+        headerList = cppProj.getAllHeaders(headerDir)
+
+        show = "\n".join(headerList)
+        self.HFileLoc.setText(show)
 
     def chooseJSONFile(self):
         """选择数据类型JSON文件
