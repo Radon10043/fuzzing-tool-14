@@ -771,7 +771,7 @@ class Ui_MainWindow(object):
         """
         source_loc_list = self.CFileLoc.toPlainText().split("\n")
         header_loc_list = self.HFileLoc.toPlainText().split("\n")
-        root_loc = os.path.dirname(source_loc_list[0])
+        root_loc = SAVE_PATH
         for source in source_loc_list:
             if not os.path.exists(source):
                 sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")
@@ -799,7 +799,9 @@ class Ui_MainWindow(object):
             instrVarName = instrVarName.lstrip("[->.]")
             # instrVarType是插装变量的类型
             instrVarType = self.instrVarTypeLabel.text()
+
             # 插装与生成dll
+            instr.SAVE_PATH = SAVE_PATH
             if self.C89RadioBtn.isChecked():
                 obj = instr.instrumentMethod2BaseC89()
                 obj.instrument(source_loc_list, instrTemplate)
@@ -810,6 +812,7 @@ class Ui_MainWindow(object):
                 obj.instrument(source_loc_list, instrTemplate)
                 obj.genInstrCFile(header_loc_list, source_loc_list, instrVarType, instrVarName)
                 del obj
+
             os.system("gcc -shared -o " + os.path.join(root_loc, "in", "insFunc.dll") + " " + os.path.join(root_loc, "in", "insFunc.c"))
             instrSuccBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, "消息", "插装成功!")
             instrSuccBox.exec_()

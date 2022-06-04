@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-06-09 16:37:49
 LastEditors: Radon
-LastEditTime: 2022-04-21 17:01:26
+LastEditTime: 2022-06-04 17:01:54
 Description: Hi, say something
 '''
 from PyQt5 import QtWidgets
@@ -15,11 +15,13 @@ import traceback
 
 import public
 
+# GLOBAL
+SAVE_PATH = ""
 
 class instrumentMethod(object):
 
     def __init__(self):
-        """构造函数，加载dll
+        """构造函数， 加载dll, 设置保存位置
 
         Notes
         -----
@@ -59,7 +61,7 @@ class instrumentMethod(object):
         -----
         [description]
         """
-        in_loc = os.path.join(os.path.dirname(source_loc_list[0]), "in")
+        in_loc = os.path.join(SAVE_PATH, "in")
         outputStructName = open(os.path.join(in_loc, "outputStruct.txt")).read()
         code = "#include <stdio.h>\n#include <stdbool.h>\n"
         for header in header_loc_list:

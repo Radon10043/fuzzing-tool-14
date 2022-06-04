@@ -2,13 +2,15 @@
 Author: Radon
 Date: 2022-04-12 11:56:47
 LastEditors: Radon
-LastEditTime: 2022-06-04 16:26:10
+LastEditTime: 2022-06-04 20:32:31
 Description: Hi, say something
 '''
 import clang.cindex
 import subprocess
 import os
 import queue
+
+import staticAnalysis as sa
 
 # yapf: disable
 # ========== GLOBAL VARIABLE ==========
@@ -17,6 +19,7 @@ GLB_AST_LIST        = list()                # or dict? <filename, cursor>
 GLB_STRUCT_DICT     = dict()                # key: hash, value: structs
 GLB_STRUCT_QUEUE    = queue.Queue()         # 队列
 GLB_STRUCT_INFO     = list()                # list(tuple(name, loc))
+GLB_TEMP_DICT       = dict()
 GLB_PREFIX          = ""                    # 结构体前缀
 # =====================================
 # yapf: enable
@@ -110,9 +113,14 @@ def preTravStruct(cursor: clang.cindex.Cursor, headerList: list, structList: lis
     _description_
     """
 
-    global GLB_STRUCT_HASH
+    global GLB_STRUCT_HASH, GLB_TEMP_DICT
 
     for cur in cursor.get_children():
+
+        if cur.hash in GLB_TEMP_DICT.keys():
+            GLB_TEMP_DICT[cur.hash].append((cur.type.spelling, cur.spelling))
+        else:
+            GLB_TEMP_DICT[cur.hash] = [(cur.type.spelling, cur.spelling)]
 
         # 根据节点的hash值确定结构体的名称, 当hash值和之前不一样时证明遍历到了新的结构体
         if cur.kind == clang.cindex.CursorKind.STRUCT_DECL and cur.hash != GLB_STRUCT_HASH:
@@ -129,7 +137,7 @@ def preTravStruct(cursor: clang.cindex.Cursor, headerList: list, structList: lis
         elif cur.kind == clang.cindex.CursorKind.TYPEDEF_DECL and cur.underlying_typedef_type.kind == clang.cindex.TypeKind.ELABORATED:  # ELABORATED?
             structList[-1].append(cur.spelling)
 
-        preTravStruct(cur, headerList, structList, structDict)
+        # preTravStruct(cur, headerList, structList, structDict)
 
 
 def getAllStruct(headerList: list) -> list:
@@ -166,6 +174,12 @@ def getAllStruct(headerList: list) -> list:
     return structList
 
 
+def analyzeInterStruct(cursor: clang.cindex.Cursor):
+    for cur in cursor.get_children():
+        print(cur.spelling)
+        analyzeInterStruct(cur)
+
+
 def preTravOneStruct(cursor: clang.cindex.Cursor):
     """遍历节点获取一个结构体的信息
 
@@ -178,9 +192,14 @@ def preTravOneStruct(cursor: clang.cindex.Cursor):
     -----
     _description_
     """
-    global GLB_STRUCT_QUEUE, GLB_STRUCT_INFO
+    global GLB_STRUCT_QUEUE, GLB_STRUCT_INFO, GLB_PREFIX
+
+    recursion = False       # 是否递归的标志
+    recurCur = cursor       # 要递归遍历的节点
 
     for cur in cursor.get_children():
+
+        bitsize = cur.get_bitfield_width()
 
         # 判断变量是否为数组
         varTypeList = cur.type.spelling.split()
@@ -197,7 +216,7 @@ def preTravOneStruct(cursor: clang.cindex.Cursor):
             continue
 
         # 查看一个变量是不是结构体变量
-        varType = varTypeList[-1]  # 获取变量类型
+        varType = " ".join(varTypeList)  # 获取变量类型
         isStructVar = False
         for k, v in GLB_STRUCT_DICT.items():  # 查看变量类型是否能在GLB_STRUCT_DICT中找到
             if varType in v:  # 如果能找到, 证明是结构体变量, 加入队列作为待分析的对象
@@ -210,6 +229,19 @@ def preTravOneStruct(cursor: clang.cindex.Cursor):
 
                 isStructVar = True
 
+        # 如果结构体里嵌套了结构体, 要递归分析 ... struct { struct {} }
+        if recursion:
+            GLB_PREFIX += cur.spelling + "."
+            preTravOneStruct(recurCur)
+            GLB_PREFIX = GLB_PREFIX[:(0 - len(cur.spelling) - 1)]
+            recursion = False
+            continue
+
+        # 遇到嵌套时, 本次不递归, 下次获得结构体名字后递归
+        if "struct " in cur.type.spelling:
+            recursion = True
+            recurCur = cur
+
         # 获取位置
         filename = cur.location.file.name
         line = cur.location.line
@@ -218,6 +250,11 @@ def preTravOneStruct(cursor: clang.cindex.Cursor):
         # 若不是结构体变量, 正常分析
         if not isStructVar and cur.kind == clang.cindex.CursorKind.FIELD_DECL:
             var = varType + " " + GLB_PREFIX + cur.spelling
+
+            # 若用户指定了位大小
+            if bitsize != -1:
+                var += ":" + str(bitsize)
+
             if arrLen:  # 如果是数组的话, 依次加入GLB_STRUCT_INFO
                 for i in range(arrLen):
                     GLB_STRUCT_INFO.append((var + "[" + str(i) + "]", loc))
@@ -266,6 +303,8 @@ def analyzeOneStruct(structName: str) -> list:
     # 全局变量用于帮助分析嵌套结构体
     global GLB_STRUCT_DICT, GLB_STRUCT_QUEUE, GLB_PREFIX
 
+    GLB_PREFIX = ""
+
     for k, v in GLB_STRUCT_DICT.items():
         if structName in v:
             structHash = k
@@ -292,7 +331,16 @@ def analyzeOneStruct(structName: str) -> list:
             for cursor in GLB_AST_LIST:
                 findStruct(cursor, nextHash)
 
-    structInfo = GLB_STRUCT_INFO.copy()
+    rawStructInfo = GLB_STRUCT_INFO.copy()
+
+    # 去重
+    infoSet = set()
+    for tup in rawStructInfo:
+        if tup[0] in infoSet:
+            continue
+        infoSet.add(tup[0])
+        structInfo.append(tup)
+
     return structInfo
 
 
@@ -470,7 +518,7 @@ def init(headerList: list):
 
 
 if __name__ == '__main__':
-    root = r"C:\Users\77257\Desktop\LocalFiles\Project_VSCode\python\fuzzing-tool-14\example"
+    root = r"C:\Users\77257\Desktop\example\example"
 
     srcList = getAllCppSrcs(root)
     headerList = getAllHeaders(root)
@@ -491,6 +539,6 @@ if __name__ == '__main__':
     tDict = getTypedefDict()
 
     # STEP 2: 获取指定结构体内容
-    analyzeOneStruct("MS1")
+    analyzeOneStruct("Datagram")
 
     print("Hm?")
