@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2022-04-12 11:56:47
 LastEditors: Radon
-LastEditTime: 2022-05-26 17:12:23
+LastEditTime: 2022-06-04 12:23:31
 Description: Hi, say something
 '''
 import clang.cindex
@@ -183,7 +183,7 @@ def preTravOneStruct(cursor: clang.cindex.Cursor):
         arrLen = 0
         if cur.type.kind == clang.cindex.TypeKind.CONSTANTARRAY:
             arrLen = varTypeList.pop(-1)
-            arrLen = arrLen.lstrip("[").rstrip("]")     # arrLen是数组长度
+            arrLen = arrLen.lstrip("[").rstrip("]")  # arrLen是数组长度
 
         # 将arrLen转换为int类型, 目前只支持一维数组
         try:
@@ -303,23 +303,57 @@ def getAllHeaders(root: str) -> list:
     """
     headerList = list()
 
-    q = queue.Queue()   # 队列用于存储文件夹的地址
+    q = queue.Queue()  # 队列用于存储文件夹的地址
     q.put(root)
 
     while not q.empty():
         path = q.get()
         for f in os.listdir(path):
             nf = os.path.join(path, f)
-            if os.path.isdir(nf):   # 如果遍历到的东西是文件夹, 加入队列, 遍历它里面的内容寻找头文件
+            if os.path.isdir(nf):  # 如果遍历到的东西是文件夹, 加入队列, 遍历它里面的内容寻找头文件
                 q.put(nf)
-            elif nf.endswith(".h"): # 遍历到的东西是头文件的话, 加入列表
+            elif nf.endswith(".h"):  # 遍历到的东西是头文件的话, 加入列表
                 headerList.append(nf)
 
     return headerList
 
 
-def getAllSrcs(root: str) -> list:
-    """获取根目录下所有头文件的绝对地址
+def getAllCSrcs(root: str) -> list:
+    """获取根目录下所有C文件的绝对地址
+
+    Parameters
+    ----------
+    root : str
+        根目录地址
+
+    Returns
+    -------
+    list
+        存储所有[.c]文件绝对地址的列表
+
+    Notes
+    -----
+    _description_
+    """
+    srcList = list()
+
+    q = queue.Queue()  # 队列用于存储文件夹的地址
+    q.put(root)
+
+    while not q.empty():
+        path = q.get()
+        for f in os.listdir(path):
+            nf = os.path.join(path, f)
+            if os.path.isdir(nf):  # 如果遍历到的东西是文件夹, 加入队列, 遍历它里面的内容寻找头文件
+                q.put(nf)
+            elif nf.endswith(".c"):  # 遍历到的东西是头文件的话, 加入列表
+                srcList.append(nf)
+
+    return srcList
+
+
+def getAllCppSrcs(root: str) -> list:
+    """获取根目录下所有Cpp文件的绝对地址
 
     Parameters
     ----------
@@ -337,16 +371,16 @@ def getAllSrcs(root: str) -> list:
     """
     srcList = list()
 
-    q = queue.Queue()   # 队列用于存储文件夹的地址
+    q = queue.Queue()  # 队列用于存储文件夹的地址
     q.put(root)
 
     while not q.empty():
         path = q.get()
         for f in os.listdir(path):
             nf = os.path.join(path, f)
-            if os.path.isdir(nf):   # 如果遍历到的东西是文件夹, 加入队列, 遍历它里面的内容寻找头文件
+            if os.path.isdir(nf):  # 如果遍历到的东西是文件夹, 加入队列, 遍历它里面的内容寻找头文件
                 q.put(nf)
-            elif nf.endswith(".cpp") or nf.endswith(".cxx") or nf.endswith(".cc"): # 遍历到的东西是头文件的话, 加入列表
+            elif nf.endswith(".cpp") or nf.endswith(".cxx") or nf.endswith(".cc"):  # 遍历到的东西是头文件的话, 加入列表
                 srcList.append(nf)
 
     return srcList
@@ -362,7 +396,7 @@ if __name__ == '__main__':
 
     root = r"C:\Users\77257\Desktop\LocalFiles\Project_VSCode\python\fuzzing-tool-14\example"
 
-    srcList = getAllSrcs(root)
+    srcList = getAllCppSrcs(root)
     headerList = getAllHeaders(root)
 
     # STEP 0: init
