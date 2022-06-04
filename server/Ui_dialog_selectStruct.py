@@ -15,6 +15,7 @@ import traceback
 
 import Ui_dialog_output as outputDialogPY
 import staticAnalysis
+import cppProj
 
 
 class Ui_Dialog(object):
@@ -115,15 +116,15 @@ class Ui_Dialog(object):
         """
         self.header_loc_list = header_loc_list
 
-        # self.structOneDimList = list()
-        # structTwoDimList = staticAnalysis.getAllStruct(header_loc_list)
-        # for struct in structTwoDimList:
-        #     if struct[0] != "":
-        #         self.structOneDimList.append(struct[0])
-        #     else:
-        #         self.structOneDimList.append(struct[1])
+        cppProj.init(header_loc_list)
 
-        self.structOneDimList = staticAnalysis.getAllStruct(header_loc_list)
+        self.structOneDimList = list()
+        structList= cppProj.getAllStruct(header_loc_list)
+
+        structSet = set()
+        for struct in structList:
+            structSet.add(struct[-1])
+        self.structOneDimList = sorted(list(structSet))
 
         self.structTableWidget.setRowCount(len(self.structOneDimList))
         self.choice = choice

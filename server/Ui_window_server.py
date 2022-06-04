@@ -24,6 +24,8 @@ import callgraph as cg
 
 import cppProj
 
+# GLOBAL
+SAVE_PATH = ""
 
 class Ui_MainWindow(object):
 
@@ -425,7 +427,7 @@ class Ui_MainWindow(object):
         """
         if self.instrTabWidget.currentIndex() == 0:  # 方式1
             self.assignCodePreviewLabel.setText("仅支持方式3")
-            root_loc = os.path.dirname(self.CFileLoc.toPlainText().split("\n")[0])
+            root_loc = SAVE_PATH
             instrTxtLoc = os.path.join(root_loc, "in", "instrument.txt")
             if os.path.exists(instrTxtLoc):
                 f = open(instrTxtLoc)
@@ -471,14 +473,18 @@ class Ui_MainWindow(object):
         srcDir = QtWidgets.QFileDialog.getExistingDirectory(None, "选择文件夹(src)", os.getcwd())
         srcList = list()
 
-        # getExistingDirectory获得的文件夹路径默认的是/, win下要换成\\ ?
-        if "win" in sys.platform:
-            srDir = srDir.replace("/", "\\")
-
         # 若文件夹不存在, 返回
         if not os.path.exists(srcDir):
             print("Not exist?")
             return
+
+        # 更新保存路径, 用于保存函数调用图, 静态分析结果等
+        global SAVE_PATH
+        SAVE_PATH = srcDir
+
+        # getExistingDirectory获得的文件夹路径默认的是/, win下要换成\\ ?
+        if "win" in sys.platform:
+            srcDir = srcDir.replace("/", "\\")
 
         # 若选中了C, 则获得文件夹下所有.c文件的路径
         # 若选中了Cpp, 则获得文件夹下所有.cpp, .cxx, .cc文件的路径
@@ -511,6 +517,9 @@ class Ui_MainWindow(object):
         # getExistingDirectory获得的文件夹路径默认的是/, win下要换成\\ ?
         if "win" in sys.platform:
             headerDir = headerDir.replace("/", "\\")
+
+        # 保存路径为用户所选的路径
+        outputDialogPY.SAVE_PATH = headerDir
 
         if not os.path.exists(headerDir):
             print("Hum?")
@@ -678,8 +687,7 @@ class Ui_MainWindow(object):
                     sourceNotExistBox.exec_()
                     return
 
-            root_loc = source_loc_list[0]
-            root_loc = os.path.join(os.path.dirname(root_loc), "in")
+            root_loc = os.path.join(SAVE_PATH, "in")
             if not os.path.exists(root_loc):
                 os.mkdir(root_loc)
             f = open(os.path.join(root_loc, "saresult.txt"), mode="w")
@@ -703,7 +711,7 @@ class Ui_MainWindow(object):
         [description]
         """
         # 读取插装变量
-        root_loc = os.path.dirname(self.CFileLoc.toPlainText().split("\n")[0])
+        root_loc = SAVE_PATH
         instrTxtLoc = os.path.join(root_loc, "in", "instrument.txt")
         if os.path.exists(instrTxtLoc):
             f = open(instrTxtLoc)
@@ -901,7 +909,7 @@ class Ui_MainWindow(object):
         [description]
         """
         source_loc_list = self.CFileLoc.toPlainText().split("\n")
-        root_loc = os.path.dirname(source_loc_list[0])
+        root_loc = SAVE_PATH
         for source in source_loc_list:
             if not os.path.exists(source):
                 sourceNotExistBox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Warning, "警告", "C文件不存在!")

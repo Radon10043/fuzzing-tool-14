@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-10-30 15:16:11
+LastEditTime: 2022-06-04 16:36:13
 Description: 网络通信的输出设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -28,11 +28,15 @@ from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import QMessageBox, QHeaderView
 
 import public
+import cppProj
 import staticAnalysis as sa
 
-# 传入数据结构-start
 from util.get_comment_from_struct import handle_struct
 
+# GLOBAL
+SAVE_PATH = ""
+
+# 传入数据结构-start
 structDict = {
     "结构体名1": {
         "变量名11": {
@@ -357,8 +361,9 @@ class Ui_Dialog(object):
             f.close()
         else:
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
-            structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
-            typedefDict = sa.getTypedefDict(header_loc_list)
+            # structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
+            structInfo = cppProj.analyzeOneStruct(struct)
+            typedefDict = cppProj.getTypedefDict()
 
             tempDict = {}
             # 分析并设置structDict的值
@@ -409,7 +414,7 @@ class Ui_Dialog(object):
         outputStruct.txt: 记录了输出结构体的名称
         """
         # 1.生成instrument.txt
-        root_loc = os.path.join(os.path.dirname(self.header_loc_list[0]), "in")
+        root_loc = os.path.join(SAVE_PATH, "in")
         if not os.path.exists(root_loc):
             os.mkdir(root_loc)
         f = open(os.path.join(root_loc, "instrument.txt"), mode="w")
