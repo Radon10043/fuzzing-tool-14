@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2021-05-16 10:03:05
 LastEditors: Radon
-LastEditTime: 2021-10-30 12:01:41
+LastEditTime: 2022-06-05 14:40:18
 Description: Some public function
 '''
 
@@ -13,6 +13,9 @@ import re
 import struct as structModule
 
 from util.check_code import CheckCode
+
+# GLOBAL
+SAVE_PATH = ""
 
 # ==============================转换大小端关键字对应字典==============================
 # <c Type, format>
@@ -103,7 +106,7 @@ def genSeed(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode, 
     check_code = CheckCode()
     check_code.init4str(checkCodeMethod)
     # 先设置好相关的位置信息
-    root = os.path.join(os.path.dirname(header_loc_list[0]), "in")
+    root = os.path.join(SAVE_PATH, "in")
     if not os.path.exists(root):
         os.mkdir(root)
     genSeedPath = os.path.join(root, "genSeed.cpp")
@@ -271,7 +274,7 @@ def genMutate(header_loc_list, struct, structDict, checkCodeMethod, hasCheckCode
     check_code.init4str(checkCodeMethod)
 
     # 先设置好相关的位置信息
-    root = os.path.join(os.path.dirname(header_loc_list[0]), "in")
+    root = os.path.join(os.path.dirname(SAVE_PATH), "in")
     if not os.path.exists(root):
         os.mkdir(root)
     genMutatePath = os.path.join(root, "mutate.c")
@@ -424,7 +427,7 @@ def genTestcaseVisual(header_loc_list, struct, structDict):
     [description]
     """
     code = ""
-    f = open(os.path.join(os.path.dirname(header_loc_list[0]), "in", "testcaseVisual.c"), mode="w")
+    f = open(os.path.join(os.path.dirname(SAVE_PATH), "in", "testcaseVisual.c"), mode="w")
     # 写一个将结构体可视化的方法，savePath需要以.txt结尾
     code += "#include <stdio.h>\n#include <stdbool.h>\n"
     for header in header_loc_list:

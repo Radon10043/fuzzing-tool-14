@@ -12,6 +12,7 @@ from PyQt5 import QtCore
 import sys
 import os
 import traceback
+import cppProj
 
 import Ui_dialog_seed as seedDialogPY
 import staticAnalysis
@@ -118,7 +119,17 @@ class Ui_Dialog(object):
         [description]
         """
         self.header_loc_list = header_loc_list
-        self.structList = staticAnalysis.getAllStruct(header_loc_list)
+
+        # ========== Support for cpp ==========
+        cppProj.init(header_loc_list)
+        self.structList = cppProj.getAllStruct(header_loc_list)
+
+        structSet = set()
+        for struct in self.structList:
+            structSet.add(struct[-1])
+        self.structList = sorted(list(structSet))
+        # =====================================
+
         self.structTableWidget.setRowCount(len(self.structList))
         self.typeJSONPath = typeJSONPath
         self.uiClient = uiClient

@@ -23,6 +23,7 @@ import Ui_dialog_selectStruct as selectStructDialogPY
 import Ui_dialog_validation as validateDialogPY
 import Ui_dialog_prepareFuzz as prepareFuzzDialogPY
 import cppProj
+import public
 
 import Ui_dialog_protocolFuzzConfig as pfcfgDialogPY
 
@@ -255,8 +256,8 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "模糊测试工具 - 客户端"))
         self.label.setText(_translate("MainWindow", "模糊测试工具 - 客户端"))
         self.fileSelectGroupBox.setTitle(_translate("MainWindow", "文件选择"))
-        self.HFileLoc.setPlaceholderText(_translate("MainWindow", "头文件位置"))
-        self.chooseHFileBtn.setText(_translate("MainWindow", "选择头文件"))
+        self.HFileLoc.setPlaceholderText(_translate("MainWindow", "选择文件夹后, 程序会自动获得该文件夹下所有的头文件位置"))
+        self.chooseHFileBtn.setText(_translate("MainWindow", "选择文件夹"))
         self.dataTypeDictLoc.setPlaceholderText(_translate("MainWindow", "数据类型文件位置(JSON)"))
         self.chooseJSONFileBtn.setText(_translate("MainWindow", "选择JSON文件"))
         self.dataTypeInputBtn.setText(_translate("MainWindow", "设置数据类型信息"))
@@ -331,6 +332,9 @@ class Ui_MainWindow(object):
 
         # 获取所有头文件路径
         headerList = cppProj.getAllHeaders(headerDir)
+
+        # 更新文件保存路径
+        public.SAVE_PATH = headerDir
 
         show = "\n".join(headerList)
         self.HFileLoc.setText(show)

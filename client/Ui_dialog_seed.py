@@ -1,7 +1,7 @@
 '''
 Author: 金昊宸
 Date: 2021-04-22 14:26:43
-LastEditTime: 2021-10-30 17:20:17
+LastEditTime: 2022-06-05 14:36:55
 Description: 网络通信的输入设置界面
 '''
 # -*- coding: utf-8 -*-
@@ -29,6 +29,7 @@ from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import QMessageBox, QHeaderView
 
 import public
+import cppProj
 import staticAnalysis as sa
 
 # 传入数据结构-start
@@ -660,8 +661,8 @@ class Ui_Dialog(object):
         else:
             self.struct = struct
             # structInfo是一个List(tuple(name, loc)), 存储了可设置初始值的成员变量名称和它所在的位置
-            structInfo = sa.getOneStruct(header_loc_list, struct, "", allStruct)
-            self.typedefDict = sa.getTypedefDict(header_loc_list)
+            structInfo = cppProj.analyzeOneStruct(struct)
+            self.typedefDict = cppProj.getTypedefDict()
 
             tempDict = {}
             # 分析并设置structDict的值
