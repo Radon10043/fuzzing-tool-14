@@ -2,7 +2,7 @@
 Author: Radon
 Date: 2022-04-12 11:56:47
 LastEditors: Radon
-LastEditTime: 2022-06-04 20:32:31
+LastEditTime: 2022-06-09 10:29:54
 Description: Hi, say something
 '''
 import clang.cindex
@@ -19,7 +19,7 @@ GLB_AST_LIST        = list()                # or dict? <filename, cursor>
 GLB_STRUCT_DICT     = dict()                # key: hash, value: structs
 GLB_STRUCT_QUEUE    = queue.Queue()         # 队列
 GLB_STRUCT_INFO     = list()                # list(tuple(name, loc))
-GLB_TEMP_DICT       = dict()
+GLB_HEADER_LIST     = list()                # 头文件列表
 GLB_PREFIX          = ""                    # 结构体前缀
 # =====================================
 # yapf: enable
@@ -113,14 +113,13 @@ def preTravStruct(cursor: clang.cindex.Cursor, headerList: list, structList: lis
     _description_
     """
 
-    global GLB_STRUCT_HASH, GLB_TEMP_DICT
+    global GLB_STRUCT_HASH
 
     for cur in cursor.get_children():
 
-        if cur.hash in GLB_TEMP_DICT.keys():
-            GLB_TEMP_DICT[cur.hash].append((cur.type.spelling, cur.spelling))
-        else:
-            GLB_TEMP_DICT[cur.hash] = [(cur.type.spelling, cur.spelling)]
+        # 节点不在头文件列表, 跳过
+        if not cur.location.file.name in GLB_HEADER_LIST:
+            continue
 
         # 根据节点的hash值确定结构体的名称, 当hash值和之前不一样时证明遍历到了新的结构体
         if cur.kind == clang.cindex.CursorKind.STRUCT_DECL and cur.hash != GLB_STRUCT_HASH:
@@ -172,12 +171,6 @@ def getAllStruct(headerList: list) -> list:
     GLB_STRUCT_DICT = structDict
 
     return structList
-
-
-def analyzeInterStruct(cursor: clang.cindex.Cursor):
-    for cur in cursor.get_children():
-        print(cur.spelling)
-        analyzeInterStruct(cur)
 
 
 def preTravOneStruct(cursor: clang.cindex.Cursor):
@@ -497,9 +490,10 @@ def init(headerList: list):
     -----
     _description_
     """
-    global GLB_AST_LIST
+    global GLB_AST_LIST, GLB_HEADER_LIST
 
     GLB_AST_LIST = list()
+    GLB_HEADER_LIST = headerList.copy()
 
     # init
     libclangPath = subprocess.getstatusoutput("where clang")[1]
